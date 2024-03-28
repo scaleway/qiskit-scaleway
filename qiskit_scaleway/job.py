@@ -7,7 +7,6 @@ from qiskit.providers import JobTimeoutError
 from qiskit.providers.jobstatus import JobStatus
 from qiskit.result import Result
 from .client import ScalewayClient
-from qiskit_qir import to_qir_module
 from qiskit import qasm2
 from enum import Enum
 from dataclasses import dataclass

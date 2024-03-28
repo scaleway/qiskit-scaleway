@@ -1,5 +1,4 @@
 import httpx
-import requests
 
 from qiskit.providers import ProviderV1 as Provider
 from qiskit.providers.providerutils import filter_backends
