@@ -26,7 +26,7 @@ class ScalewayBackend(Backend):
         # Instead of None for this and below instructions you can define
         # a qiskit.transpiler.InstructionProperties object to define properties
         # for an instruction.
-        # TODO: fix
+        # TODO: fix https://docs.quantum.ibm.com/api/qiskit/dev/providers
         lam = Parameter("λ")
         p_props = {(qubit,): None for qubit in range(5)}
         self._target.add_instruction(PhaseGate(lam), p_props)
