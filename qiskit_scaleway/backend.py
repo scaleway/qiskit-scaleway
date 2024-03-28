@@ -20,6 +20,7 @@ class ScalewayBackend(Backend):
         self._platform_id = platform_id
         self._options = self._default_options()
         self._name = name
+        self._version = version
 
         # Create Target
         self._target = Target("Target for Scaleway Backend")

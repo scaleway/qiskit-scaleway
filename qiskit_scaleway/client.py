@@ -70,7 +70,7 @@ class ScalewayClient:
         payload = {
             "name": f"qj-aer-{name}-{session_id}",
             "session_id": session_id,
-            "circuit": {"qiskit_circuit": f"{circuits}"},
+            "circuit": {"qiskit_circuit": f"{circuits}"}
         }
 
         request = http_client.post(self._build_endpoint(_ENDPOINT_JOB), json=payload)
@@ -95,4 +95,6 @@ class ScalewayClient:
         resp = http_client.get(endpoint)
         resp.raise_for_status()
 
-        return resp.json()
+        results_dict = resp.json()
+
+        return results_dict["job_results"]
