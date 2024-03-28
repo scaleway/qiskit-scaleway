@@ -11,10 +11,11 @@ from qiskit import qasm2
 
 
 class ScalewayJob(Job):
-    def __init__(self, backend, job_id, circuits, config):
+    def __init__(self, backend, job_id: str, circuits, config) -> None:
         super().__init__(backend, job_id)
         self._backend = backend
         self.circuits = circuits
+        self._job_id = job_id
         self._provider = backend.provider
         self._config = config
         self._client = ScalewayClient(
@@ -23,7 +24,7 @@ class ScalewayJob(Job):
             project_id=self._provider.project_id,
         )
 
-    def _wait_for_result(self, timeout=None, wait=5):
+    def _wait_for_result(self, timeout=None, wait=5) -> dict | None:
         start_time = time.time()
         result = None
         while True:
@@ -55,7 +56,7 @@ class ScalewayJob(Job):
         #     'success': True,
         # })
 
-    def status(self):
+    def status(self) -> JobStatus:
         result = self._client.get_job(self._job_id)
         if result["status"] == "running":
             status = JobStatus.RUNNING

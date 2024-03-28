@@ -39,7 +39,7 @@ class ScalewayProvider(Provider):
         return self._project_id
 
     @property
-    def session(self) -> str:
+    def session(self) -> str | None:
         return self._session
 
     @property
