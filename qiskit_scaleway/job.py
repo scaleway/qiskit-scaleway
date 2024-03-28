@@ -9,6 +9,7 @@ from .client import ScalewayClient
 from qiskit_qir import to_qir_module
 from qiskit import qasm2
 
+
 class ScalewayJob(Job):
     def __init__(self, backend, job_id, circuits, config):
         super().__init__(backend, job_id)
@@ -16,7 +17,11 @@ class ScalewayJob(Job):
         self.circuits = circuits
         self._provider = backend.provider
         self._config = config
-        self._client = ScalewayClient(url=self._provider.url, token=self._provider.secret_key, project_id=self._provider.project_id)
+        self._client = ScalewayClient(
+            url=self._provider.url,
+            token=self._provider.secret_key,
+            project_id=self._provider.project_id,
+        )
 
     def _wait_for_result(self, timeout=None, wait=5):
         start_time = time.time()
@@ -24,19 +29,19 @@ class ScalewayJob(Job):
         while True:
             elapsed = time.time() - start_time
             if timeout and elapsed >= timeout:
-                raise JobTimeoutError('Timed out waiting for result')
+                raise JobTimeoutError("Timed out waiting for result")
             status = self.status()
             if status == JobStatus.DONE:
                 result = self._client.get_job_result(self._job_id)
                 break
             if status == JobStatus.ERROR:
-                raise JobError('Job error')
+                raise JobError("Job error")
             time.sleep(wait)
         return result
 
     def result(self, timeout=None, wait=5):
         if self._job_id == None:
-            raise JobError('Job ID error')
+            raise JobError("Job ID error")
         result = self._wait_for_result(timeout, wait)
         print(result)
         # results = [{'success': True, 'shots': len(result['counts']),
@@ -51,17 +56,16 @@ class ScalewayJob(Job):
         # })
 
     def status(self):
-        result =  self._client.get_job(self._job_id)
-        if result['status'] == 'running':
+        result = self._client.get_job(self._job_id)
+        if result["status"] == "running":
             status = JobStatus.RUNNING
-        elif result['status'] == 'waiting':
+        elif result["status"] == "waiting":
             status = JobStatus.QUEUED
-        elif result['status'] == 'completed':
+        elif result["status"] == "completed":
             status = JobStatus.DONE
         else:
             status = JobStatus.ERROR
         return status
-
 
     def submit(self) -> None:
         # backend_name = self.backend().name
@@ -74,22 +78,26 @@ class ScalewayJob(Job):
                 "version": "1.0",
                 "options": {
                     "method": "statevector",
-                }
+                },
             },
             "run": {
-                "shots": self._config['shots'],
+                "shots": self._config["shots"],
                 "options": {},
                 "circuit": {
                     "serialization_type": 2,
-                    "circuit_serialization": qasm2.dumps(self.circuits[0])
-                }
+                    "circuit_serialization": qasm2.dumps(self.circuits[0]),
+                },
             },
-            "version": "1.0"
+            "version": "1.0",
         }
 
-        session_id = self._client.create_session(deduplication_id=deduplication_id, platform_id=platform_id)
+        session_id = self._client.create_session(
+            deduplication_id=deduplication_id, platform_id=platform_id
+        )
 
         if self._job_id:
             raise RuntimeError(f"Job already submitted (ID: {self._job_id})")
 
-        self._job_id = self._client.create_job(session_id=session_id, circuits=qiskit_payload)
+        self._job_id = self._client.create_job(
+            session_id=session_id, circuits=qiskit_payload
+        )

@@ -14,10 +14,11 @@ class ScalewayClient:
         self._project_id = project_id
         self._session_id = None
 
-
     def _http_client(self) -> httpx.Client:
         # TODO: remove verify false
-        return httpx.Client(headers=self._api_headers(), base_url=self._url, timeout=10.0, verify=False)
+        return httpx.Client(
+            headers=self._api_headers(), base_url=self._url, timeout=10.0, verify=False
+        )
 
     def _api_headers(self):
         return {"X-Auth-Token": self._token}
@@ -27,8 +28,10 @@ class ScalewayClient:
 
     def list_platforms(self, name: str = None):
         http_client = self._http_client()
-        endpoint = f"{self._build_endpoint(_ENDPOINT_PLATFORM)}?providerName={_PROVIDER_NAME}"
-        if (name):
+        endpoint = (
+            f"{self._build_endpoint(_ENDPOINT_PLATFORM)}?providerName={_PROVIDER_NAME}"
+        )
+        if name:
             endpoint += f"&name={name}"
 
         resp = http_client.get(endpoint)
@@ -49,7 +52,9 @@ class ScalewayClient:
             "max_idle_duration": "3600s",
         }
 
-        request = http_client.post(self._build_endpoint(_ENDPOINT_SESSION), json=payload)
+        request = http_client.post(
+            self._build_endpoint(_ENDPOINT_SESSION), json=payload
+        )
         try:
             request.raise_for_status()
             request_dict = request.json()
@@ -67,9 +72,7 @@ class ScalewayClient:
         payload = {
             "name": f"qj-aer-{name}-{session_id}",
             "session_id": session_id,
-            "circuit": {
-                "qiskit_circuit": f"{circuits}"
-            }
+            "circuit": {"qiskit_circuit": f"{circuits}"},
         }
 
         request = http_client.post(self._build_endpoint(_ENDPOINT_JOB), json=payload)

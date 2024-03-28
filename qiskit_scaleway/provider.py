@@ -12,7 +12,6 @@ _ENDPOINT_URL = "https://api.scaleway.com/qaas/v1alpha1"
 
 
 class ScalewayProvider(Provider):
-
     """
     :param project_id: UUID of the Scaleway Project
 
@@ -22,10 +21,7 @@ class ScalewayProvider(Provider):
     """
 
     def __init__(
-        self,
-        project_id: str,
-        secret_key: str,
-        url: str = _ENDPOINT_URL
+        self, project_id: str, secret_key: str, url: str = _ENDPOINT_URL
     ) -> None:
         self._session = None
         self._project_id = project_id
@@ -41,7 +37,6 @@ class ScalewayProvider(Provider):
     @property
     def project_id(self) -> str:
         return self._project_id
-
 
     @property
     def session(self) -> str:
@@ -67,6 +62,14 @@ class ScalewayProvider(Provider):
         json_resp = self._client.list_platforms(name)
 
         for platform in json_resp["platforms"]:
-            scaleway_backends.append(ScalewayBackend(provider=self, platform_id=platform.get("id"), name=platform.get("name"), version=platform.get("version"), num_qubits=platform.get("max_qubit_count")))
+            scaleway_backends.append(
+                ScalewayBackend(
+                    provider=self,
+                    platform_id=platform.get("id"),
+                    name=platform.get("name"),
+                    version=platform.get("version"),
+                    num_qubits=platform.get("max_qubit_count"),
+                )
+            )
 
         return filter_backends(scaleway_backends, **kwargs)

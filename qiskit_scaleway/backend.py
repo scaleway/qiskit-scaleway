@@ -9,15 +9,17 @@ from qiskit.converters import circuit_to_dag
 
 from .job import ScalewayJob
 
+
 class ScalewayBackend(Backend):
 
-    def __init__(self, provider, platform_id: str, name: str, version: str, num_qubits: int):
+    def __init__(
+        self, provider, platform_id: str, name: str, version: str, num_qubits: int
+    ):
         super().__init__(provider=provider, backend_version=version, name=name)
 
         self._platform_id = platform_id
         self._options = self._default_options()
         self._name = name
-
 
         # Create Target
         self._target = Target("Target for Scaleway Backend")
@@ -78,7 +80,9 @@ class ScalewayBackend(Backend):
         if not isinstance(circuits, list):
             circuits = [circuits]
 
-        valid_options = {key: value for key, value in kwargs.items() if key in self.options}
+        valid_options = {
+            key: value for key, value in kwargs.items() if key in self.options
+        }
         unknown_options = set(kwargs) - set(valid_options)
 
         if unknown_options:
@@ -94,17 +98,16 @@ class ScalewayBackend(Backend):
             if not hasattr(self.options, kwarg):
                 warnings.warn(
                     "Option %s is not used by this backend" % kwarg,
-                    UserWarning, stacklevel=2)
+                    UserWarning,
+                    stacklevel=2,
+                )
             else:
                 job_config[kwarg] = kwargs[kwarg]
-        if 'shots' not in job_config:
-            job_config['shots'] = self.options.shots
+        if "shots" not in job_config:
+            job_config["shots"] = self.options.shots
 
         job = ScalewayJob(
-            backend=self,
-            job_id=None,
-            circuits=circuits,
-            config=job_config
+            backend=self, job_id=None, circuits=circuits, config=job_config
         )
         job.submit()
         return job
