@@ -1,8 +1,8 @@
 from qiskit.providers import ProviderV1 as Provider
 from qiskit.providers.providerutils import filter_backends
 
-from .backend import ScalewayBackend
-from .client import ScalewayClient
+from .backend import ScalewayBackend, AerBackend
+from .utils import QaaSClient
 
 
 _ENDPOINT_URL = "https://api.scaleway.com/qaas/v1alpha1"
@@ -20,18 +20,7 @@ class ScalewayProvider(Provider):
     def __init__(
         self, project_id: str, secret_key: str, url: str = _ENDPOINT_URL
     ) -> None:
-        self.__project_id = project_id
-        self.__url = url
-
-        self.__client = ScalewayClient(url=url, token=secret_key, project_id=project_id)
-
-    @property
-    def url(self) -> str:
-        return self.__url
-
-    @property
-    def project_id(self) -> str:
-        return self.__project_id
+        self.__client = QaaSClient(url=url, token=secret_key, project_id=project_id)
 
     def backends(self, name: str = None, **kwargs) -> list[ScalewayBackend]:
         """Return a list of backends matching the specified filtering.
@@ -47,16 +36,19 @@ class ScalewayProvider(Provider):
         scaleway_backends = []
         json_resp = self.__client.list_platforms(name)
 
-        for platform in json_resp["platforms"]:
-            scaleway_backends.append(
-                ScalewayBackend(
-                    provider=self,
-                    client=self.__client,
-                    platform_id=platform.get("id"),
-                    name=platform.get("name"),
-                    version=platform.get("version"),
-                    num_qubits=platform.get("max_qubit_count"),
+        for platform_dict in json_resp["platforms"]:
+            name = platform_dict.get("name")
+
+            if "aer" in name:
+                scaleway_backends.append(
+                    AerBackend(
+                        provider=self,
+                        client=self.__client,
+                        backend_id=platform_dict.get("id"),
+                        name=name,
+                        version=platform_dict.get("version"),
+                        num_qubits=platform_dict.get("max_qubit_count"),
+                    )
                 )
-            )
 
         return filter_backends(scaleway_backends, **kwargs)

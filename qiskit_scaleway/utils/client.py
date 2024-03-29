@@ -7,8 +7,8 @@ _ENDPOINT_JOB = "/jobs"
 _PROVIDER_NAME = "scaleway"
 
 
-class ScalewayClient:
-    def __init__(self, url: str, token: str, project_id: str) -> None:
+class QaaSClient:
+    def __init__(self, project_id: str, token: str, url: str) -> None:
         self.__token = token
         self.__url = url
         self.__project_id = project_id
@@ -58,26 +58,47 @@ class ScalewayClient:
             "max_idle_duration": max_idle_duration,
         }
 
-        request = http_client.post(
+        response = http_client.post(
             self._build_endpoint(_ENDPOINT_SESSION), json=payload
         )
 
-        request.raise_for_status()
-        request_dict = request.json()
-        session_id = request_dict["id"]
+        response.raise_for_status()
+        response_dict = response.json()
+        session_id = response_dict["id"]
+
+        return session_id
+
+    def update_session(
+        self, session_id: str, name: str, max_duration: str, max_idle_duration: str
+    ) -> str:
+        http_client = self._http_client()
+
+        payload = {
+            "name": name,
+            "max_duration": max_duration,
+            "max_idle_duration": max_idle_duration,
+        }
+
+        response = http_client.patch(
+            self._build_endpoint(f"{_ENDPOINT_SESSION}/{session_id}"), json=payload
+        )
+
+        response.raise_for_status()
+        response_dict = response.json()
+        session_id = response_dict["id"]
 
         return session_id
 
     def terminate_session(self, session_id: str) -> str:
         http_client = self._http_client()
 
-        request = http_client.post(
+        response = http_client.post(
             self._build_endpoint(f"{_ENDPOINT_SESSION}/{session_id}/terminate")
         )
 
-        request.raise_for_status()
-        request_dict = request.json()
-        session_id = request_dict["id"]
+        response.raise_for_status()
+        response_dict = response.json()
+        session_id = response_dict["id"]
 
         return session_id
 
@@ -95,12 +116,12 @@ class ScalewayClient:
             "circuit": {"qiskit_circuit": f"{circuits}"},
         }
 
-        request = http_client.post(self._build_endpoint(_ENDPOINT_JOB), json=payload)
+        response = http_client.post(self._build_endpoint(_ENDPOINT_JOB), json=payload)
 
-        request.raise_for_status()
-        request_dict = request.json()
+        response.raise_for_status()
+        response_dict = response.json()
 
-        return request_dict["id"]
+        return response_dict["id"]
 
     def get_job(self, job_id: str) -> dict:
         http_client = self._http_client()

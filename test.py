@@ -7,7 +7,6 @@ from qiskit_scaleway import ScalewayProvider
 provider = ScalewayProvider(
     project_id=os.environ["TEST_USER_PROJECT_ID"],
     secret_key=os.environ["TEST_USER_TOKEN"],
-    # url="https://agw.stg.fr-par-2.internal.scaleway.com/qaas/v1alpha1",
     url="http://localhost:5044/qaas/v1alpha1",
 )
 
@@ -36,7 +35,7 @@ qc = qiskit.transpile(qc, backend)
 result = backend.run(qc, shots=1000).result()
 
 # TODO
-# if result.success:
-#     print(result.get_counts())
-# else:
-#     print(result.to_dict()["error"])
+if result.success:
+    print(result.get_counts())
+else:
+    print(result.to_dict()["error"])

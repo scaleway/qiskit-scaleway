@@ -3,31 +3,35 @@ import warnings
 
 from typing import Union, List
 
-from qiskit.providers import BackendV2 as Backend
 from qiskit.transpiler import Target
 from qiskit.providers import Options
 from qiskit.circuit import Parameter, Measure, QuantumCircuit
 from qiskit.circuit.library import PhaseGate, SXGate, UGate, CXGate, IGate
 
-from .job import ScalewayJob
-from .client import ScalewayClient
+from .aer_job import AerJob
+from .scaleway_backend import ScalewayBackend
+from ..utils import QaaSClient
 
 
-class ScalewayBackend(Backend):
+class AerBackend(ScalewayBackend):
     def __init__(
         self,
         provider,
-        client: ScalewayClient,
-        platform_id: str,
+        client: QaaSClient,
+        backend_id: str,
         name: str,
         version: str,
         num_qubits: int,
     ):
-        super().__init__(provider=provider, backend_version=version, name=name)
+        super().__init__(
+            provider=provider,
+            client=client,
+            backend_id=backend_id,
+            name=name,
+            version=version,
+        )
 
-        self._platform_id = platform_id
         self._options = self._default_options()
-        self._client = client
 
         # Create Target
         self._target = Target("Target for Scaleway Backend")
@@ -67,10 +71,6 @@ class ScalewayBackend(Backend):
         return self._target
 
     @property
-    def id(self):
-        return self._platform_id
-
-    @property
     def num_qubits(self) -> int:
         return self._target.num_qubits
 
@@ -78,61 +78,12 @@ class ScalewayBackend(Backend):
     def max_circuits(self):
         return 1024
 
-    def start_session(
-        self,
-        name: str = None,
-        deduplication_id: str = None,
-        max_duration: Union[int, str] = None,
-        max_idle_duration: Union[int, str] = None,
-    ) -> str:
-        if name is None:
-            name = self._options.session_name
-
-        if deduplication_id is None:
-            deduplication_id = self._options.session_deduplication_id
-
-        if max_duration is None:
-            max_duration = self._options.session_max_duration
-
-        if max_idle_duration is None:
-            max_idle_duration = self._options.session_max_idle_duration
-
-        return self._client.create_session(
-            name,
-            platform_id=self.id,
-            deduplication_id=deduplication_id,
-            max_duration=max_duration,
-            max_idle_duration=max_idle_duration,
-        )
-
-    def stop_session(self, id: str):
-        self._client.terminate_session(
-            session_id=id,
-        )
-
-    def delete_session(self, id: str):
-        self._client.delete_session(
-            session_id=id,
-        )
-
     def run(self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **kwargs):
         if not isinstance(circuits, list):
             circuits = [circuits]
 
-        valid_options = {
-            key: value for key, value in kwargs.items() if key in self._options
-        }
-        unknown_options = set(kwargs) - set(valid_options)
+        job_config = {key: value for key, value in self._options.items()}
 
-        if unknown_options:
-            for unknown_option in unknown_options:
-                warnings.warn(
-                    f"Option {unknown_option} is not used by this backend",
-                    UserWarning,
-                    stacklevel=2,
-                )
-
-        job_config = {}
         for kwarg in kwargs:
             if not hasattr(self.options, kwarg):
                 warnings.warn(
@@ -143,12 +94,15 @@ class ScalewayBackend(Backend):
             else:
                 job_config[kwarg] = kwargs[kwarg]
 
-        if "shots" not in job_config:
-            job_config["shots"] = self._options.shots
-
         job_name = f"qj-aer-{randomname.get_name()}"
 
-        job = ScalewayJob(
+        job_config.pop("session_id")
+        job_config.pop("session_name")
+        job_config.pop("session_deduplication_id")
+        job_config.pop("session_max_duration")
+        job_config.pop("session_max_idle_duration")
+
+        job = AerJob(
             backend=self,
             client=self._client,
             circuits=circuits,
@@ -160,6 +114,7 @@ class ScalewayBackend(Backend):
 
         if session_id in ["auto", None]:
             session_id = self.start_session(name=f"auto-{self._options.session_name}")
+            assert session_id is not None
 
         job.submit(session_id)
 
@@ -167,6 +122,7 @@ class ScalewayBackend(Backend):
 
     @classmethod
     def _default_options(self):
+        # https://qiskit.github.io/qiskit-aer/stubs/qiskit_aer.AerSimulator.html
         return Options(
             session_id="auto",
             session_name="qiskit-scaleway-session",
@@ -176,4 +132,46 @@ class ScalewayBackend(Backend):
             shots=1000,
             memory=False,
             method="automatic",
+            precision="double",
+            max_shot_size=None,
+            enable_truncation=True,
+            zero_threshold=1e-10,
+            validation_threshold=1e-8,
+            max_parallel_threads=0,
+            max_parallel_shots=0,
+            max_parallel_experiments=1,
+            blocking_enable=True,
+            blocking_qubits=0,
+            batched_shots_gpu=False,
+            chunk_swap_buffer_qubits=15,
+            batched_shots_gpu_max_qubits=16,
+            num_threads_per_device=1,
+            shot_branching_enable=False,
+            shot_branching_sampling_enable=False,
+            accept_distributed_results=None,
+            runtime_parameter_bind_enable=False,
+            statevector_parallel_threshold=14,
+            statevector_sample_measure_opt=10,
+            stabilizer_max_snapshot_probabilities=32,
+            extended_stabilizer_sampling_method="resampled_metropolis",
+            extended_stabilizer_metropolis_mixing_time=5000,
+            extended_stabilizer_approximation_error=0.05,
+            extended_stabilizer_norm_estimation_samples=100,
+            extended_stabilizer_norm_estimation_repetitions=3,
+            extended_stabilizer_parallel_threshold=100,
+            extended_stabilizer_probabilities_snapshot_samples=3000,
+            matrix_product_state_max_bond_dimension=None,
+            matrix_product_state_truncation_threshold=1e-16,
+            mps_sample_measure_algorithm="mps_apply_measure",
+            mps_log_data=False,
+            mps_swap_direction="mps_swap_left",
+            chop_threshold=1e-8,
+            mps_parallel_threshold=14,
+            mps_omp_threads=1,
+            tensor_network_num_sampling_qubits=10,
+            use_cuTensorNet_autotuning=False,
+            fusion_enable=True,
+            fusion_verbose=False,
+            fusion_max_qubit=None,
+            fusion_threshold=None,
         )

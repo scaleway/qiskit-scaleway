@@ -1,20 +1,16 @@
-import time
 import json
-import httpx
 
 from enum import Enum
 from typing import Union, List
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 
-from qiskit.providers import JobV1 as Job
 from qiskit.providers import JobError
-from qiskit.providers import JobTimeoutError
-from qiskit.providers.jobstatus import JobStatus
 from qiskit.result import Result
 from qiskit import qasm2
 
-from .client import ScalewayClient
+from ..utils import QaaSClient
+from .scaleway_job import ScalewayJob
 
 
 class _SerializationType(Enum):
@@ -55,57 +51,18 @@ class _JobPayload:
     run: _RunPayload
 
 
-class ScalewayJob(Job):
+class AerJob(ScalewayJob):
     def __init__(
         self,
         name: str,
         backend,
-        client: ScalewayClient,
+        client: QaaSClient,
         circuits,
         config,
     ) -> None:
-        super().__init__(backend, None)
+        super().__init__(name, backend, client)
         self._circuits = circuits
-        self._name = name
         self._config = config
-        self._client = client
-
-    def _wait_for_result(self, timeout=None, fetch_interval: int = 5) -> dict | None:
-        start_time = time.time()
-
-        while True:
-            elapsed = time.time() - start_time
-
-            if timeout and elapsed >= timeout:
-                raise JobTimeoutError("Timed out waiting for result")
-
-            status = self.status()
-
-            if status == JobStatus.DONE:
-                return self._client.get_job_results(self._job_id)
-
-            if status == JobStatus.ERROR:
-                raise JobError("Job error")
-
-            time.sleep(fetch_interval)
-
-    @property
-    def name(self):
-        return self._name
-
-    def status(self) -> JobStatus:
-        result = self._client.get_job(self._job_id)
-
-        if result["status"] == "running":
-            status = JobStatus.RUNNING
-        elif result["status"] == "waiting":
-            status = JobStatus.QUEUED
-        elif result["status"] == "completed":
-            status = JobStatus.DONE
-        else:
-            status = JobStatus.ERROR
-
-        return status
 
     def submit(self, session_id: str) -> None:
         if self._job_id:
@@ -152,22 +109,6 @@ class ScalewayJob(Job):
 
         job_results = self._wait_for_result(timeout, fetch_interval)
 
-        def __extract_payload_from_response(result_response: dict) -> str:
-            result = result_response.get("result", None)
-
-            if result is None or result == "":
-                url = result_response.get("url", None)
-
-                if url is not None or result == "":
-                    http_client = httpx.Client(base_url=url, timeout=10.0, verify=False)
-
-                    resp = http_client.get(url)
-                    resp.raise_for_status()
-
-                    return resp.text
-            else:
-                return result
-
         def __make_result_from_payload(payload: str) -> Result:
             payload_dict = json.loads(payload)
 
@@ -182,10 +123,14 @@ class ScalewayJob(Job):
                 }
             )
 
-        qiskit_results = list(map(
-            lambda r: __make_result_from_payload(__extract_payload_from_response(r)),
-            job_results,
-        ))
+        qiskit_results = list(
+            map(
+                lambda r: __make_result_from_payload(
+                    self._extract_payload_from_response(r)
+                ),
+                job_results,
+            )
+        )
 
         if len(qiskit_results) == 1:
             return qiskit_results[0]
