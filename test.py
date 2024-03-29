@@ -3,7 +3,11 @@ import qiskit
 from qiskit import QuantumCircuit
 from qiskit_scaleway import ScalewayProvider
 
-provider = ScalewayProvider(project_id="<project_id>", secret_key="<secret_key>", url="https://agw.stg.fr-par-2.internal.scaleway.com/qaas/v1alpha1")
+provider = ScalewayProvider(
+    project_id="<project_id>",
+    secret_key="<secret_key>",
+    url="https://agw.stg.fr-par-2.internal.scaleway.com/qaas/v1alpha1",
+)
 
 # The backends() method lists all available computing backends. Printing it
 # renders it as a table that shows each backend's containing workspace.
@@ -28,12 +32,10 @@ qc = qiskit.transpile(qc, backend)
 # Execute on the target backend
 # Send job in QASM format
 # Every params from backend + job are send to the session
-result = backend.run(qc, shots=1).result()
+result = backend.run(qc, shots=1000).result()
 
 # TODO
 # if result.success:
 #     print(result.get_counts())
 # else:
 #     print(result.to_dict()["error"])
-
-

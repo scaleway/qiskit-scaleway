@@ -1,5 +1,5 @@
 import httpx
-import randomname
+
 
 _ENDPOINT_PLATFORM = "/platforms"
 _ENDPOINT_SESSION = "/sessions"
@@ -9,19 +9,19 @@ _PROVIDER_NAME = "scaleway"
 
 class ScalewayClient:
     def __init__(self, url: str, token: str, project_id: str) -> None:
-        self._token = token
-        self._url = url
-        self._project_id = project_id
-        self._session_id = None
+        self.__token = token
+        self.__url = url
+        self.__project_id = project_id
+        # self._session_id = None
 
     def _http_client(self) -> httpx.Client:
         # TODO: remove verify false
         return httpx.Client(
-            headers=self._api_headers(), base_url=self._url, timeout=10.0, verify=False
+            headers=self._api_headers(), base_url=self.__url, timeout=10.0, verify=False
         )
 
     def _api_headers(self) -> dict:
-        return {"X-Auth-Token": self._token}
+        return {"X-Auth-Token": self.__token}
 
     def _build_endpoint(self, endpoint: str) -> str:
         return f"{self._url}{endpoint}"
@@ -31,6 +31,7 @@ class ScalewayClient:
         endpoint = (
             f"{self._build_endpoint(_ENDPOINT_PLATFORM)}?providerName={_PROVIDER_NAME}"
         )
+
         if name:
             endpoint += f"&name={name}"
 
@@ -39,17 +40,24 @@ class ScalewayClient:
 
         return resp.json()
 
-    def create_session(self, platform_id: str, deduplication_id: str = "") -> str:
+    def create_session(
+        self,
+        name: str,
+        platform_id: str,
+        deduplication_id: str,
+        max_duration: str,
+        max_idle_duration: str,
+    ) -> str:
         http_client = self._http_client()
-        name = randomname.get_name()
+        # name = randomname.get_name()
 
         payload = {
-            "name": f"qs-aer-{name}",
-            "project_id": self._project_id,
+            "name": name,
+            "project_id": self.__project_id,
             "platform_id": platform_id,
             "deduplication_id": deduplication_id,
-            "max_duration": "1200s",
-            "max_idle_duration": "3600s",
+            "max_duration": max_duration,
+            "max_idle_duration": max_idle_duration,
         }
 
         request = http_client.post(
@@ -59,24 +67,25 @@ class ScalewayClient:
         request.raise_for_status()
         request_dict = request.json()
         session_id = request_dict["id"]
-        self._session_id = session_id
+        # self._session_id = session_id
 
         return session_id
 
-    def create_job(self, session_id: str, circuits: dict) -> str:
+    def create_job(self, name: str, session_id: str, circuits: dict) -> str:
         http_client = self._http_client()
-        name = randomname.get_name()
+        # name = randomname.get_name()
 
         payload = {
-            "name": f"qj-aer-{name}-{session_id}",
+            "name": name,
             "session_id": session_id,
-            "circuit": {"qiskit_circuit": f"{circuits}"}
+            "circuit": {"qiskit_circuit": f"{circuits}"},
         }
 
         request = http_client.post(self._build_endpoint(_ENDPOINT_JOB), json=payload)
 
         request.raise_for_status()
         request_dict = request.json()
+
         return request_dict["id"]
 
     def get_job(self, job_id: str) -> dict:
@@ -88,7 +97,7 @@ class ScalewayClient:
 
         return resp.json()
 
-    def get_job_result(self, job_id: str) -> dict:
+    def get_job_results(self, job_id: str) -> list:
         http_client = self._http_client()
         endpoint = f"{self._build_endpoint(_ENDPOINT_JOB)}/{job_id}/results"
 
