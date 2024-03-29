@@ -1,6 +1,5 @@
 import time
 import json
-import randomname
 
 from qiskit.providers import JobV1 as Job
 from qiskit.providers import JobError
@@ -58,49 +57,44 @@ class _JobPayload:
 class ScalewayJob(Job):
     def __init__(
         self,
+        name: str,
         backend: ScalewayBackend,
         client: ScalewayClient,
-        job_id: str,
         circuits,
         config,
     ) -> None:
-        super().__init__(backend, job_id)
-        # self.__backend = backend
-        # self.__circuits = circuits
-        self.__job_id = job_id
-        self.__config = config
-        self.__client = client
-        self.__name = None
+        super().__init__(backend, None)
+        self._circuits = circuits
+        self._name = name
+        self._config = config
+        self._client = client
 
     def _wait_for_result(self, timeout=None) -> dict | None:
         start_time = time.time()
-        result = None
 
         while True:
             elapsed = time.time() - start_time
+
             if timeout and elapsed >= timeout:
                 raise JobTimeoutError("Timed out waiting for result")
+
             status = self.status()
+
             if status == JobStatus.DONE:
-                result = self.__client.get_job_result(self._job_id)
-                break
+                return self._client.get_job_results(self._job_id)
+
             if status == JobStatus.ERROR:
                 raise JobError("Job error")
 
-            time.sleep(5)
-
-        return result
+            time.sleep(3)
 
     @property
     def name(self):
-        return self.__name
-
-    @property
-    def id(self):
-        return self.__job_id
+        return self._name
 
     def status(self) -> JobStatus:
-        result = self.__client.get_job(self._job_id)
+        result = self._client.get_job(self._job_id)
+
         if result["status"] == "running":
             status = JobStatus.RUNNING
         elif result["status"] == "waiting":
@@ -109,60 +103,56 @@ class ScalewayJob(Job):
             status = JobStatus.DONE
         else:
             status = JobStatus.ERROR
+
         return status
 
-    def submit(self) -> None:
-        # backend_name = self.backend().name
-        # deduplication_id = self._provider.session
+    def submit(self, session_id: str, **kwargs) -> None:
+        if self._job_id:
+            raise RuntimeError(f"Job already submitted (ID: {self._job_id})")
+
         qiskit_payload = _JobPayload.schema().dumps(
             _JobPayload(
                 backend=_BackendPayload(
                     name="aer",
                     version="1.0",
-                    options={
-                        "method": "statevector",
-                    },
+                    options=self._config,
                 ),
                 run=_RunPayload(
-                    shots=self.__config["shots"],
-                    options=self.__config,
+                    shots=self._config["shots"],
+                    # options=self._config,
                     circuit=_CircuitPayload(
                         serialization_type=_SerializationType.QASM_V2,
-                        circuit_serialization=qasm2.dumps(self.circuits[0]),
+                        circuit_serialization=qasm2.dumps(self._circuits[0]),
                     ),
                 ),
                 version="1.0",
             )
         )
 
-        # session_id = self.__client.create_session(
-        #     name= "",deduplication_id=deduplication_id, platform_id=self.__backend.id
-        # )
-
-        if self.__job_id:
-            raise RuntimeError(f"Job already submitted (ID: {self.__job_id})")
-
-        self.__job_id = self.__client.create_job(
-            name=f"qj-aer-{randomname.get_name()}-{session_id}",
+        self._job_id = self._client.create_job(
+            name=self._name,
             session_id=session_id,
             circuits=qiskit_payload,
         )
 
     def result(self, timeout=None, wait=5):
-        if self.__job_id == None:
+        if self._job_id == None:
             raise JobError("Job ID error")
+
         job_results = self._wait_for_result(timeout, wait)
 
         # TODO
-        # job_result = job_results[0]
-        # result_load = json.loads(job_result["result"])
+        job_result = job_results[0]
+        result_load = json.loads(job_result["result"])
 
         # results = [{'success': True, 'shots': 1, 'data': 1}]
-        # return Result.from_dict({
-        #     'results': results,
-        #     'backend_name': self.backend().name,
-        #     'backend_version': self.backend().version,
-        #     'job_id': self._job_id,
-        #     'qobj_id': ', '.join(x.name for x in self.circuits),
-        #     'success': True,
-        # })
+        return Result.from_dict(
+            {
+                "results": result_load,
+                "backend_name": self.backend().name,
+                "backend_version": self.backend().version,
+                "job_id": self._job_id,
+                "qobj_id": ", ".join(x.name for x in self.circuits),
+                "success": True,
+            }
+        )

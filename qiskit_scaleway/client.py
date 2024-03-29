@@ -1,3 +1,5 @@
+from typing import Union
+
 import httpx
 
 
@@ -12,7 +14,6 @@ class ScalewayClient:
         self.__token = token
         self.__url = url
         self.__project_id = project_id
-        # self._session_id = None
 
     def _http_client(self) -> httpx.Client:
         # TODO: remove verify false
@@ -49,7 +50,6 @@ class ScalewayClient:
         max_idle_duration: str,
     ) -> str:
         http_client = self._http_client()
-        # name = randomname.get_name()
 
         payload = {
             "name": name,
@@ -67,13 +67,28 @@ class ScalewayClient:
         request.raise_for_status()
         request_dict = request.json()
         session_id = request_dict["id"]
-        # self._session_id = session_id
+
+        return session_id
+
+    def terminate_session(self, session_id: str) -> str:
+        http_client = self._http_client()
+
+        payload = {
+            "session_id": session_id,
+        }
+
+        request = http_client.post(
+            self._build_endpoint(_ENDPOINT_SESSION), json=payload
+        )
+
+        request.raise_for_status()
+        request_dict = request.json()
+        session_id = request_dict["id"]
 
         return session_id
 
     def create_job(self, name: str, session_id: str, circuits: dict) -> str:
         http_client = self._http_client()
-        # name = randomname.get_name()
 
         payload = {
             "name": name,

@@ -1,5 +1,3 @@
-# import httpx
-
 from qiskit.providers import ProviderV1 as Provider
 from qiskit.providers.providerutils import filter_backends
 
@@ -22,10 +20,8 @@ class ScalewayProvider(Provider):
     def __init__(
         self, project_id: str, secret_key: str, url: str = _ENDPOINT_URL
     ) -> None:
-        # self.__session = None
         self.__project_id = project_id
         self.__url = url
-        # self.__secret_key = secret_key
 
         self.__client = ScalewayClient(url=url, token=secret_key, project_id=project_id)
 
@@ -37,14 +33,6 @@ class ScalewayProvider(Provider):
     def project_id(self) -> str:
         return self.__project_id
 
-    # @property
-    # def session(self) -> str | None:
-    #     return self.__session
-
-    # @property
-    # def secret_key(self) -> str:
-    #     return self.__secret_key
-
     def backends(self, name: str = None, **kwargs) -> list[ScalewayBackend]:
         """Return a list of backends matching the specified filtering.
 
@@ -55,7 +43,6 @@ class ScalewayProvider(Provider):
             list[ScalewayBackend]: a list of Backends that match the filtering
                 criteria.
         """
-        # self._session = session
 
         scaleway_backends = []
         json_resp = self.__client.list_platforms(name)
