@@ -1,5 +1,3 @@
-from typing import Union
-
 import httpx
 
 
@@ -25,7 +23,7 @@ class ScalewayClient:
         return {"X-Auth-Token": self.__token}
 
     def _build_endpoint(self, endpoint: str) -> str:
-        return f"{self._url}{endpoint}"
+        return f"{self.__url}{endpoint}"
 
     def list_platforms(self, name: str = "") -> dict:
         http_client = self._http_client()
@@ -73,12 +71,8 @@ class ScalewayClient:
     def terminate_session(self, session_id: str) -> str:
         http_client = self._http_client()
 
-        payload = {
-            "session_id": session_id,
-        }
-
         request = http_client.post(
-            self._build_endpoint(_ENDPOINT_SESSION), json=payload
+            self._build_endpoint(f"{_ENDPOINT_SESSION}/{session_id}/terminate")
         )
 
         request.raise_for_status()
@@ -86,6 +80,11 @@ class ScalewayClient:
         session_id = request_dict["id"]
 
         return session_id
+
+    def delete_session(self, session_id: str):
+        http_client = self._http_client()
+
+        http_client.delete(self._build_endpoint(f"{_ENDPOINT_SESSION}/{session_id}"))
 
     def create_job(self, name: str, session_id: str, circuits: dict) -> str:
         http_client = self._http_client()

@@ -1,12 +1,14 @@
+import os
 import qiskit
 
 from qiskit import QuantumCircuit
 from qiskit_scaleway import ScalewayProvider
 
 provider = ScalewayProvider(
-    project_id="<project_id>",
-    secret_key="<secret_key>",
-    url="https://agw.stg.fr-par-2.internal.scaleway.com/qaas/v1alpha1",
+    project_id=os.environ["TEST_USER_PROJECT_ID"],
+    secret_key=os.environ["TEST_USER_TOKEN"],
+    # url="https://agw.stg.fr-par-2.internal.scaleway.com/qaas/v1alpha1",
+    url="http://localhost:5044/qaas/v1alpha1",
 )
 
 # The backends() method lists all available computing backends. Printing it
@@ -14,8 +16,7 @@ provider = ScalewayProvider(
 print(provider.backends())
 
 # Retrieve a backend by providing search criteria. The search must have a single match
-# Create or fetch an existing Scaleway session, the session argument use the deduplication_id
-backend = provider.get_backend("aer_simulation_h100", session="test-qiskit-12")
+backend = provider.get_backend("aer_simulation_local")
 
 # Define a quantum circuit that produces a 4-qubit GHZ state.
 qc = QuantumCircuit(4)
@@ -26,7 +27,7 @@ qc.cx(0, 3)
 qc.measure_all()
 
 # # Transpile for the target backend
-# # useless for now, could return the same circuit ( later could be useful for Perceval to Qiskit)
+# # useless for now, could return the same circuit (later could be useful for Perceval to Qiskit)
 qc = qiskit.transpile(qc, backend)
 
 # Execute on the target backend

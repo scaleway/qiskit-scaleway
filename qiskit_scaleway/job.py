@@ -1,5 +1,11 @@
 import time
 import json
+import httpx
+
+from enum import Enum
+from typing import Union, List
+from dataclasses import dataclass
+from dataclasses_json import dataclass_json
 
 from qiskit.providers import JobV1 as Job
 from qiskit.providers import JobError
@@ -8,12 +14,7 @@ from qiskit.providers.jobstatus import JobStatus
 from qiskit.result import Result
 from qiskit import qasm2
 
-from enum import Enum
-from dataclasses import dataclass
-from dataclasses_json import dataclass_json
-
 from .client import ScalewayClient
-from .backend import ScalewayBackend
 
 
 class _SerializationType(Enum):
@@ -58,7 +59,7 @@ class ScalewayJob(Job):
     def __init__(
         self,
         name: str,
-        backend: ScalewayBackend,
+        backend,
         client: ScalewayClient,
         circuits,
         config,
@@ -69,7 +70,7 @@ class ScalewayJob(Job):
         self._config = config
         self._client = client
 
-    def _wait_for_result(self, timeout=None) -> dict | None:
+    def _wait_for_result(self, timeout=None, fetch_interval: int = 5) -> dict | None:
         start_time = time.time()
 
         while True:
@@ -86,7 +87,7 @@ class ScalewayJob(Job):
             if status == JobStatus.ERROR:
                 raise JobError("Job error")
 
-            time.sleep(3)
+            time.sleep(fetch_interval)
 
     @property
     def name(self):
@@ -106,25 +107,33 @@ class ScalewayJob(Job):
 
         return status
 
-    def submit(self, session_id: str, **kwargs) -> None:
+    def submit(self, session_id: str) -> None:
         if self._job_id:
             raise RuntimeError(f"Job already submitted (ID: {self._job_id})")
 
-        qiskit_payload = _JobPayload.schema().dumps(
+        options = self._config.copy()
+
+        runOpts = _RunPayload(
+            shots=options["shots"],
+            options={},
+            circuit=_CircuitPayload(
+                serialization_type=_SerializationType.QASM_V2,
+                circuit_serialization=qasm2.dumps(self._circuits[0]),
+            ),
+        )
+
+        options.pop("shots")
+
+        backendOpts = _BackendPayload(
+            name="aer",
+            version="1.0",
+            options=options,
+        )
+
+        job_payload = _JobPayload.schema().dumps(
             _JobPayload(
-                backend=_BackendPayload(
-                    name="aer",
-                    version="1.0",
-                    options=self._config,
-                ),
-                run=_RunPayload(
-                    shots=self._config["shots"],
-                    # options=self._config,
-                    circuit=_CircuitPayload(
-                        serialization_type=_SerializationType.QASM_V2,
-                        circuit_serialization=qasm2.dumps(self._circuits[0]),
-                    ),
-                ),
+                backend=backendOpts,
+                run=runOpts,
                 version="1.0",
             )
         )
@@ -132,27 +141,53 @@ class ScalewayJob(Job):
         self._job_id = self._client.create_job(
             name=self._name,
             session_id=session_id,
-            circuits=qiskit_payload,
+            circuits=job_payload,
         )
 
-    def result(self, timeout=None, wait=5):
+    def result(
+        self, timeout=None, fetch_interval: int = 3
+    ) -> Union[Result, List[Result]]:
         if self._job_id == None:
             raise JobError("Job ID error")
 
-        job_results = self._wait_for_result(timeout, wait)
+        job_results = self._wait_for_result(timeout, fetch_interval)
 
-        # TODO
-        job_result = job_results[0]
-        result_load = json.loads(job_result["result"])
+        def __extract_payload_from_response(result_response: dict) -> str:
+            result = result_response.get("result", None)
 
-        # results = [{'success': True, 'shots': 1, 'data': 1}]
-        return Result.from_dict(
-            {
-                "results": result_load,
-                "backend_name": self.backend().name,
-                "backend_version": self.backend().version,
-                "job_id": self._job_id,
-                "qobj_id": ", ".join(x.name for x in self.circuits),
-                "success": True,
-            }
-        )
+            if result is None or result == "":
+                url = result_response.get("url", None)
+
+                if url is not None or result == "":
+                    http_client = httpx.Client(base_url=url, timeout=10.0, verify=False)
+
+                    resp = http_client.get(url)
+                    resp.raise_for_status()
+
+                    return resp.text
+            else:
+                return result
+
+        def __make_result_from_payload(payload: str) -> Result:
+            payload_dict = json.loads(payload)
+
+            return Result.from_dict(
+                {
+                    "results": payload_dict["results"],
+                    "backend_name": payload_dict["backend_name"],
+                    "backend_version": payload_dict["backend_version"],
+                    "job_id": self._job_id,
+                    "qobj_id": ", ".join(x.name for x in self._circuits),
+                    "success": payload_dict["success"],
+                }
+            )
+
+        qiskit_results = list(map(
+            lambda r: __make_result_from_payload(__extract_payload_from_response(r)),
+            job_results,
+        ))
+
+        if len(qiskit_results) == 1:
+            return qiskit_results[0]
+
+        return qiskit_results

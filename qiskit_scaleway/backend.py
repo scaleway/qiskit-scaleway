@@ -8,8 +8,6 @@ from qiskit.transpiler import Target
 from qiskit.providers import Options
 from qiskit.circuit import Parameter, Measure, QuantumCircuit
 from qiskit.circuit.library import PhaseGate, SXGate, UGate, CXGate, IGate
-from qiskit.providers.models import BackendConfiguration
-from qiskit.converters import circuit_to_dag
 
 from .job import ScalewayJob
 from .client import ScalewayClient
@@ -29,8 +27,6 @@ class ScalewayBackend(Backend):
 
         self._platform_id = platform_id
         self._options = self._default_options()
-        self._name = name
-        self._version = version
         self._client = client
 
         # Create Target
@@ -65,14 +61,6 @@ class ScalewayBackend(Backend):
         # Set option validators
         self.options.set_validator("shots", (1, 4096))
         self.options.set_validator("memory", bool)
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def version(self):
-        return self._version
 
     @property
     def target(self):
@@ -117,8 +105,13 @@ class ScalewayBackend(Backend):
             max_idle_duration=max_idle_duration,
         )
 
-    def stop_session(self, id):
+    def stop_session(self, id: str):
         self._client.terminate_session(
+            session_id=id,
+        )
+
+    def delete_session(self, id: str):
+        self._client.delete_session(
             session_id=id,
         )
 
@@ -165,9 +158,8 @@ class ScalewayBackend(Backend):
 
         session_id = job_config.get("session_id", None)
 
-        if session_id is None or session_id == "auto":
+        if session_id in ["auto", None]:
             session_id = self.start_session(name=f"auto-{self._options.session_name}")
-
 
         job.submit(session_id)
 
@@ -181,7 +173,7 @@ class ScalewayBackend(Backend):
             session_deduplication_id="qiskit-scaleway-session",
             session_max_duration="1200s",
             session_max_idle_duration="1200s",
-            shots=1024,
+            shots=1000,
             memory=False,
             method="automatic",
         )
