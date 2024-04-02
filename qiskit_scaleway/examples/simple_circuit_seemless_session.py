@@ -17,7 +17,7 @@ qc.cx(0, 2)
 qc.cx(0, 3)
 qc.measure_all()
 
-# Create and send a job to the new session (or an existing one)
+# Create and send a job to the new QPU's session (or on an existing one)
 result = backend.run(qc, shots=1000).result()
 
 if result.success:

@@ -2,6 +2,7 @@ from typing import Union
 
 from abc import ABC
 from qiskit.providers import BackendV2 as Backend
+from pytimeparse.timeparse import timeparse
 
 from ..utils import QaaSClient
 
@@ -42,6 +43,12 @@ class ScalewayBackend(Backend, ABC):
 
         if max_idle_duration is None:
             max_idle_duration = self._options.session_max_idle_duration
+
+        if isinstance(max_duration, str):
+            max_duration = f"{timeparse(max_duration)}s"
+
+        if isinstance(max_idle_duration, str):
+            max_idle_duration = f"{timeparse(max_idle_duration)}s"
 
         return self._client.create_session(
             name,

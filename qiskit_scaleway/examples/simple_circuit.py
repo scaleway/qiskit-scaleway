@@ -18,7 +18,9 @@ qc.cx(0, 3)
 qc.measure_all()
 
 # Create a QPU's session for a limited duration
-session_id = backend.start_session(deduplication_id="my-session-workshop", max_duration="2h")
+session_id = backend.start_session(
+    deduplication_id="my-session-workshop", max_duration="2h"
+)
 
 # Create and send a job to the target session
 result = backend.run(qc, shots=1000, session_id=session_id).result()

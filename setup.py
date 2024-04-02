@@ -14,6 +14,7 @@ setup(
         "httpx==0.27.0",
         "dataclasses-json==0.6.4",
         "dataclasses==0.6",
+        "pytimeparse==1.1.8",
     ],
     long_description=description,
     long_description_content_type="text/markdown",
