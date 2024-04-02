@@ -79,6 +79,8 @@ class AerBackend(ScalewayBackend):
 
         job_name = f"qj-aer-{randomname.get_name()}"
 
+        session_id = job_config.get("session_id", None)
+
         job_config.pop("session_id")
         job_config.pop("session_name")
         job_config.pop("session_deduplication_id")
@@ -92,8 +94,6 @@ class AerBackend(ScalewayBackend):
             config=job_config,
             name=job_name,
         )
-
-        session_id = job_config.get("session_id", None)
 
         if session_id in ["auto", None]:
             session_id = self.start_session(name=f"auto-{self._options.session_name}")
@@ -110,8 +110,8 @@ class AerBackend(ScalewayBackend):
             session_id="auto",
             session_name="qiskit-scaleway-session",
             session_deduplication_id="qiskit-scaleway-session",
-            session_max_duration="1200s",
-            session_max_idle_duration="1200s",
+            session_max_duration="20m",
+            session_max_idle_duration="20m",
             shots=1000,
             memory=False,
             method="automatic",
