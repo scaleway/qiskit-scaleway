@@ -51,12 +51,12 @@ class ScalewayBackend(Backend, ABC):
             max_idle_duration=max_idle_duration,
         )
 
-    def stop_session(self, id: str):
+    def stop_session(self, session_id: str):
         self._client.terminate_session(
-            session_id=id,
+            session_id=session_id,
         )
 
-    def delete_session(self, id: str):
+    def delete_session(self, session_id: str):
         self._client.delete_session(
-            session_id=id,
+            session_id=session_id,
         )

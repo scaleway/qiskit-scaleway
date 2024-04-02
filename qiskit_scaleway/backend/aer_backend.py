@@ -3,10 +3,12 @@ import warnings
 
 from typing import Union, List
 
-from qiskit.transpiler import Target
 from qiskit.providers import Options
-from qiskit.circuit import Parameter, Measure, QuantumCircuit
-from qiskit.circuit.library import PhaseGate, SXGate, UGate, CXGate, IGate
+from qiskit.circuit import QuantumCircuit
+from qiskit.providers import convert_to_target
+from qiskit.providers.models import QasmBackendConfiguration
+from qiskit_aer.backends.aer_simulator import AerSimulator
+from qiskit_aer.backends.aerbackend import NAME_MAPPING
 
 from .aer_job import AerJob
 from .scaleway_backend import ScalewayBackend
@@ -34,36 +36,17 @@ class AerBackend(ScalewayBackend):
         self._options = self._default_options()
 
         # Create Target
-        self._target = Target("Target for Scaleway Backend")
+        self._configuration = QasmBackendConfiguration.from_dict(
+            AerSimulator._DEFAULT_CONFIGURATION
+        )
+        self._properties = None
+        self._target = convert_to_target(
+            self._configuration, self._properties, None, NAME_MAPPING
+        )
         self._target.num_qubits = num_qubits
 
-        # Instead of None for this and below instructions you can define
-        # a qiskit.transpiler.InstructionProperties object to define properties
-        # for an instruction.
-        # TODO: fix https://docs.quantum.ibm.com/api/qiskit/dev/providers
-        lam = Parameter("λ")
-        p_props = {(qubit,): None for qubit in range(5)}
-        self._target.add_instruction(PhaseGate(lam), p_props)
-
-        sx_props = {(qubit,): None for qubit in range(5)}
-        self._target.add_instruction(SXGate(), sx_props)
-
-        phi = Parameter("φ")
-        theta = Parameter("ϴ")
-        u_props = {(qubit,): None for qubit in range(5)}
-        self._target.add_instruction(UGate(theta, phi, lam), u_props)
-
-        cx_props = {edge: None for edge in [(0, 1), (1, 2), (2, 3), (3, 4)]}
-        self._target.add_instruction(CXGate(), cx_props)
-
-        meas_props = {(qubit,): None for qubit in range(5)}
-        self._target.add_instruction(Measure(), meas_props)
-
-        id_props = {(qubit,): None for qubit in range(5)}
-        self._target.add_instruction(IGate(), id_props)
-
         # Set option validators
-        self.options.set_validator("shots", (1, 4096))
+        self.options.set_validator("shots", (1, 10000))
         self.options.set_validator("memory", bool)
 
     @property
@@ -137,17 +120,6 @@ class AerBackend(ScalewayBackend):
             enable_truncation=True,
             zero_threshold=1e-10,
             validation_threshold=1e-8,
-            max_parallel_threads=0,
-            max_parallel_shots=0,
-            max_parallel_experiments=1,
-            blocking_enable=True,
-            blocking_qubits=0,
-            batched_shots_gpu=False,
-            chunk_swap_buffer_qubits=15,
-            batched_shots_gpu_max_qubits=16,
-            num_threads_per_device=1,
-            shot_branching_enable=False,
-            shot_branching_sampling_enable=False,
             accept_distributed_results=None,
             runtime_parameter_bind_enable=False,
             statevector_parallel_threshold=14,

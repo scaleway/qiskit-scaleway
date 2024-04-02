@@ -61,13 +61,13 @@ class ScalewayJob(Job, ABC):
         return self._name
 
     def status(self) -> JobStatus:
-        result = self._client.get_job(self._job_id)
+        job = self._client.get_job(self._job_id)
 
-        if result["status"] == "running":
+        if job["status"] == "running":
             status = JobStatus.RUNNING
-        elif result["status"] == "waiting":
+        elif job["status"] == "waiting":
             status = JobStatus.QUEUED
-        elif result["status"] == "completed":
+        elif job["status"] == "completed":
             status = JobStatus.DONE
         else:
             status = JobStatus.ERROR
