@@ -10,12 +10,12 @@ from qiskit.providers.models import QasmBackendConfiguration
 from qiskit_aer.backends.aer_simulator import AerSimulator
 from qiskit_aer.backends.aerbackend import NAME_MAPPING
 
-from .aer_job import AerJob
+from .qsim_job import QsimJob
 from .scaleway_backend import ScalewayBackend
 from ..utils import QaaSClient
 
 
-class AerBackend(ScalewayBackend):
+class QsimBackend(ScalewayBackend):
     def __init__(
         self,
         provider,
@@ -77,7 +77,7 @@ class AerBackend(ScalewayBackend):
             else:
                 job_config[kwarg] = kwargs[kwarg]
 
-        job_name = f"qj-aer-{randomname.get_name()}"
+        job_name = f"qj-qsim-{randomname.get_name()}"
 
         session_id = job_config.get("session_id", None)
 
@@ -87,7 +87,7 @@ class AerBackend(ScalewayBackend):
         job_config.pop("session_max_duration")
         job_config.pop("session_max_idle_duration")
 
-        job = AerJob(
+        job = QsimJob(
             backend=self,
             client=self._client,
             circuits=circuits,
@@ -105,45 +105,15 @@ class AerBackend(ScalewayBackend):
 
     @classmethod
     def _default_options(self):
-        # https://qiskit.github.io/qiskit-aer/stubs/qiskit_aer.AerSimulator.html
         return Options(
             session_id="auto",
-            session_name="aer-session-from-qiskit",
-            session_deduplication_id="aer-session-from-qiskit",
+            session_name="qsim-session-from-qiskit",
+            session_deduplication_id="qsim-session-from-qiskit",
             session_max_duration="20m",
             session_max_idle_duration="20m",
             shots=1000,
-            memory=False,
-            method="automatic",
-            precision="double",
-            max_shot_size=None,
-            enable_truncation=True,
-            zero_threshold=1e-10,
-            validation_threshold=1e-8,
-            accept_distributed_results=None,
-            runtime_parameter_bind_enable=False,
-            statevector_parallel_threshold=14,
-            statevector_sample_measure_opt=10,
-            stabilizer_max_snapshot_probabilities=32,
-            extended_stabilizer_sampling_method="resampled_metropolis",
-            extended_stabilizer_metropolis_mixing_time=5000,
-            extended_stabilizer_approximation_error=0.05,
-            extended_stabilizer_norm_estimation_samples=100,
-            extended_stabilizer_norm_estimation_repetitions=3,
-            extended_stabilizer_parallel_threshold=100,
-            extended_stabilizer_probabilities_snapshot_samples=3000,
-            matrix_product_state_max_bond_dimension=None,
-            matrix_product_state_truncation_threshold=1e-16,
-            mps_sample_measure_algorithm="mps_apply_measure",
-            mps_log_data=False,
-            mps_swap_direction="mps_swap_left",
-            chop_threshold=1e-8,
-            mps_parallel_threshold=14,
-            mps_omp_threads=1,
-            tensor_network_num_sampling_qubits=10,
-            use_cuTensorNet_autotuning=False,
-            fusion_enable=True,
-            fusion_verbose=False,
-            fusion_max_qubit=None,
-            fusion_threshold=None,
+            circuit_memoization_size=0,
+            max_fused_gate_size=2,
+            ev_noisy_repetitions=1,
+            denormals_are_zeros=False,
         )
