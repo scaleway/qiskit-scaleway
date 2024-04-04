@@ -24,6 +24,7 @@ class AerBackend(ScalewayBackend):
         name: str,
         version: str,
         num_qubits: int,
+        metadata: str,
     ):
         super().__init__(
             provider=provider,

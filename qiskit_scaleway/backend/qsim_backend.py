@@ -24,6 +24,7 @@ class QsimBackend(ScalewayBackend):
         name: str,
         version: str,
         num_qubits: int,
+        metadata: str,
     ):
         super().__init__(
             provider=provider,
@@ -47,7 +48,6 @@ class QsimBackend(ScalewayBackend):
 
         # Set option validators
         self.options.set_validator("shots", (1, 10000000))
-        self.options.set_validator("memory", bool)
 
     @property
     def target(self):

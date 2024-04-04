@@ -1,7 +1,9 @@
+import warnings
+
 from qiskit.providers import ProviderV1 as Provider
 from qiskit.providers.providerutils import filter_backends
 
-from .backend import ScalewayBackend, AerBackend
+from .backend import ScalewayBackend, AerBackend, QsimBackend
 from .utils import QaaSClient
 
 
@@ -38,17 +40,38 @@ class ScalewayProvider(Provider):
 
         for platform_dict in json_resp["platforms"]:
             name = platform_dict.get("name")
+            backend = None
 
-            if "aer" in name:
-                scaleway_backends.append(
-                    AerBackend(
+            if name.startswith("aer"):
+                backend = AerBackend(
                         provider=self,
                         client=self.__client,
                         backend_id=platform_dict.get("id"),
                         name=name,
                         version=platform_dict.get("version"),
                         num_qubits=platform_dict.get("max_qubit_count"),
+                        metadata=platform_dict.get("metadata", None)
                     )
+            elif name.startswith("qsim"):
+                backend = QsimBackend(
+                        provider=self,
+                        client=self.__client,
+                        backend_id=platform_dict.get("id"),
+                        name=name,
+                        version=platform_dict.get("version"),
+                        num_qubits=platform_dict.get("max_qubit_count"),
+                        metadata=platform_dict.get("metadata", None)
                 )
+
+            if backend is None:
+                warnings.warn(
+                    f"Backend {name} was not created successfully",
+                    UserWarning,
+                    stacklevel=2,
+                )
+
+                continue
+
+            scaleway_backends.append(backend)
 
         return filter_backends(scaleway_backends, **kwargs)

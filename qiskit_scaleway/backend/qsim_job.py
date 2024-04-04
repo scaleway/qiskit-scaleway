@@ -50,14 +50,6 @@ class _JobPayload:
     run: _RunPayload
 
 
-# @dataclass_json
-# @dataclass
-# class _QSimOptions:
-#     max_fused_gate_size: int
-#     ev_noisy_repetitions: int
-#     denormals_are_zeros: bool
-
-
 class QsimJob(ScalewayJob):
     def __init__(
         self,
