@@ -1,7 +1,6 @@
 import json
 import io
 import collections
-import itertools
 
 import numpy as np
 
@@ -130,7 +129,7 @@ class QsimJob(ScalewayJob):
         shots = options.pop("shots")
 
         # Barriers are only visual elements
-        # Barriers are not handle by Cirq deserialization
+        # Barriers are not managed by Cirq deserialization
         circuit = RemoveBarriers()(self._circuits[0])
 
         runOpts = _RunPayload(
