@@ -1,17 +1,22 @@
 import json
 import io
+import collections
+import itertools
 
 import numpy as np
-import pandas as pd
 
 from enum import Enum
 from typing import Union, List
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 from typing import (
+    Any,
+    Callable,
+    Iterable,
     Mapping,
     Optional,
     Sequence,
+    Tuple,
     Union,
     cast,
 )
@@ -61,6 +66,47 @@ class _JobPayload:
     version: str
     backend: _BackendPayload
     run: _RunPayload
+
+
+def _tuple_of_big_endian_int(bit_groups: Iterable[Any]) -> Tuple[int, ...]:
+    return tuple(_big_endian_bits_to_int(bits) for bits in bit_groups)
+
+
+def _big_endian_bits_to_int(bits: Iterable[Any]) -> int:
+    result = 0
+
+    for e in bits:
+        result <<= 1
+        if e:
+            result |= 1
+
+    return result
+
+
+def _unpack_digits(
+    packed_digits: str,
+    binary: bool,
+    dtype: Union[None, str],
+    shape: Union[None, Sequence[int]],
+) -> np.ndarray:
+    if binary:
+        dtype = cast(str, dtype)
+        shape = cast(Sequence[int], shape)
+        return _unpack_bits(packed_digits, dtype, shape)
+
+    buffer = io.BytesIO()
+    buffer.write(bytes.fromhex(packed_digits))
+    buffer.seek(0)
+    digits = np.load(buffer, allow_pickle=False)
+    buffer.close()
+
+    return digits
+
+
+def _unpack_bits(packed_bits: str, dtype: str, shape: Sequence[int]) -> np.ndarray:
+    bits_bytes = bytes.fromhex(packed_bits)
+    bits = np.unpackbits(np.frombuffer(bits_bytes, dtype=np.uint8))
+    return bits[: np.prod(shape).item()].reshape(shape).astype(dtype)
 
 
 class QsimJob(ScalewayJob):
@@ -126,11 +172,29 @@ class QsimJob(ScalewayJob):
 
         job_results = self._wait_for_result(timeout, fetch_interval)
 
-        def __make_expresult_from_meas(k, v) -> ExperimentResult:
-            print(k)
-            print(v)
+        def __make_hex_from_result_array(result: Tuple):
+            str_value = "".join(map(str, result))
+            integer_value = int(str_value, 2)
+            return hex(integer_value)
+
+        def __make_expresult_from_cirq_result(
+            cirq_result: CirqResult,
+        ) -> ExperimentResult:
+            hist = dict(
+                cirq_result.multi_measurement_histogram(
+                    keys=cirq_result.measurements.keys()
+                )
+            )
+
             return ExperimentResult(
-                shots=None, success=True, data=ExperimentResultData()
+                shots=cirq_result.repetitions,
+                success=True,
+                data=ExperimentResultData(
+                    counts={
+                        __make_hex_from_result_array(key): value
+                        for key, value in hist.items()
+                    },
+                ),
             )
 
         def __make_result_from_payload(payload: str) -> Result:
@@ -138,15 +202,16 @@ class QsimJob(ScalewayJob):
             cirq_result = CirqResult._from_json_dict_(**payload_dict)
 
             return Result(
-                backend_name="QsimSimulator",
-                backend_version="0.21.0",
+                backend_name=self.backend().name,
+                backend_version=self.backend().version,
                 job_id=self._job_id,
                 qobj_id=", ".join(x.name for x in self._circuits),
                 success=True,
-                results=[
-                    __make_expresult_from_meas(k, m)
-                    for k, m in enumerate(cirq_result.records)
-                ],
+                results=__make_expresult_from_cirq_result(cirq_result),
+                status=None,  # TODO
+                header=None,  # TODO
+                date=None,  # TODO
+                cirq_result=payload,
             )
 
         qiskit_results = list(
@@ -172,13 +237,11 @@ class CirqResult(Result):
         records: Optional[Mapping[str, np.ndarray]] = None,
     ) -> None:
         if measurements is None and records is None:
-            # For backwards compatibility, allow constructing with None.
             measurements = {}
             records = {}
         self._params = None
         self._measurements = measurements
         self._records = records
-        self._data: Optional[pd.DataFrame] = None
 
     @property
     def measurements(self) -> Mapping[str, np.ndarray]:
@@ -214,11 +277,25 @@ class CirqResult(Result):
             # Get the length quickly from one of the keyed results.
             return len(next(iter(self._measurements.values())))
 
-    @property
-    def data(self) -> pd.DataFrame:
-        if self._data is None:
-            self._data = self.dataframe_from_measurements(self.measurements)
-        return self._data
+    def multi_measurement_histogram(
+        self,
+        *,  # Forces keyword args.
+        keys: Iterable,
+        fold_func: Callable = cast(Callable, _tuple_of_big_endian_int),
+    ) -> collections.Counter:
+        fixed_keys = tuple(key for key in keys)
+        samples: Iterable[Any] = zip(
+            *(self.measurements[sub_key] for sub_key in fixed_keys)
+        )
+
+        if len(fixed_keys) == 0:
+            samples = [()] * self.repetitions
+
+        c: collections.Counter = collections.Counter()
+
+        for sample in samples:
+            c[fold_func(sample)] += 1
+        return c
 
     @classmethod
     def _from_packed_records(cls, records, **kwargs):
@@ -239,55 +316,9 @@ class CirqResult(Result):
             )
         return cls._from_packed_records(records=kwargs["records"])
 
-    @staticmethod
-    def dataframe_from_measurements(
-        measurements: Mapping[str, np.ndarray]
-    ) -> pd.DataFrame:
-        # Convert to a DataFrame with columns as measurement keys, rows as
-        # repetitions and a big endian integer for individual measurements.
-        converted_dict = {}
-        for key, bitstrings in measurements.items():
-            _, n = bitstrings.shape
-            dtype = object if n > 63 else np.int64
-            basis = 2 ** np.arange(n, dtype=dtype)[::-1]
-            converted_dict[key] = np.sum(basis * bitstrings, axis=1)
-
-        # Use objects to accommodate more than 64 qubits if needed.
-        dtype = (
-            object
-            if any(bs.shape[1] > 63 for _, bs in measurements.items())
-            else np.int64
-        )
-        return pd.DataFrame(converted_dict, dtype=dtype)
-
     @property
     def repetitions(self) -> int:
         if not self.records:
             return 0
         # Get the length quickly from one of the keyed results.
         return len(next(iter(self.records.values())))
-
-
-def _unpack_digits(
-    packed_digits: str,
-    binary: bool,
-    dtype: Union[None, str],
-    shape: Union[None, Sequence[int]],
-) -> np.ndarray:
-    if binary:
-        dtype = cast(str, dtype)
-        shape = cast(Sequence[int], shape)
-        return _unpack_bits(packed_digits, dtype, shape)
-
-    buffer = io.BytesIO()
-    buffer.write(bytes.fromhex(packed_digits))
-    buffer.seek(0)
-    digits = np.load(buffer, allow_pickle=False)
-    buffer.close()
-    return digits
-
-
-def _unpack_bits(packed_bits: str, dtype: str, shape: Sequence[int]) -> np.ndarray:
-    bits_bytes = bytes.fromhex(packed_bits)
-    bits = np.unpackbits(np.frombuffer(bits_bytes, dtype=np.uint8))
-    return bits[: np.prod(shape).item()].reshape(shape).astype(dtype)
