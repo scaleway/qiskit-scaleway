@@ -44,23 +44,23 @@ class ScalewayProvider(Provider):
 
             if name.startswith("aer"):
                 backend = AerBackend(
-                        provider=self,
-                        client=self.__client,
-                        backend_id=platform_dict.get("id"),
-                        name=name,
-                        version=platform_dict.get("version"),
-                        num_qubits=platform_dict.get("max_qubit_count"),
-                        metadata=platform_dict.get("metadata", None)
-                    )
+                    provider=self,
+                    client=self.__client,
+                    backend_id=platform_dict.get("id"),
+                    name=name,
+                    version=platform_dict.get("version"),
+                    num_qubits=platform_dict.get("max_qubit_count"),
+                    metadata=platform_dict.get("metadata", None),
+                )
             elif name.startswith("qsim"):
                 backend = QsimBackend(
-                        provider=self,
-                        client=self.__client,
-                        backend_id=platform_dict.get("id"),
-                        name=name,
-                        version=platform_dict.get("version"),
-                        num_qubits=platform_dict.get("max_qubit_count"),
-                        metadata=platform_dict.get("metadata", None)
+                    provider=self,
+                    client=self.__client,
+                    backend_id=platform_dict.get("id"),
+                    name=name,
+                    version=platform_dict.get("version"),
+                    num_qubits=platform_dict.get("max_qubit_count"),
+                    metadata=platform_dict.get("metadata", None),
                 )
 
             if backend is None:

@@ -5,10 +5,6 @@ from typing import Union, List
 
 from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
-from qiskit.providers import convert_to_target
-from qiskit.providers.models import QasmBackendConfiguration
-from qiskit_aer.backends.aer_simulator import AerSimulator
-from qiskit_aer.backends.aerbackend import NAME_MAPPING
 
 from .qsim_job import QsimJob
 from .scaleway_backend import ScalewayBackend
@@ -35,16 +31,6 @@ class QsimBackend(ScalewayBackend):
         )
 
         self._options = self._default_options()
-
-        # Create Target
-        self._configuration = QasmBackendConfiguration.from_dict(
-            AerSimulator._DEFAULT_CONFIGURATION
-        )
-        self._properties = None
-        self._target = convert_to_target(
-            self._configuration, self._properties, None, NAME_MAPPING
-        )
-        self._target.num_qubits = num_qubits
 
         # Set option validators
         self.options.set_validator("shots", (1, 10000000))
