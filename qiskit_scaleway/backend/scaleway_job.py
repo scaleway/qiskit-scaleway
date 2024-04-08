@@ -28,12 +28,12 @@ class ScalewayJob(Job, ABC):
             url = result_response.get("url", None)
 
             if url is not None:
-                http_client = httpx.Client(base_url=url, timeout=10.0, verify=False)
-
-                resp = http_client.get(url)
+                resp = httpx.get(url)
                 resp.raise_for_status()
 
                 return resp.text
+            else:
+                raise Exception("Get result with empty data and url")
         else:
             return result
 

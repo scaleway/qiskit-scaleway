@@ -69,17 +69,16 @@ class AerJob(ScalewayJob):
             raise RuntimeError(f"Job already submitted (ID: {self._job_id})")
 
         options = self._config.copy()
+        shots = options.pop("shots")
 
         runOpts = _RunPayload(
-            shots=options["shots"],
+            shots=shots,
             options={},
             circuit=_CircuitPayload(
                 serialization_type=_SerializationType.QASM_V2,
                 circuit_serialization=qasm2.dumps(self._circuits[0]),
             ),
         )
-
-        options.pop("shots")
 
         backendOpts = _BackendPayload(
             name="aer",

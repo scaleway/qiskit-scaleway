@@ -24,6 +24,7 @@ class AerBackend(ScalewayBackend):
         name: str,
         version: str,
         num_qubits: int,
+        metadata: str,
     ):
         super().__init__(
             provider=provider,
@@ -46,7 +47,7 @@ class AerBackend(ScalewayBackend):
         self._target.num_qubits = num_qubits
 
         # Set option validators
-        self.options.set_validator("shots", (1, 10000))
+        self.options.set_validator("shots", (1, 10000000))
         self.options.set_validator("memory", bool)
 
     @property
@@ -108,8 +109,8 @@ class AerBackend(ScalewayBackend):
         # https://qiskit.github.io/qiskit-aer/stubs/qiskit_aer.AerSimulator.html
         return Options(
             session_id="auto",
-            session_name="qiskit-scaleway-session",
-            session_deduplication_id="qiskit-scaleway-session",
+            session_name="aer-session-from-qiskit",
+            session_deduplication_id="aer-session-from-qiskit",
             session_max_duration="20m",
             session_max_idle_duration="20m",
             shots=1000,
