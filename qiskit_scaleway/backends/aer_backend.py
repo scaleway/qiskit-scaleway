@@ -62,11 +62,15 @@ class AerBackend(ScalewayBackend):
     def max_circuits(self):
         return 1024
 
-    def run(self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **kwargs):
+    def run(
+        self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **kwargs
+    ) -> AerJob:
         if not isinstance(circuits, list):
             circuits = [circuits]
 
         job_config = {key: value for key, value in self._options.items()}
+
+        print(kwargs["parameter_binds"])
 
         for kwarg in kwargs:
             if not hasattr(self.options, kwarg):
@@ -113,12 +117,14 @@ class AerBackend(ScalewayBackend):
             session_deduplication_id="aer-session-from-qiskit",
             session_max_duration="20m",
             session_max_idle_duration="20m",
+            parameter_binds=None,
             shots=1000,
             memory=False,
             method="automatic",
             precision="double",
             max_shot_size=None,
             enable_truncation=True,
+            max_parallel_experiments=1,
             zero_threshold=1e-10,
             validation_threshold=1e-8,
             accept_distributed_results=None,
