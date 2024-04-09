@@ -7,7 +7,8 @@ from dataclasses_json import dataclass_json
 
 from qiskit.providers import JobError
 from qiskit.result import Result
-from qiskit import qasm2
+from qiskit import qasm2, qasm3
+from qiskit.version import VERSION
 
 from ..utils import QaaSClient
 from .scaleway_job import ScalewayJob
@@ -31,7 +32,7 @@ class _CircuitPayload:
 @dataclass
 class _RunPayload:
     shots: int
-    circuit: _CircuitPayload
+    circuits: List[_CircuitPayload]
     options: dict
 
 
@@ -74,15 +75,20 @@ class AerJob(ScalewayJob):
         runOpts = _RunPayload(
             shots=shots,
             options={},
-            circuit=_CircuitPayload(
-                serialization_type=_SerializationType.QASM_V2,
-                circuit_serialization=qasm2.dumps(self._circuits[0]),
+            circuits=list(
+                map(
+                    lambda c: _CircuitPayload(
+                        serialization_type=_SerializationType.QASM_V3,
+                        circuit_serialization=qasm3.dumps(c),
+                    ),
+                    self._circuits,
+                )
             ),
         )
 
         backendOpts = _BackendPayload(
-            name="aer",
-            version="1.0",
+            name=self.backend().name,
+            version=self.backend().version,
             options=options,
         )
 
@@ -90,7 +96,7 @@ class AerJob(ScalewayJob):
             _JobPayload(
                 backend=backendOpts,
                 run=runOpts,
-                version="1.0",
+                version=VERSION,
             )
         )
 

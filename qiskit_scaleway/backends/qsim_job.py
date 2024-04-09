@@ -25,6 +25,7 @@ from qiskit.providers import JobError
 from qiskit.result import Result
 from qiskit.transpiler.passes import RemoveBarriers
 from qiskit.result.models import ExperimentResult, ExperimentResultData
+from qiskit.version import VERSION
 
 from ..utils import QaaSClient
 from .scaleway_job import ScalewayJob
@@ -128,8 +129,9 @@ class QsimJob(ScalewayJob):
         options = self._config.copy()
         shots = options.pop("shots")
 
-        # Barriers are only visual elements
+        # Note 1: Barriers are only visual elements
         # Barriers are not managed by Cirq deserialization
+        # Note 2: Qsim can only handle on circuit at a time
         circuit = RemoveBarriers()(self._circuits[0])
 
         runOpts = _RunPayload(
@@ -144,8 +146,8 @@ class QsimJob(ScalewayJob):
         options.pop("circuit_memoization_size")
 
         backendOpts = _BackendPayload(
-            name="qsim",
-            version="1.0",
+            name=self.backend().name,
+            version=self.backend().version,
             options=options,
         )
 
@@ -153,7 +155,7 @@ class QsimJob(ScalewayJob):
             _JobPayload(
                 backend=backendOpts,
                 run=runOpts,
-                version="1.0",
+                version=VERSION,
             )
         )
 

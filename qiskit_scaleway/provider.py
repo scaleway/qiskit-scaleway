@@ -3,7 +3,7 @@ import warnings
 from qiskit.providers import ProviderV1 as Provider
 from qiskit.providers.providerutils import filter_backends
 
-from .backend import ScalewayBackend, AerBackend, QsimBackend
+from .backends import ScalewayBackend, AerBackend, QsimBackend
 from .utils import QaaSClient
 
 

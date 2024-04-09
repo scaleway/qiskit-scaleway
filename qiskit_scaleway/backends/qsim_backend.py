@@ -35,19 +35,23 @@ class QsimBackend(ScalewayBackend):
         # Set option validators
         self.options.set_validator("shots", (1, 10000000))
 
+        self._max_qubits = num_qubits
+
     @property
     def target(self):
-        return self._target
+        return None
 
     @property
     def num_qubits(self) -> int:
-        return self._target.num_qubits
+        return self._max_qubits
 
     @property
     def max_circuits(self):
-        return 1024
+        return 1
 
-    def run(self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **kwargs):
+    def run(
+        self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **kwargs
+    ) -> QsimJob:
         if not isinstance(circuits, list):
             circuits = [circuits]
 
