@@ -165,14 +165,25 @@ class QsimJob(ScalewayJob):
             circuits=job_payload,
         )
 
-    def result(
-        self, timeout=None, fetch_interval: int = 3
-    ) -> Union[Result, List[Result]]:
-        if self._job_id == None:
-            raise JobError("Job ID error")
+    def __to_cirq_result(self, job_results) -> "cirq.Result":
+        try:
+            import cirq
+        except:
+            raise Exception("Cannot get Cirq result: Cirq not installed")
 
-        job_results = self._wait_for_result(timeout, fetch_interval)
+        from cirq.study import ResultDict
 
+        if len(job_results) == 0:
+            raise Exception("Empty result list")
+
+        payload = self._extract_payload_from_response(job_results[0])
+        payload_dict = json.loads(payload)
+        cirq_result = ResultDict._from_json_dict_(**payload_dict)
+
+        return cirq_result
+
+
+    def __to_qiskit_result(self, job_results):
         def __make_hex_from_result_array(result: Tuple):
             str_value = "".join(map(str, result))
             integer_value = int(str_value, 2)
@@ -230,7 +241,23 @@ class QsimJob(ScalewayJob):
         return qiskit_results
 
 
-class CirqResult(Result):
+    def result(
+        self, timeout=None, fetch_interval: int = 3, type: str = "qiskit",
+    ) -> Union[Result, List[Result], "cirq.Result"]:
+        if self._job_id == None:
+            raise JobError("Job ID error")
+
+        match = {
+            "qiskit": self.__to_qiskit_result,
+            "cirq": self.__to_cirq_result,
+        }
+
+        job_results = self._wait_for_result(timeout, fetch_interval)
+
+        return match.get(type, "qiskit")(job_results)
+
+
+class CirqResult():
     def __init__(
         self,
         *,  # Forces keyword args.
@@ -270,17 +297,15 @@ class CirqResult(Result):
         if self._records is not None:
             if not self._records:
                 return 0
-            # Get the length quickly from one of the keyed results.
             return len(next(iter(self._records.values())))
         else:
             if not self._measurements:
                 return 0
-            # Get the length quickly from one of the keyed results.
             return len(next(iter(self._measurements.values())))
 
     def multi_measurement_histogram(
         self,
-        *,  # Forces keyword args.
+        *,
         keys: Iterable,
         fold_func: Callable = cast(Callable, _tuple_of_big_endian_int),
     ) -> collections.Counter:
