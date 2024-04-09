@@ -182,7 +182,6 @@ class QsimJob(ScalewayJob):
 
         return cirq_result
 
-
     def __to_qiskit_result(self, job_results):
         def __make_hex_from_result_array(result: Tuple):
             str_value = "".join(map(str, result))
@@ -240,9 +239,11 @@ class QsimJob(ScalewayJob):
 
         return qiskit_results
 
-
     def result(
-        self, timeout=None, fetch_interval: int = 3, type: str = "qiskit",
+        self,
+        timeout=None,
+        fetch_interval: int = 3,
+        type: str = "qiskit",
     ) -> Union[Result, List[Result], "cirq.Result"]:
         if self._job_id == None:
             raise JobError("Job ID error")
@@ -257,7 +258,7 @@ class QsimJob(ScalewayJob):
         return match.get(type, "qiskit")(job_results)
 
 
-class CirqResult():
+class CirqResult:
     def __init__(
         self,
         *,  # Forces keyword args.
