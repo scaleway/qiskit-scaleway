@@ -70,8 +70,6 @@ class AerBackend(ScalewayBackend):
 
         job_config = {key: value for key, value in self._options.items()}
 
-        print(kwargs["parameter_binds"])
-
         for kwarg in kwargs:
             if not hasattr(self.options, kwarg):
                 warnings.warn(
