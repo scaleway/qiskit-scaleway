@@ -117,7 +117,6 @@ class AerBackend(ScalewayBackend):
             session_deduplication_id="aer-session-from-qiskit",
             session_max_duration="20m",
             session_max_idle_duration="20m",
-            parameter_binds=None,
             shots=1000,
             memory=False,
             method="automatic",
