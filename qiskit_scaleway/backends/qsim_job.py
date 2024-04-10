@@ -243,7 +243,7 @@ class QsimJob(ScalewayJob):
         self,
         timeout=None,
         fetch_interval: int = 3,
-        type: str = "qiskit",
+        format: str = "qiskit",
     ) -> Union[Result, List[Result], "cirq.Result"]:
         if self._job_id == None:
             raise JobError("Job ID error")
@@ -255,13 +255,13 @@ class QsimJob(ScalewayJob):
 
         job_results = self._wait_for_result(timeout, fetch_interval)
 
-        return match.get(type, "qiskit")(job_results)
+        return match.get(format, self.__to_qiskit_result)(job_results)
 
 
 class CirqResult:
     def __init__(
         self,
-        *,  # Forces keyword args.
+        *,
         measurements: Optional[Mapping[str, np.ndarray]] = None,
         records: Optional[Mapping[str, np.ndarray]] = None,
     ) -> None:

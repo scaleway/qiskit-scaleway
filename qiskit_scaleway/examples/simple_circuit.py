@@ -17,9 +17,9 @@ qc.cx(0, 2)
 qc.cx(0, 3)
 qc.measure_all()
 
-# Create a QPU's session for a limited duration
+# Create a QPU's session for a limited duration, a max_idle_duration can also be specified
 session_id = backend.start_session(
-    deduplication_id="my-session-workshop", max_duration="2h"
+    deduplication_id="my-aer-session-workshop", max_duration="2h"
 )
 
 # Create and send a job to the target session
@@ -31,4 +31,5 @@ else:
     print(result.to_dict()["error"])
 
 # Revoke manually the QPU's session if needed
+# If not done, will be revoked automatically after 2 hours
 backend.stop_session(session_id)

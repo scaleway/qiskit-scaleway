@@ -1,5 +1,4 @@
-import cirq
-import matplotlib.pyplot as plt
+from qiskit.visualization import plot_histogram
 
 from qiskit import QuantumCircuit
 from qiskit_scaleway import ScalewayProvider
@@ -28,13 +27,11 @@ session_id = backend.start_session(
 # Create and send a job to the target session
 qsim_job = backend.run(qc, shots=1000, session_id=session_id)
 
-# Wait and get the result
-# To retrieve the result as Cirq result, you need to have Cirq package installed
-cirq_result = qsim_job.result(format="cirq")
+# Wait and get the Qiskit result
+qiskit_result = qsim_job.result()
 
-# Display the Cirq Result
-cirq.plot_state_histogram(cirq_result, plt.subplot())
-plt.show()
+# Display the result
+plot_histogram(qiskit_result.get_counts())
 
 # Revoke manually the QPU's session if needed
 # If not done, will be revoked automatically after 2 hours
