@@ -33,7 +33,7 @@ class ScalewayJob(Job, ABC):
 
                 return resp.text
             else:
-                raise Exception("Get result with empty data and url")
+                raise Exception("Got result with empty data and url fields")
         else:
             return result
 
@@ -43,7 +43,7 @@ class ScalewayJob(Job, ABC):
         while True:
             elapsed = time.time() - start_time
 
-            if timeout and elapsed >= timeout:
+            if timeout is not None and elapsed >= timeout:
                 raise JobTimeoutError("Timed out waiting for result")
 
             status = self.status()
