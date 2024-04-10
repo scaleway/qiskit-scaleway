@@ -7,7 +7,7 @@ from dataclasses_json import dataclass_json
 
 from qiskit.providers import JobError
 from qiskit.result import Result
-from qiskit import qasm2, qasm3
+from qiskit import qasm3
 from qiskit.version import VERSION
 
 from ..utils import QaaSClient
