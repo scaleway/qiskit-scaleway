@@ -6,6 +6,8 @@
 
 **Qiskit Scaleway** is a Python package to run quantum circuits on [Scaleway](https://www.scaleway.com/en/) infrastructure, providing access to [Aer](https://github.com/Qiskit/qiskit-aer) and [Qsim](https://github.com/quantumlib/qsim) simulators on powerful hardware (CPU and GPU).
 
+To use Quandela backends provided by Scaleway, you must use [Perceval SDK](https://perceval.quandela.net/) and use the [Scaleway provider](https://perceval.quandela.net/docs/providers.html).
+
 More info on the [Quantum service web page](https://labs.scaleway.com/en/qaas/).
 
 ## Installation
@@ -48,10 +50,10 @@ else:
 ```
 
 ## Development
-This repository is at its early stage and is still in active development. If you are looking for a way to contribute please read CONTRIBUTING.md.
+This repository is at its early stage and is still in active development. If you are looking for a way to contribute please read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Reach us
-We love feedback. Feel free to reach us on Scaleway Slack community, we are waiting for you on #opensource.
+We love feedback. Feel free to reach us on [Scaleway Slack community](https://slack.scaleway.com/), we are waiting for you on [#opensource](https://scaleway-community.slack.com/app_redirect?channel=opensource)..
 
 ## Licence
 [License Apache 2.0](LICENCE)
