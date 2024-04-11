@@ -4,7 +4,6 @@ import httpx
 _ENDPOINT_PLATFORM = "/platforms"
 _ENDPOINT_SESSION = "/sessions"
 _ENDPOINT_JOB = "/jobs"
-_PROVIDER_NAME = "scaleway"
 
 
 class QaaSClient:
@@ -25,14 +24,11 @@ class QaaSClient:
     def _build_endpoint(self, endpoint: str) -> str:
         return f"{self.__url}{endpoint}"
 
-    def list_platforms(self, name: str = "") -> dict:
-        http_client = self._http_client()
-        endpoint = (
-            f"{self._build_endpoint(_ENDPOINT_PLATFORM)}?providerName={_PROVIDER_NAME}"
-        )
+    def list_platforms(self, name: str) -> dict:
+        assert name is not None
 
-        if name:
-            endpoint += f"&name={name}"
+        http_client = self._http_client()
+        endpoint = f"{self._build_endpoint(_ENDPOINT_PLATFORM)}?name={name}"
 
         resp = http_client.get(endpoint)
         resp.raise_for_status()

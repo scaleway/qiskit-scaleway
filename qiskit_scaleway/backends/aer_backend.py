@@ -50,6 +50,9 @@ class AerBackend(ScalewayBackend):
         self.options.set_validator("shots", (1, 10000000))
         self.options.set_validator("memory", bool)
 
+    def __repr__(self) -> str:
+        return f"<AerBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
+
     @property
     def target(self):
         return self._target
