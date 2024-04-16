@@ -2,17 +2,19 @@
 
 **Qiskit Scaleway** is a Python package to run quantum circuits on [Scaleway](https://www.scaleway.com/en/) infrastructure, providing access to [Aer](https://github.com/Qiskit/qiskit-aer) and [Qsim](https://github.com/quantumlib/qsim) simulators on powerful hardware (CPU and GPU).
 
+To run circuits over [Quandela](https://www.quandela.com/) backends provided by Scaleway, you must use [Perceval SDK](https://perceval.quandela.net/) through the [Scaleway provider](https://perceval.quandela.net/docs/providers.html).
+
 More info on the [Quantum service web page](https://labs.scaleway.com/en/qaas/).
 
 ## Installation
 
-We encourage installing Scaleway provider via the pip tool (a python package manager):
+We encourage installing Scaleway provider via the pip tool (a Python package manager):
 
 ```bash
 pip install qiskit-scaleway
 ```
 
-## Usage
+## Getting started
 ```python
 from qiskit import QuantumCircuit
 from qiskit_scaleway import ScalewayProvider
@@ -34,7 +36,7 @@ qc.cx(0, 3)
 qc.measure_all()
 
 # Create and send a job to a new QPU's session (or on an existing one)
-result = backend.run(qc, shots=1000).result()
+result = backend.run(qc, method="statevector", shots=1000).result()
 
 if result.success:
     print(result.get_counts())
@@ -43,8 +45,11 @@ else:
 
 ```
 
-## Contribute
-TODO
+## Development
+This repository is at its early stage and is still in active development. If you are looking for a way to contribute please read [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Reach us
+We love feedback. Feel free to reach us on [Scaleway Slack community](https://slack.scaleway.com/), we are waiting for you on [#opensource](https://scaleway-community.slack.com/app_redirect?channel=opensource)..
 
 ## Licence
 [License Apache 2.0](LICENCE)

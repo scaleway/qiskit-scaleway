@@ -37,6 +37,9 @@ class QsimBackend(ScalewayBackend):
 
         self._max_qubits = num_qubits
 
+    def __repr__(self) -> str:
+        return f"<QsimBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
+
     @property
     def target(self):
         return None
