@@ -25,10 +25,12 @@ class QaaSClient:
         return f"{self.__url}{endpoint}"
 
     def list_platforms(self, name: str) -> dict:
-        assert name is not None
+        filter_by_name = ""
+        if (name):
+            filter_by_name = f"?name={name}"
 
         http_client = self._http_client()
-        endpoint = f"{self._build_endpoint(_ENDPOINT_PLATFORM)}?name={name}"
+        endpoint = f"{self._build_endpoint(_ENDPOINT_PLATFORM)}{filter_by_name}"
 
         resp = http_client.get(endpoint)
         resp.raise_for_status()

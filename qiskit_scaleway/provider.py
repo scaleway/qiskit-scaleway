@@ -36,10 +36,16 @@ class ScalewayProvider(Provider):
         """
 
         scaleway_backends = []
+        filters = {}
+
+        if (kwargs.get('operational') is not None):
+            filters["operational"] = kwargs.pop('operational', None)
+
         json_resp = self.__client.list_platforms(name)
 
         for platform_dict in json_resp["platforms"]:
             name = platform_dict.get("name")
+
             backend = None
 
             if name.startswith("aer"):
@@ -48,6 +54,7 @@ class ScalewayProvider(Provider):
                     client=self.__client,
                     backend_id=platform_dict.get("id"),
                     name=name,
+                    availability=platform_dict.get("availability"),
                     version=platform_dict.get("version"),
                     num_qubits=platform_dict.get("max_qubit_count"),
                     metadata=platform_dict.get("metadata", None),
@@ -58,6 +65,7 @@ class ScalewayProvider(Provider):
                     client=self.__client,
                     backend_id=platform_dict.get("id"),
                     name=name,
+                    availability=platform_dict.get("availability"),
                     version=platform_dict.get("version"),
                     num_qubits=platform_dict.get("max_qubit_count"),
                     metadata=platform_dict.get("metadata", None),
@@ -74,4 +82,23 @@ class ScalewayProvider(Provider):
 
             scaleway_backends.append(backend)
 
+        if filters is not None:
+            scaleway_backends = self.filters(scaleway_backends, filters)
+
         return filter_backends(scaleway_backends, **kwargs)
+
+
+    def _filter_availability(self, operational, availability):
+        availabilities = ['ailability_unknown','available', 'scarce'] if operational else ['shortage']
+
+        return availability in availabilities
+
+    def filters(self, backends: list[ScalewayBackend], filters: dict) -> list[ScalewayBackend]:
+        filtered_backends = []
+        operational = filters.get('operational')
+
+
+        if operational is not None:
+            backends = [b for b in backends if self._filter_availability(operational, b.availability)]
+
+        return backends
