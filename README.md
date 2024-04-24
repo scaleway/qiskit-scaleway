@@ -24,6 +24,14 @@ provider = ScalewayProvider(
     secret_key="<your-scaleway-secret-key>",
 )
 
+# List all operational backends
+backends = provider.backends(operational=False)
+print(backends)
+
+# List all backends with a minimum number of qbits
+backends = provider.backends(min_num_qubits=35)
+print(backends)
+
 # Retrieve a backend by providing search criteria. The search must have a single match
 backend = provider.get_backend("aer_simulation_h100")
 
