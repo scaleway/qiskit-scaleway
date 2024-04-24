@@ -41,6 +41,10 @@ class ScalewayProvider(Provider):
         if (kwargs.get('operational') is not None):
             filters["operational"] = kwargs.pop('operational', None)
 
+        if (kwargs.get('min_num_qubits') is not None):
+            filters["min_num_qubits"] = kwargs.pop('min_num_qubits', None)
+
+
         json_resp = self.__client.list_platforms(name)
 
         for platform_dict in json_resp["platforms"]:
@@ -96,9 +100,15 @@ class ScalewayProvider(Provider):
     def filters(self, backends: list[ScalewayBackend], filters: dict) -> list[ScalewayBackend]:
         filtered_backends = []
         operational = filters.get('operational')
+        min_num_qubits = filters.get('min_num_qubits')
 
 
         if operational is not None:
             backends = [b for b in backends if self._filter_availability(operational, b.availability)]
+
+
+        if min_num_qubits is not None:
+            backends = [b for b in backends if b.num_qubits >= min_num_qubits]
+
 
         return backends
