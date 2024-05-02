@@ -15,6 +15,7 @@ setup(
         "dataclasses-json==0.6.4",
         "dataclasses==0.6",
         "pytimeparse==1.1.8",
+        "python-dotenv==1.0.1"
     ],
     long_description=description,
     long_description_content_type="text/markdown",

@@ -1,4 +1,6 @@
+import os
 import warnings
+from dotenv import dotenv_values
 
 from qiskit.providers import ProviderV1 as Provider
 from qiskit.providers.providerutils import filter_backends
@@ -12,17 +14,38 @@ _ENDPOINT_URL = "https://api.scaleway.com/qaas/v1alpha1"
 
 class ScalewayProvider(Provider):
     """
-    :param project_id: UUID of the Scaleway Project
+    :param project_id: optional UUID of the Scaleway Project, if the provided ``project_id`` is None, the value is loaded from the SCALEWAY_PROJECT_ID variables in the dotenv file or the QISKIT_SCALEWAY_PROJECT_ID environment variables
 
-    :param secret_key: authentication token required to access the Scaleway API
+    :param secret_key: optional authentication token required to access the Scaleway API, if the provided ``secret_key`` is None, the value is loaded from the SCALEWAY_API_TOKEN variables in the dotenv file or the QISKIT_SCALEWAY_API_TOKEN environment variables
 
-    :param url: optional value, endpoint URL of the API
+    :param url: optional value, endpoint URL of the API, if the provided ``url`` is None, the value is loaded from the SCALEWAY_API_URL variables in the dotenv file or the QISKIT_SCALEWAY_API_URL environment variables, if no url is found, then ``_ENDPOINT_URL`` is used.
     """
 
     def __init__(
-        self, project_id: str, secret_key: str, url: str = _ENDPOINT_URL
+        self, project_id: str = None, secret_key: str = None, url: str = None
     ) -> None:
-        self.__client = QaaSClient(url=url, token=secret_key, project_id=project_id)
+        env_token = (
+            dotenv_values().get("SCALEWAY_API_TOKEN") or os.getenv("QISKIT_SCALEWAY_API_TOKEN")
+        )
+        env_project_id = (
+            dotenv_values().get("SCALEWAY_PROJECT_ID") or os.getenv("QISKIT_SCALEWAY_PROJECT_ID")
+        )
+        env_api_url = (
+            dotenv_values().get("SCALEWAY_API_URL") or os.get("QISKIT_SCALEWAY_API_URL")
+        )
+
+        token = secret_key or env_token
+        if token is None:
+            raise Exception("secret_key is missing")
+
+
+        project_id = project_id or env_project_id
+        if project_id is None:
+            raise Exception("project_id is missing")
+
+        api_url = url or env_api_url or _ENDPOINT_URL
+
+        self.__client = QaaSClient(url=api_url, token=token, project_id=project_id)
 
     def backends(self, name: str = None, **kwargs) -> list[ScalewayBackend]:
         """Return a list of backends matching the specified filtering.
