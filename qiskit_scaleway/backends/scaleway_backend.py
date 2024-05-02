@@ -14,16 +14,26 @@ class ScalewayBackend(Backend, ABC):
         client: QaaSClient,
         backend_id: str,
         name: str,
+        availability: str,
         version: str,
     ):
         super().__init__(provider=provider, backend_version=version, name=name)
 
         self._backend_id = backend_id
+        self._availability = availability
         self._client = client
 
     @property
     def id(self):
         return self._backend_id
+
+    @property
+    def availability(self):
+        return self._availability
+
+    @property
+    def num_qubits(self) -> int:
+        return self._max_qubits
 
     def start_session(
         self,

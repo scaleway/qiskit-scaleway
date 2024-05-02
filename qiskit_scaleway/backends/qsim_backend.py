@@ -18,6 +18,7 @@ class QsimBackend(ScalewayBackend):
         client: QaaSClient,
         backend_id: str,
         name: str,
+        availability: str,
         version: str,
         num_qubits: int,
         metadata: str,
@@ -27,6 +28,7 @@ class QsimBackend(ScalewayBackend):
             client=client,
             backend_id=backend_id,
             name=name,
+            availability=availability,
             version=version,
         )
 
