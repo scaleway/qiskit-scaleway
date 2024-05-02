@@ -33,7 +33,6 @@ Alternatively, the Scaleway Provider can discover your access token from environ
 ```
 export QISKIT_SCALEWAY_PROJECT_ID="project_id"
 export QISKIT_SCALEWAY_API_TOKEN="token"
-
 ```
 
 Then you can instantiate the provider without any arguments:
