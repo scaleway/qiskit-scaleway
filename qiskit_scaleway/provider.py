@@ -31,7 +31,7 @@ class ScalewayProvider(Provider):
             dotenv_values().get("QISKIT_SCALEWAY_PROJECT_ID") or os.getenv("QISKIT_SCALEWAY_PROJECT_ID")
         )
         env_api_url = (
-            dotenv_values().get("QISKIT_SCALEWAY_API_URL") or os.get("QISKIT_SCALEWAY_API_URL")
+            dotenv_values().get("QISKIT_SCALEWAY_API_URL") or os.getenv("QISKIT_SCALEWAY_API_URL")
         )
 
         token = secret_key or env_token
