@@ -25,13 +25,13 @@ class ScalewayProvider(Provider):
         self, project_id: str = None, secret_key: str = None, url: str = None
     ) -> None:
         env_token = (
-            dotenv_values().get("SCALEWAY_API_TOKEN") or os.getenv("QISKIT_SCALEWAY_API_TOKEN")
+            dotenv_values().get("QISKIT_SCALEWAY_API_TOKEN") or os.getenv("QISKIT_SCALEWAY_API_TOKEN")
         )
         env_project_id = (
-            dotenv_values().get("SCALEWAY_PROJECT_ID") or os.getenv("QISKIT_SCALEWAY_PROJECT_ID")
+            dotenv_values().get("QISKIT_SCALEWAY_PROJECT_ID") or os.getenv("QISKIT_SCALEWAY_PROJECT_ID")
         )
         env_api_url = (
-            dotenv_values().get("SCALEWAY_API_URL") or os.get("QISKIT_SCALEWAY_API_URL")
+            dotenv_values().get("QISKIT_SCALEWAY_API_URL") or os.get("QISKIT_SCALEWAY_API_URL")
         )
 
         token = secret_key or env_token
