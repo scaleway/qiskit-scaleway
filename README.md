@@ -25,7 +25,7 @@ provider = ScalewayProvider(
 )
 
 # List all operational backends
-backends = provider.backends(operational=False)
+backends = provider.backends(operational=True)
 print(backends)
 
 # List all backends with a minimum number of qbits
