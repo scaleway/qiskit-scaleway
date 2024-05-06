@@ -26,7 +26,7 @@ class QaaSClient:
 
     def list_platforms(self, name: str) -> dict:
         filter_by_name = ""
-        if (name):
+        if name:
             filter_by_name = f"?name={name}"
 
         http_client = self._http_client()

@@ -31,10 +31,6 @@ class ScalewayBackend(Backend, ABC):
     def availability(self):
         return self._availability
 
-    @property
-    def num_qubits(self) -> int:
-        return self._max_qubits
-
     def start_session(
         self,
         name: str = None,

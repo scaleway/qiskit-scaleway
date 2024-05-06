@@ -7,7 +7,7 @@ provider = ScalewayProvider(
 )
 
 # Retrieve a backend by providing search criteria. The search must have a single match
-backend = provider.get_backend("aer_simulation_h100")
+backend = provider.get_backend("aer_simulation_2l4")
 
 # Define a quantum circuit that produces a 4-qubit GHZ state.
 qc = QuantumCircuit(4)
