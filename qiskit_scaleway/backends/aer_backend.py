@@ -49,7 +49,7 @@ class AerBackend(ScalewayBackend):
         self._target.num_qubits = num_qubits
 
         # Set option validators
-        self.options.set_validator("shots", (1, 10000000))
+        self.options.set_validator("shots", (1, 100000000))
         self.options.set_validator("memory", bool)
 
     def __repr__(self) -> str:

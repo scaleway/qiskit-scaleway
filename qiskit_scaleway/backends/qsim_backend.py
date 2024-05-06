@@ -35,7 +35,7 @@ class QsimBackend(ScalewayBackend):
         self._options = self._default_options()
 
         # Set option validators
-        self.options.set_validator("shots", (1, 10000000))
+        self.options.set_validator("shots", (1, 100000000))
 
         self._max_qubits = num_qubits
 

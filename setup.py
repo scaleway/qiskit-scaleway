@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="qiskit_scaleway",
-    version="0.1.7",
+    version="0.1.8",
     packages=find_packages(),
     install_requires=[
         "qiskit==1.0.2",
@@ -15,7 +15,7 @@ setup(
         "dataclasses-json==0.6.4",
         "dataclasses==0.6",
         "pytimeparse==1.1.8",
-        "python-dotenv==1.0.1"
+        "python-dotenv==1.0.1",
     ],
     long_description=description,
     long_description_content_type="text/markdown",

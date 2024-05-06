@@ -24,20 +24,19 @@ class ScalewayProvider(Provider):
     def __init__(
         self, project_id: str = None, secret_key: str = None, url: str = None
     ) -> None:
-        env_token = (
-            dotenv_values().get("QISKIT_SCALEWAY_API_TOKEN") or os.getenv("QISKIT_SCALEWAY_API_TOKEN")
+        env_token = dotenv_values().get("QISKIT_SCALEWAY_API_TOKEN") or os.getenv(
+            "QISKIT_SCALEWAY_API_TOKEN"
         )
-        env_project_id = (
-            dotenv_values().get("QISKIT_SCALEWAY_PROJECT_ID") or os.getenv("QISKIT_SCALEWAY_PROJECT_ID")
+        env_project_id = dotenv_values().get("QISKIT_SCALEWAY_PROJECT_ID") or os.getenv(
+            "QISKIT_SCALEWAY_PROJECT_ID"
         )
-        env_api_url = (
-            dotenv_values().get("QISKIT_SCALEWAY_API_URL") or os.getenv("QISKIT_SCALEWAY_API_URL")
+        env_api_url = dotenv_values().get("QISKIT_SCALEWAY_API_URL") or os.getenv(
+            "QISKIT_SCALEWAY_API_URL"
         )
 
         token = secret_key or env_token
         if token is None:
             raise Exception("secret_key is missing")
-
 
         project_id = project_id or env_project_id
         if project_id is None:
@@ -61,12 +60,11 @@ class ScalewayProvider(Provider):
         scaleway_backends = []
         filters = {}
 
-        if (kwargs.get('operational') is not None):
-            filters["operational"] = kwargs.pop('operational', None)
+        if kwargs.get("operational") is not None:
+            filters["operational"] = kwargs.pop("operational", None)
 
-        if (kwargs.get('min_num_qubits') is not None):
-            filters["min_num_qubits"] = kwargs.pop('min_num_qubits', None)
-
+        if kwargs.get("min_num_qubits") is not None:
+            filters["min_num_qubits"] = kwargs.pop("min_num_qubits", None)
 
         json_resp = self.__client.list_platforms(name)
 
@@ -114,24 +112,30 @@ class ScalewayProvider(Provider):
 
         return filter_backends(scaleway_backends, **kwargs)
 
-
     def _filter_availability(self, operational, availability):
-        availabilities = ['ailability_unknown','available', 'scarce'] if operational else ['shortage']
+        availabilities = (
+            ["ailability_unknown", "available", "scarce"]
+            if operational
+            else ["shortage"]
+        )
 
         return availability in availabilities
 
-    def filters(self, backends: list[ScalewayBackend], filters: dict) -> list[ScalewayBackend]:
+    def filters(
+        self, backends: list[ScalewayBackend], filters: dict
+    ) -> list[ScalewayBackend]:
         filtered_backends = []
-        operational = filters.get('operational')
-        min_num_qubits = filters.get('min_num_qubits')
-
+        operational = filters.get("operational")
+        min_num_qubits = filters.get("min_num_qubits")
 
         if operational is not None:
-            backends = [b for b in backends if self._filter_availability(operational, b.availability)]
-
+            backends = [
+                b
+                for b in backends
+                if self._filter_availability(operational, b.availability)
+            ]
 
         if min_num_qubits is not None:
             backends = [b for b in backends if b.num_qubits >= min_num_qubits]
-
 
         return backends
