@@ -1,0 +1,4 @@
+pytest
+pytest-dependency
+pytest-progress
+numpy

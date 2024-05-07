@@ -1,17 +1,9 @@
-name: Deploy to PyPi
+name: Test package
 
-on:
-  workflow_run:
-    workflows: ["Test package"]
-    types:
-      - completed
-    branches:
-      - main
-    status:
-      - success
+on: [push, pull_request]
 
 jobs:
-  publish:
+  test:
 
     runs-on: ubuntu-latest
 
@@ -37,15 +29,15 @@ jobs:
     - name: Build package
       run: python setup.py sdist bdist_wheel
 
-    - name: Publish package
-      uses: pypa/gh-action-pypi-publish@v1.5.0
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
+    - name: Install package
+      run: pip install dist/qiskit_scaleway-${version}-py3-none-any.whl
 
-    - name: Create and push tag
-      run: |
-        git tag v$version
-        git push origin v$version
+    - name: Install test
+      run: pip install -r tests/requirements.txt
+
+    - name: Run test
+      run: pytest -s --showprogress -vv tests/
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        QISKIT_SCALEWAY_PROJECT_ID: ${{ secrets.STG_QISKIT_SCALEWAY_PROJECT_ID }}
+        QISKIT_SCALEWAY_API_TOKEN: ${{ secrets.STG_QISKIT_SCALEWAY_API_TOKEN }}
+        QISKIT_SCALEWAY_API_URL: ${{ secrets.STG_QISKIT_SCALEWAY_API_URL }}
