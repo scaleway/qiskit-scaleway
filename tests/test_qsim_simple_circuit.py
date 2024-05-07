@@ -4,21 +4,21 @@ from qiskit import QuantumCircuit
 from qiskit_scaleway import ScalewayProvider
 
 
-def test_aer_simple_circuit():
+def test_qsim_simple_circuit():
     provider = ScalewayProvider(
         project_id=os.environ["QISKIT_SCALEWAY_PROJECT_ID"],
         secret_key=os.environ["QISKIT_SCALEWAY_API_TOKEN"],
         url=os.environ["QISKIT_SCALEWAY_API_URL"],
     )
 
-    backend = provider.get_backend("aer_simulation_pop_c16m128")
+    backend = provider.get_backend("qsim_simulation_pop_c16m128")
 
     assert backend is not None
 
     session_id = backend.start_session(
-        name="my-aer-session-autotest",
-        deduplication_id="my-aer-session-autotest",
-        max_duration="5m",
+        name="my-qsim-session-autotest",
+        deduplication_id="my-qsim-session-autotest",
+        max_duration="2m",
     )
 
     assert session_id is not None

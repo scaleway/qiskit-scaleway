@@ -39,14 +39,14 @@ def test_aer_multiple_circuits():
         url=os.environ["QISKIT_SCALEWAY_API_URL"],
     )
 
-    backend = provider.get_backend("aer_simulation_2l4")
+    backend = provider.get_backend("aer_simulation_pop_c16m128")
 
     assert backend is not None
 
     session_id = backend.start_session(
-        name="my-aer-session-autotest-2",
-        deduplication_id="my-aer-session-autotest-2",
-        max_duration="2m",
+        name="my-aer-session-autotest",
+        deduplication_id="my-aer-session-autotest",
+        max_duration="5m",
     )
 
     assert session_id is not None

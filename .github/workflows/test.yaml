@@ -1,9 +1,9 @@
 name: Test package
 
-on: push
+on: [push, pull_request]
 
 jobs:
-  tests:
+  test:
 
     runs-on: ubuntu-latest
 

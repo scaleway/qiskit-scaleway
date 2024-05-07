@@ -1,9 +1,14 @@
 name: Deploy to PyPi
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Test package"]
+    types:
+      - completed
     branches:
       - main
+    status:
+      - success
 
 jobs:
   publish:
