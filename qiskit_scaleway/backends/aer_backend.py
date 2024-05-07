@@ -68,7 +68,7 @@ class AerBackend(ScalewayBackend):
         return 1024
 
     def run(
-        self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], parameter_binds = None, **run_options
+        self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **run_options
     ) -> AerJob:
         if not isinstance(circuits, list):
             circuits = [circuits]
@@ -100,7 +100,6 @@ class AerBackend(ScalewayBackend):
             client=self._client,
             circuits=circuits,
             config=job_config,
-            parameter_binds=parameter_binds,
             name=job_name,
         )
 
@@ -119,8 +118,8 @@ class AerBackend(ScalewayBackend):
             session_id="auto",
             session_name="aer-session-from-qiskit",
             session_deduplication_id="aer-session-from-qiskit",
-            session_max_duration="1m",
-            session_max_idle_duration="1m",
+            session_max_duration="20m",
+            session_max_idle_duration="20m",
             shots=1000,
             memory=False,
             method="automatic",
