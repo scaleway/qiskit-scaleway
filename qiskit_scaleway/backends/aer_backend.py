@@ -68,14 +68,14 @@ class AerBackend(ScalewayBackend):
         return 1024
 
     def run(
-        self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **kwargs
+        self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **run_options
     ) -> AerJob:
         if not isinstance(circuits, list):
             circuits = [circuits]
 
         job_config = {key: value for key, value in self._options.items()}
 
-        for kwarg in kwargs:
+        for kwarg in run_options:
             if not hasattr(self.options, kwarg):
                 warnings.warn(
                     f"Option {kwarg} is not used by this backend",
@@ -83,7 +83,7 @@ class AerBackend(ScalewayBackend):
                     stacklevel=2,
                 )
             else:
-                job_config[kwarg] = kwargs[kwarg]
+                job_config[kwarg] = run_options[kwarg]
 
         job_name = f"qj-aer-{randomname.get_name()}"
 
