@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import random
 
 from qiskit import QuantumCircuit
 from qiskit_scaleway import ScalewayProvider
@@ -45,7 +46,7 @@ def test_aer_multiple_circuits():
 
     session_id = backend.start_session(
         name="my-aer-session-autotest",
-        deduplication_id="my-aer-session-autotest",
+        deduplication_id=f"my-aer-session-autotest-{random.randint(1, 1000)}",
         max_duration="5m",
     )
 
