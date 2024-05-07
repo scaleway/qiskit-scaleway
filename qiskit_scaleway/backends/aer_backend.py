@@ -68,14 +68,14 @@ class AerBackend(ScalewayBackend):
         return 1024
 
     def run(
-        self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **kwargs
+        self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], parameter_binds = None, **run_options
     ) -> AerJob:
         if not isinstance(circuits, list):
             circuits = [circuits]
 
         job_config = {key: value for key, value in self._options.items()}
 
-        for kwarg in kwargs:
+        for kwarg in run_options:
             if not hasattr(self.options, kwarg):
                 warnings.warn(
                     f"Option {kwarg} is not used by this backend",
@@ -83,7 +83,7 @@ class AerBackend(ScalewayBackend):
                     stacklevel=2,
                 )
             else:
-                job_config[kwarg] = kwargs[kwarg]
+                job_config[kwarg] = run_options[kwarg]
 
         job_name = f"qj-aer-{randomname.get_name()}"
 
@@ -100,6 +100,7 @@ class AerBackend(ScalewayBackend):
             client=self._client,
             circuits=circuits,
             config=job_config,
+            parameter_binds=parameter_binds,
             name=job_name,
         )
 
@@ -118,8 +119,8 @@ class AerBackend(ScalewayBackend):
             session_id="auto",
             session_name="aer-session-from-qiskit",
             session_deduplication_id="aer-session-from-qiskit",
-            session_max_duration="20m",
-            session_max_idle_duration="20m",
+            session_max_duration="1m",
+            session_max_idle_duration="1m",
             shots=1000,
             memory=False,
             method="automatic",

@@ -13,7 +13,6 @@ from qiskit.version import VERSION
 from ..utils import QaaSClient
 from .scaleway_job import ScalewayJob
 
-
 class _SerializationType(Enum):
     UNKOWN = 0
     QASM_V1 = 1
@@ -60,10 +59,12 @@ class AerJob(ScalewayJob):
         client: QaaSClient,
         circuits,
         config,
+        parameter_binds,
     ) -> None:
         super().__init__(name, backend, client)
         self._circuits = circuits
         self._config = config
+        self._binds = parameter_binds
 
     def submit(self, session_id: str) -> None:
         if self._job_id:
@@ -72,9 +73,25 @@ class AerJob(ScalewayJob):
         options = self._config.copy()
         shots = options.pop("shots")
 
+        # print(self._binds)
+
+        # def _make(pv):
+        #     for k, v in pv.items():
+        #         print("name", k._name)
+        #         print("se", k._symbol_expr)
+        #         print("pk", k._parameter_keys)
+        #         print("ps", k._parameter_symbols)
+        #         print("nm", k._name_map)
+        #         print("h", k._hash)
+        #     return {k.name: v for k, v in pv.items()}
+
+        # binds = [_make(pv) for pv in self._binds]
+
         runOpts = _RunPayload(
             shots=shots,
-            options={},
+            options={
+                # "parameter_binds": binds,
+            },
             circuits=list(
                 map(
                     lambda c: _CircuitPayload(
