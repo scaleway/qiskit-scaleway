@@ -13,6 +13,7 @@ from qiskit.version import VERSION
 from ..utils import QaaSClient
 from .scaleway_job import ScalewayJob
 
+
 class _SerializationType(Enum):
     UNKOWN = 0
     QASM_V1 = 1
@@ -70,8 +71,6 @@ class AerJob(ScalewayJob):
 
         options = self._config.copy()
         shots = options.pop("shots")
-
-
 
         runOpts = _RunPayload(
             shots=shots,
