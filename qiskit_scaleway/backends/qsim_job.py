@@ -172,6 +172,7 @@ class QsimJob(ScalewayJob):
             _JobPayload(
                 backend=backendOpts,
                 run=runOpts,
+                client=clientOpts,
             )
         )
 
