@@ -13,9 +13,8 @@ class QaaSClient:
         self.__project_id = project_id
 
     def _http_client(self) -> httpx.Client:
-        # TODO: remove verify false
         return httpx.Client(
-            headers=self._api_headers(), base_url=self.__url, timeout=10.0, verify=False
+            headers=self._api_headers(), base_url=self.__url, timeout=10.0, verify=True
         )
 
     def _api_headers(self) -> dict:
