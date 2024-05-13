@@ -4,11 +4,12 @@ from enum import Enum
 from typing import Union, List
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
+from importlib.metadata import version
 
 from qiskit.providers import JobError
 from qiskit.result import Result
 from qiskit import qasm3
-from qiskit.version import VERSION
+from qiskit.version import VERSION as QISKIT_VERSION
 
 from ..utils import QaaSClient
 from .scaleway_job import ScalewayJob
@@ -46,8 +47,15 @@ class _BackendPayload:
 
 @dataclass_json
 @dataclass
+class _ClientPayload:
+    qiskit_version: str
+    package_version: str
+
+
+@dataclass_json
+@dataclass
 class _JobPayload:
-    version: str
+    client: _ClientPayload
     backend: _BackendPayload
     run: _RunPayload
 
@@ -92,11 +100,18 @@ class AerJob(ScalewayJob):
             options=options,
         )
 
+        package_version = version("qiskit-scaleway") or "unknown_version"
+
+        clientOpts = _ClientPayload(
+            qiskit_version=QISKIT_VERSION,
+            package_version=package_version,
+        )
+
         job_payload = _JobPayload.schema().dumps(
             _JobPayload(
                 backend=backendOpts,
                 run=runOpts,
-                version=VERSION,
+                client=clientOpts,
             )
         )
 
