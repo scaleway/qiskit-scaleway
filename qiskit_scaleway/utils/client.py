@@ -1,7 +1,10 @@
 import httpx
 
+from typing import Dict, List
 
 _ENDPOINT_PLATFORM = "/platforms"
+_ENDPOINT_APPLICATION = "/applications"
+_ENDPOINT_PROCESS = "/processes"
 _ENDPOINT_SESSION = "/sessions"
 _ENDPOINT_JOB = "/jobs"
 
@@ -36,6 +39,99 @@ class QaaSClient:
 
         return resp.json()
 
+    def list_applications(self, name) -> dict:
+        filter_by_name = ""
+        if name:
+            filter_by_name = f"?name={name}"
+
+        http_client = self._http_client()
+        endpoint = f"{self._build_endpoint(_ENDPOINT_APPLICATION)}{filter_by_name}"
+
+        resp = http_client.get(endpoint)
+        resp.raise_for_status()
+
+        return resp.json()
+
+    def create_process(
+        self,
+        platform_id: str,
+        application_id: str,
+        name: str,
+        input: str,
+        tags: List[str] = ["qiskit"],
+    ):
+        http_client = self._http_client()
+
+        payload = {
+            "project_id": self.__project_id,
+            "platform_id": platform_id,
+            "application_id": application_id,
+            "name": name,
+            "input": input,
+            "tags": tags,
+        }
+
+        response = http_client.post(
+            self._build_endpoint(_ENDPOINT_PROCESS), json=payload
+        )
+
+        response.raise_for_status()
+        response_dict = response.json()
+        process_id = response_dict["id"]
+
+        return process_id
+
+    def get_process(self, process_id: str) -> dict:
+        if process_id is None:
+            raise Exception("process_id must be not None")
+
+        http_client = self._http_client()
+
+        resp = http_client.get(
+            f"{self._build_endpoint(_ENDPOINT_PROCESS)}/{process_id}"
+        )
+        resp.raise_for_status()
+
+        return resp.json()
+
+    def get_process_results(self, process_id: str) -> List[Dict]:
+        if process_id is None:
+            raise Exception("process_id must be not None")
+
+        http_client = self._http_client()
+
+        response = http_client.get(
+            f"{self._build_endpoint(_ENDPOINT_PROCESS)}/{process_id}/results"
+        )
+        response.raise_for_status()
+
+        process_results_response = response.json()
+
+        process_results = []
+
+        for result_dict in process_results_response["process_results"]:
+            process_results.append(result_dict)
+
+        return process_results
+
+    def cancel_process(self, process_id: str):
+        if process_id is None:
+            raise Exception("process_id must be not None")
+
+        http_client = self._http_client()
+
+        http_client.post(
+            f"{self._build_endpoint(_ENDPOINT_PROCESS)}/{process_id}/cancel"
+        )
+
+    def delete_process(self, process_id: str):
+        if process_id is None:
+            raise Exception("process_id must be not None")
+
+        http_client = self._http_client()
+
+        http_client.delete(f"{self._build_endpoint(_ENDPOINT_PROCESS)}/{process_id}")
+
     def create_session(
         self,
         name: str,
@@ -68,6 +164,9 @@ class QaaSClient:
     def update_session(
         self, session_id: str, name: str, max_duration: str, max_idle_duration: str
     ) -> str:
+        if session_id is None:
+            raise Exception("session_id must be not None")
+
         http_client = self._http_client()
 
         payload = {
@@ -87,6 +186,9 @@ class QaaSClient:
         return session_id
 
     def terminate_session(self, session_id: str) -> str:
+        if session_id is None:
+            raise Exception("session_id must be not None")
+
         http_client = self._http_client()
 
         response = http_client.post(
@@ -100,11 +202,17 @@ class QaaSClient:
         return session_id
 
     def delete_session(self, session_id: str):
+        if session_id is None:
+            raise Exception("session_id must be not None")
+
         http_client = self._http_client()
 
         http_client.delete(self._build_endpoint(f"{_ENDPOINT_SESSION}/{session_id}"))
 
     def create_job(self, name: str, session_id: str, circuits: dict) -> str:
+        if session_id is None:
+            raise Exception("session_id must be not None")
+
         http_client = self._http_client()
 
         payload = {
@@ -121,6 +229,9 @@ class QaaSClient:
         return response_dict["id"]
 
     def get_job(self, job_id: str) -> dict:
+        if job_id is None:
+            raise Exception("job_id must be not None")
+
         http_client = self._http_client()
         endpoint = f"{self._build_endpoint(_ENDPOINT_JOB)}/{job_id}"
 
@@ -130,6 +241,9 @@ class QaaSClient:
         return resp.json()
 
     def get_job_results(self, job_id: str) -> list:
+        if job_id is None:
+            raise Exception("job_id must be not None")
+
         http_client = self._http_client()
         endpoint = f"{self._build_endpoint(_ENDPOINT_JOB)}/{job_id}/results"
 

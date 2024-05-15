@@ -12,7 +12,7 @@ from qiskit import qasm3
 from qiskit.version import VERSION as QISKIT_VERSION
 
 from ..utils import QaaSClient
-from .scaleway_job import ScalewayJob
+from .scaleway_backend_job import ScalewayBackendJob
 
 
 class _SerializationType(Enum):
@@ -60,7 +60,7 @@ class _JobPayload:
     run: _RunPayload
 
 
-class AerJob(ScalewayJob):
+class AerJob(ScalewayBackendJob):
     def __init__(
         self,
         name: str,

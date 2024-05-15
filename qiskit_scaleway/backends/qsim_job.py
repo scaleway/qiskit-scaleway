@@ -29,7 +29,7 @@ from qiskit.result.models import ExperimentResult, ExperimentResultData
 from qiskit.version import VERSION as QISKIT_VERSION
 
 from ..utils import QaaSClient
-from .scaleway_job import ScalewayJob
+from .scaleway_backend_job import ScalewayBackendJob
 
 
 class _SerializationType(Enum):
@@ -117,7 +117,7 @@ def _unpack_bits(packed_bits: str, dtype: str, shape: Sequence[int]) -> np.ndarr
     return bits[: np.prod(shape).item()].reshape(shape).astype(dtype)
 
 
-class QsimJob(ScalewayJob):
+class QsimJob(ScalewayBackendJob):
     def __init__(
         self,
         name: str,

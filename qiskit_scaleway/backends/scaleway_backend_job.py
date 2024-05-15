@@ -10,7 +10,7 @@ from qiskit.providers.jobstatus import JobStatus
 from ..utils import QaaSClient
 
 
-class ScalewayJob(Job, ABC):
+class ScalewayBackendJob(Job, ABC):
     def __init__(
         self,
         name: str,
