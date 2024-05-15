@@ -26,6 +26,19 @@ class QaaSClient:
     def _build_endpoint(self, endpoint: str) -> str:
         return f"{self.__url}{endpoint}"
 
+    def get_platform(self, platform_id) -> dict:
+        if platform_id is None:
+            raise Exception("platform_id must be not None")
+
+        http_client = self._http_client()
+
+        resp = http_client.get(
+            f"{self._build_endpoint(_ENDPOINT_PLATFORM)}/{platform_id}"
+        )
+        resp.raise_for_status()
+
+        return resp.json()
+
     def list_platforms(self, name: str) -> dict:
         filter_by_name = ""
         if name:
@@ -39,13 +52,22 @@ class QaaSClient:
 
         return resp.json()
 
-    def list_applications(self, name) -> dict:
-        filter_by_name = ""
-        if name:
-            filter_by_name = f"?name={name}"
+    def get_application(self, application_id) -> dict:
+        if application_id is None:
+            raise Exception("application_id must be not None")
 
         http_client = self._http_client()
-        endpoint = f"{self._build_endpoint(_ENDPOINT_APPLICATION)}{filter_by_name}"
+
+        resp = http_client.get(
+            f"{self._build_endpoint(_ENDPOINT_APPLICATION)}/{application_id}"
+        )
+        resp.raise_for_status()
+
+        return resp.json()
+
+    def list_applications(self) -> dict:
+        http_client = self._http_client()
+        endpoint = f"{self._build_endpoint(_ENDPOINT_APPLICATION)}"
 
         resp = http_client.get(endpoint)
         resp.raise_for_status()
@@ -60,6 +82,12 @@ class QaaSClient:
         input: str,
         tags: List[str] = ["qiskit"],
     ):
+        if platform_id is None:
+            raise Exception("platform_id must be not None")
+
+        if application_id is None:
+            raise Exception("application_id must be not None")
+
         http_client = self._http_client()
 
         payload = {

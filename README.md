@@ -16,7 +16,9 @@ pip install qiskit-scaleway
 
 ## Getting started
 
-To instantiate the ScalewayProvider, you need to have an access token and a project_id
+To instantiate the Scaleway Provider object, you need a project_id and a token. They can be generated through [the Scaleway console](https://console.scaleway.com/organization/projects) or the [our API](https://www.scaleway.com/en/docs/identity-and-access-management/iam/api-cli/managing-projects/).
+
+Note: if your plan to create a granular secret key, make sure it grants you the QaaSFullAccess permission.
 
 ```python
 from qiskit import QuantumCircuit
@@ -31,11 +33,11 @@ provider = ScalewayProvider(
 Alternatively, the Scaleway Provider can discover your access token from environment variables or from your .env file
 
 ```
-export QISKIT_SCALEWAY_PROJECT_ID="project_id"
-export QISKIT_SCALEWAY_API_TOKEN="token"
+export QISKIT_SCALEWAY_PROJECT_ID="<your-scaleway-project-id>"
+export QISKIT_SCALEWAY_API_TOKEN="<your-scaleway-secret-key>"
 ```
 
-Then you can instantiate the provider without any arguments:
+Then you can instantiate the provider object without any argument:
 
 ```python
 from qiskit import QuantumCircuit
@@ -44,7 +46,7 @@ from qiskit_scaleway import ScalewayProvider
 provider = ScalewayProvider()
 ```
 
-Now you can have acces to the supported backends:
+Now you can have acces to supported backends:
 
 
 ```python
