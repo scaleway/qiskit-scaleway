@@ -32,10 +32,19 @@ def test_qsim_simple_circuit():
         qc.cx(0, 3)
         qc.measure_all()
 
-        # Create and send a job to the target session
-        result = backend.run(qc, shots=1000, session_id=session_id).result()
+        shots_count = 1000
+        job = backend.run(qc, shots=shots_count, session_id=session_id)
 
-        assert result is not None
-        assert result.success
+        cirq_result = job.result(format="cirq")
+
+        assert cirq_result is not None
+        assert cirq_result.success
+
+        qiskit_result = job.result(format="qiskit")
+
+        assert qiskit_result is not None
+        assert qiskit_result.success
+        assert qiskit_result.results[0].shots == shots_count
+
     finally:
         backend.stop_session(session_id)
