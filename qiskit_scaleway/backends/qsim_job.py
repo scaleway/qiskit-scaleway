@@ -235,7 +235,7 @@ class QsimJob(ScalewayJob):
                 job_id=self._job_id,
                 qobj_id=", ".join(x.name for x in self._circuits),
                 success=True,
-                results=__make_expresult_from_cirq_result(cirq_result),
+                results=[__make_expresult_from_cirq_result(cirq_result)],
                 status=None,  # TODO
                 header=None,  # TODO
                 date=None,  # TODO
