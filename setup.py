@@ -8,8 +8,8 @@ setup(
     version="0.1.13",
     packages=find_packages(),
     install_requires=[
-        "qiskit==1.0.2",
-        "qiskit-aer==0.14.0.1",
+        "qiskit==1.1",
+        "qiskit-aer==0.14.1",
         "randomname==0.2.1",
         "httpx==0.27.0",
         "dataclasses-json==0.6.4",

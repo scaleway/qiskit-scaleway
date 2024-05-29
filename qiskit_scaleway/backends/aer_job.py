@@ -9,10 +9,10 @@ from importlib.metadata import version
 from qiskit.providers import JobError
 from qiskit.result import Result
 from qiskit import qasm3
-from qiskit.version import VERSION as QISKIT_VERSION
 
 from ..utils import QaaSClient
 from .scaleway_job import ScalewayJob
+from ..versions import USER_AGENT
 
 
 class _SerializationType(Enum):
@@ -32,7 +32,6 @@ class _CircuitPayload:
 @dataclass_json
 @dataclass
 class _RunPayload:
-    shots: int
     circuits: List[_CircuitPayload]
     options: dict
 
@@ -48,8 +47,7 @@ class _BackendPayload:
 @dataclass_json
 @dataclass
 class _ClientPayload:
-    qiskit_version: str
-    package_version: str
+    user_agent: str
 
 
 @dataclass_json
@@ -79,10 +77,15 @@ class AerJob(ScalewayJob):
 
         options = self._config.copy()
         shots = options.pop("shots")
+        memory = options.pop("memory")
+        seed_simulator = options.pop("seed_simulator")
 
         runOpts = _RunPayload(
-            shots=shots,
-            options={},
+            options={
+                "shots": shots,
+                "memory": memory,
+                "seed_simulator": seed_simulator,
+            },
             circuits=list(
                 map(
                     lambda c: _CircuitPayload(
@@ -100,11 +103,8 @@ class AerJob(ScalewayJob):
             options=options,
         )
 
-        package_version = version("qiskit-scaleway") or "unknown_version"
-
         clientOpts = _ClientPayload(
-            qiskit_version=QISKIT_VERSION,
-            package_version=package_version,
+            user_agent=USER_AGENT,
         )
 
         job_payload = _JobPayload.schema().dumps(
@@ -140,6 +140,8 @@ class AerJob(ScalewayJob):
                     "job_id": self._job_id,
                     "qobj_id": ", ".join(x.name for x in self._circuits),
                     "success": payload_dict["success"],
+                    "header": payload_dict.get("header"),
+                    "metadata": payload_dict.get("metadata"),
                 }
             )
 

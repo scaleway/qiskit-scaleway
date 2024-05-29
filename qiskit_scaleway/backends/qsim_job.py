@@ -26,10 +26,10 @@ from qiskit.providers import JobError
 from qiskit.result import Result
 from qiskit.transpiler.passes import RemoveBarriers
 from qiskit.result.models import ExperimentResult, ExperimentResultData
-from qiskit.version import VERSION as QISKIT_VERSION
 
 from ..utils import QaaSClient
 from .scaleway_job import ScalewayJob
+from ..versions import USER_AGENT
 
 
 class _SerializationType(Enum):
@@ -48,7 +48,6 @@ class _CircuitPayload:
 @dataclass_json
 @dataclass
 class _RunPayload:
-    shots: int
     circuit: _CircuitPayload
     options: dict
 
@@ -64,8 +63,7 @@ class _BackendPayload:
 @dataclass_json
 @dataclass
 class _ClientPayload:
-    qiskit_version: str
-    package_version: str
+    user_agent: str
 
 
 @dataclass_json
@@ -137,7 +135,6 @@ class QsimJob(ScalewayJob):
             raise RuntimeError(f"Job already submitted (ID: {self._job_id})")
 
         options = self._config.copy()
-        shots = options.pop("shots")
 
         # Note 1: Barriers are only visual elements
         # Barriers are not managed by Cirq deserialization
@@ -145,8 +142,7 @@ class QsimJob(ScalewayJob):
         circuit = RemoveBarriers()(self._circuits[0])
 
         runOpts = _RunPayload(
-            shots=shots,
-            options=options,
+            options={"shots": options.pop("shots")},
             circuit=_CircuitPayload(
                 serialization_type=_SerializationType.QASM_V2,
                 circuit_serialization=qasm2.dumps(circuit),
@@ -161,11 +157,8 @@ class QsimJob(ScalewayJob):
             options=options,
         )
 
-        package_version = version("qiskit-scaleway") or "unknown_version"
-
         clientOpts = _ClientPayload(
-            qiskit_version=QISKIT_VERSION,
-            package_version=package_version,
+            user_agent=USER_AGENT,
         )
 
         job_payload = _JobPayload.schema().dumps(
