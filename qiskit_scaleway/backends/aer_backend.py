@@ -49,7 +49,7 @@ class AerBackend(ScalewayBackend):
         self._target.num_qubits = num_qubits
 
         # Set option validators
-        self.options.set_validator("shots", (1, 100000000))
+        self.options.set_validator("shots", (1, 1e6))
         self.options.set_validator("memory", bool)
 
     def __repr__(self) -> str:
@@ -122,6 +122,7 @@ class AerBackend(ScalewayBackend):
             session_max_idle_duration="20m",
             shots=1000,
             memory=False,
+            seed_simulator=None,
             method="automatic",
             precision="double",
             max_shot_size=None,
