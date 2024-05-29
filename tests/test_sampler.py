@@ -10,7 +10,7 @@ from qiskit_scaleway import ScalewayProvider
 from qiskit_scaleway.primitives import Sampler as BackendSamplerV2
 
 
-def test_sampler(self):
+def test_sampler():
     provider = ScalewayProvider(
         project_id=os.environ["QISKIT_SCALEWAY_PROJECT_ID"],
         secret_key=os.environ["QISKIT_SCALEWAY_API_TOKEN"],
