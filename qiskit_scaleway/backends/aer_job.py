@@ -80,7 +80,7 @@ class AerJob(ScalewayJob):
         memory = options.pop("memory")
         seed_simulator = options.pop("seed_simulator")
 
-        runOpts = _RunPayload(
+        run_opts = _RunPayload(
             options={
                 "shots": shots,
                 "memory": memory,
@@ -97,21 +97,21 @@ class AerJob(ScalewayJob):
             ),
         )
 
-        backendOpts = _BackendPayload(
+        backend_opts = _BackendPayload(
             name=self.backend().name,
             version=self.backend().version,
             options=options,
         )
 
-        clientOpts = _ClientPayload(
+        client_opts = _ClientPayload(
             user_agent=USER_AGENT,
         )
 
         job_payload = _JobPayload.schema().dumps(
             _JobPayload(
-                backend=backendOpts,
-                run=runOpts,
-                client=clientOpts,
+                backend=backend_opts,
+                run=run_opts,
+                client=client_opts,
             )
         )
 

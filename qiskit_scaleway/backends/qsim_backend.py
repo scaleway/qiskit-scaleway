@@ -60,7 +60,7 @@ class QsimBackend(ScalewayBackend):
         if not isinstance(circuits, list):
             circuits = [circuits]
 
-        job_config = {key: value for key, value in self._options.items()}
+        job_config = dict(self._options.items())
 
         for kwarg in kwargs:
             if not hasattr(self.options, kwarg):

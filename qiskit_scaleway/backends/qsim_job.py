@@ -5,12 +5,11 @@ import collections
 import numpy as np
 
 from enum import Enum
-from typing import Union, List
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
-from importlib.metadata import version
 from typing import (
     Any,
+    List,
     Callable,
     Iterable,
     Mapping,
@@ -141,7 +140,7 @@ class QsimJob(ScalewayJob):
         # Note 2: Qsim can only handle on circuit at a time
         circuit = RemoveBarriers()(self._circuits[0])
 
-        runOpts = _RunPayload(
+        run_opts = _RunPayload(
             options={"shots": options.pop("shots")},
             circuit=_CircuitPayload(
                 serialization_type=_SerializationType.QASM_V2,
@@ -151,21 +150,21 @@ class QsimJob(ScalewayJob):
 
         options.pop("circuit_memoization_size")
 
-        backendOpts = _BackendPayload(
+        backend_opts = _BackendPayload(
             name=self.backend().name,
             version=self.backend().version,
             options=options,
         )
 
-        clientOpts = _ClientPayload(
+        client_opts = _ClientPayload(
             user_agent=USER_AGENT,
         )
 
         job_payload = _JobPayload.schema().dumps(
             _JobPayload(
-                backend=backendOpts,
-                run=runOpts,
-                client=clientOpts,
+                backend=backend_opts,
+                run=run_opts,
+                client=client_opts,
             )
         )
 

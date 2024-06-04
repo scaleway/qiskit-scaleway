@@ -124,7 +124,6 @@ class ScalewayProvider(Provider):
     def filters(
         self, backends: list[ScalewayBackend], filters: dict
     ) -> list[ScalewayBackend]:
-        filtered_backends = []
         operational = filters.get("operational")
         min_num_qubits = filters.get("min_num_qubits")
 

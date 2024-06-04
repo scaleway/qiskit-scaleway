@@ -2,3 +2,4 @@ pytest
 pytest-dependency
 pytest-progress
 numpy
+cirq==1.3.0
