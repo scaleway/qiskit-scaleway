@@ -128,7 +128,7 @@ class ScalewayProvider(Provider):
 
     def _filter_availability(self, operational, availability):
         availabilities = (
-            ["ailability_unknown", "available", "scarce"]
+            ["unknown_availability", "available", "scarce"]
             if operational
             else ["shortage"]
         )
