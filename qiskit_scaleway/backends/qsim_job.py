@@ -1,16 +1,25 @@
+# Copyright 2024 Scaleway
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import json
 import io
 import collections
 
 import numpy as np
 
-from enum import Enum
-from typing import Union, List
-from dataclasses import dataclass
-from dataclasses_json import dataclass_json
-from importlib.metadata import version
 from typing import (
     Any,
+    List,
     Callable,
     Iterable,
     Mapping,
@@ -28,50 +37,16 @@ from qiskit.transpiler.passes import RemoveBarriers
 from qiskit.result.models import ExperimentResult, ExperimentResultData
 
 from ..utils import QaaSClient
-from .scaleway_job import ScalewayJob
 from ..versions import USER_AGENT
-
-
-class _SerializationType(Enum):
-    UNKOWN = 0
-    QASM_V1 = 1
-    QASM_V2 = 2
-
-
-@dataclass_json
-@dataclass
-class _CircuitPayload:
-    serialization_type: _SerializationType
-    circuit_serialization: str
-
-
-@dataclass_json
-@dataclass
-class _RunPayload:
-    circuit: _CircuitPayload
-    options: dict
-
-
-@dataclass_json
-@dataclass
-class _BackendPayload:
-    name: str
-    version: str
-    options: dict
-
-
-@dataclass_json
-@dataclass
-class _ClientPayload:
-    user_agent: str
-
-
-@dataclass_json
-@dataclass
-class _JobPayload:
-    client: _ClientPayload
-    backend: _BackendPayload
-    run: _RunPayload
+from .scaleway_job import ScalewayJob
+from .scaleway_models import (
+    JobPayload,
+    ClientPayload,
+    BackendPayload,
+    RunPayload,
+    SerializationType,
+    CircuitPayload,
+)
 
 
 def _tuple_of_big_endian_int(bit_groups: Iterable[Any]) -> Tuple[int, ...]:
@@ -138,34 +113,36 @@ class QsimJob(ScalewayJob):
 
         # Note 1: Barriers are only visual elements
         # Barriers are not managed by Cirq deserialization
-        # Note 2: Qsim can only handle on circuit at a time
+        # Note 2: Qsim can only handle one circuit at a time
         circuit = RemoveBarriers()(self._circuits[0])
 
-        runOpts = _RunPayload(
+        run_opts = RunPayload(
             options={"shots": options.pop("shots")},
-            circuit=_CircuitPayload(
-                serialization_type=_SerializationType.QASM_V2,
-                circuit_serialization=qasm2.dumps(circuit),
-            ),
+            circuits=[
+                CircuitPayload(
+                    serialization_type=SerializationType.QASM_V2,
+                    circuit_serialization=qasm2.dumps(circuit),
+                )
+            ],
         )
 
         options.pop("circuit_memoization_size")
 
-        backendOpts = _BackendPayload(
+        backend_opts = BackendPayload(
             name=self.backend().name,
             version=self.backend().version,
             options=options,
         )
 
-        clientOpts = _ClientPayload(
+        client_opts = ClientPayload(
             user_agent=USER_AGENT,
         )
 
-        job_payload = _JobPayload.schema().dumps(
-            _JobPayload(
-                backend=backendOpts,
-                run=runOpts,
-                client=clientOpts,
+        job_payload = JobPayload.schema().dumps(
+            JobPayload(
+                backend=backend_opts,
+                run=run_opts,
+                client=client_opts,
             )
         )
 

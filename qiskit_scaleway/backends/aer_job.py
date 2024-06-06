@@ -1,61 +1,35 @@
+# Copyright 2024 Scaleway
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import json
 
-from enum import Enum
 from typing import Union, List
-from dataclasses import dataclass
-from dataclasses_json import dataclass_json
-from importlib.metadata import version
 
 from qiskit.providers import JobError
 from qiskit.result import Result
 from qiskit import qasm3
 
 from ..utils import QaaSClient
-from .scaleway_job import ScalewayJob
 from ..versions import USER_AGENT
-
-
-class _SerializationType(Enum):
-    UNKOWN = 0
-    QASM_V1 = 1
-    QASM_V2 = 2
-    QASM_V3 = 3
-
-
-@dataclass_json
-@dataclass
-class _CircuitPayload:
-    serialization_type: _SerializationType
-    circuit_serialization: str
-
-
-@dataclass_json
-@dataclass
-class _RunPayload:
-    circuits: List[_CircuitPayload]
-    options: dict
-
-
-@dataclass_json
-@dataclass
-class _BackendPayload:
-    name: str
-    version: str
-    options: dict
-
-
-@dataclass_json
-@dataclass
-class _ClientPayload:
-    user_agent: str
-
-
-@dataclass_json
-@dataclass
-class _JobPayload:
-    client: _ClientPayload
-    backend: _BackendPayload
-    run: _RunPayload
+from .scaleway_job import ScalewayJob
+from .scaleway_models import (
+    JobPayload,
+    ClientPayload,
+    BackendPayload,
+    RunPayload,
+    SerializationType,
+    CircuitPayload,
+)
 
 
 class AerJob(ScalewayJob):
@@ -76,20 +50,17 @@ class AerJob(ScalewayJob):
             raise RuntimeError(f"Job already submitted (ID: {self._job_id})")
 
         options = self._config.copy()
-        shots = options.pop("shots")
-        memory = options.pop("memory")
-        seed_simulator = options.pop("seed_simulator")
 
-        runOpts = _RunPayload(
+        run_opts = RunPayload(
             options={
-                "shots": shots,
-                "memory": memory,
-                "seed_simulator": seed_simulator,
+                "shots": options.pop("shots"),
+                "memory": options.pop("memory"),
+                "seed_simulator": options.pop("seed_simulator"),
             },
             circuits=list(
                 map(
-                    lambda c: _CircuitPayload(
-                        serialization_type=_SerializationType.QASM_V3,
+                    lambda c: CircuitPayload(
+                        serialization_type=SerializationType.QASM_V3,
                         circuit_serialization=qasm3.dumps(c),
                     ),
                     self._circuits,
@@ -97,21 +68,21 @@ class AerJob(ScalewayJob):
             ),
         )
 
-        backendOpts = _BackendPayload(
+        backend_opts = BackendPayload(
             name=self.backend().name,
             version=self.backend().version,
             options=options,
         )
 
-        clientOpts = _ClientPayload(
+        client_opts = ClientPayload(
             user_agent=USER_AGENT,
         )
 
-        job_payload = _JobPayload.schema().dumps(
-            _JobPayload(
-                backend=backendOpts,
-                run=runOpts,
-                client=clientOpts,
+        job_payload = JobPayload.schema().dumps(
+            JobPayload(
+                backend=backend_opts,
+                run=run_opts,
+                client=client_opts,
             )
         )
 
