@@ -118,7 +118,7 @@ class QsimBackend(ScalewayBackend):
             session_name="qsim-session-from-qiskit",
             session_deduplication_id="qsim-session-from-qiskit",
             session_max_duration="1h",
-            session_max_idle_duration="1h",
+            session_max_idle_duration="20m",
             shots=1000,
             circuit_memoization_size=0,
             max_fused_gate_size=2,
