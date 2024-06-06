@@ -118,10 +118,10 @@ class QsimJob(ScalewayJob):
 
         run_opts = RunPayload(
             options={"shots": options.pop("shots")},
-            circuit=CircuitPayload(
+            circuits=[CircuitPayload(
                 serialization_type=SerializationType.QASM_V2,
                 circuit_serialization=qasm2.dumps(circuit),
-            ),
+            )],
         )
 
         options.pop("circuit_memoization_size")
