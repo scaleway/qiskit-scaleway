@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-import warnings
 
 from dotenv import dotenv_values
 
@@ -85,10 +84,8 @@ class ScalewayProvider(Provider):
         for platform_dict in json_resp["platforms"]:
             name = platform_dict.get("name")
 
-            backend = None
-
             if name.startswith("aer"):
-                backend = AerBackend(
+                scaleway_backends.append(AerBackend(
                     provider=self,
                     client=self.__client,
                     backend_id=platform_dict.get("id"),
@@ -96,10 +93,10 @@ class ScalewayProvider(Provider):
                     availability=platform_dict.get("availability"),
                     version=platform_dict.get("version"),
                     num_qubits=platform_dict.get("max_qubit_count"),
-                    metadata=platform_dict.get("metadata", None),
-                )
+                    metadata=platform_dict.get("metadata"),
+                ))
             elif name.startswith("qsim"):
-                backend = QsimBackend(
+                scaleway_backends.append(QsimBackend(
                     provider=self,
                     client=self.__client,
                     backend_id=platform_dict.get("id"),
@@ -107,33 +104,13 @@ class ScalewayProvider(Provider):
                     availability=platform_dict.get("availability"),
                     version=platform_dict.get("version"),
                     num_qubits=platform_dict.get("max_qubit_count"),
-                    metadata=platform_dict.get("metadata", None),
-                )
-
-            if backend is None:
-                warnings.warn(
-                    f"Backend {name} was not created successfully",
-                    UserWarning,
-                    stacklevel=2,
-                )
-
-                continue
-
-            scaleway_backends.append(backend)
+                    metadata=platform_dict.get("metadata"),
+                ))
 
         if filters is not None:
             scaleway_backends = self.filters(scaleway_backends, filters)
 
         return filter_backends(scaleway_backends, **kwargs)
-
-    def _filter_availability(self, operational, availability):
-        availabilities = (
-            ["unknown_availability", "available", "scarce"]
-            if operational
-            else ["shortage"]
-        )
-
-        return availability in availabilities
 
     def filters(
         self, backends: list[ScalewayBackend], filters: dict
@@ -143,9 +120,7 @@ class ScalewayProvider(Provider):
 
         if operational is not None:
             backends = [
-                b
-                for b in backends
-                if self._filter_availability(operational, b.availability)
+                b for b in backends if b.availability in ["available", "scarce"]
             ]
 
         if min_num_qubits is not None:
