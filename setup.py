@@ -22,17 +22,13 @@ long_description = io.open("README.md", encoding="utf-8").read()
 requirements = open("requirements.txt").readlines()
 requirements = [r.strip() for r in requirements]
 
-qiskit_packages = ["qiskit_packages"] + [
-    "qiskit_packages." + package for package in find_packages(where="qiskit_packages")
-]
-
 setup(
     name="qiskit_scaleway",
     version="0.1.15",
     url="http://github.com/scaleway/qiskit-scaleway",
     author="The Scaleway Developers",
     author_email="community@scaleway.com",
-    packages=qiskit_packages,
+    packages=find_packages(),
     install_requires=requirements,
     python_requires=(">=3.10.0"),
     license="Apache 2",
