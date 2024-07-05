@@ -24,7 +24,7 @@ requirements = [r.strip() for r in requirements]
 
 setup(
     name="qiskit_scaleway",
-    version="0.1.15",
+    version="0.1.16",
     url="http://github.com/scaleway/qiskit-scaleway",
     author="The Scaleway Developers",
     author_email="community@scaleway.com",
