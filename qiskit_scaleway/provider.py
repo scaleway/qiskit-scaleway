@@ -85,27 +85,31 @@ class ScalewayProvider(Provider):
             name = platform_dict.get("name")
 
             if name.startswith("aer"):
-                scaleway_backends.append(AerBackend(
-                    provider=self,
-                    client=self.__client,
-                    backend_id=platform_dict.get("id"),
-                    name=name,
-                    availability=platform_dict.get("availability"),
-                    version=platform_dict.get("version"),
-                    num_qubits=platform_dict.get("max_qubit_count"),
-                    metadata=platform_dict.get("metadata"),
-                ))
+                scaleway_backends.append(
+                    AerBackend(
+                        provider=self,
+                        client=self.__client,
+                        backend_id=platform_dict.get("id"),
+                        name=name,
+                        availability=platform_dict.get("availability"),
+                        version=platform_dict.get("version"),
+                        num_qubits=platform_dict.get("max_qubit_count"),
+                        metadata=platform_dict.get("metadata"),
+                    )
+                )
             elif name.startswith("qsim"):
-                scaleway_backends.append(QsimBackend(
-                    provider=self,
-                    client=self.__client,
-                    backend_id=platform_dict.get("id"),
-                    name=name,
-                    availability=platform_dict.get("availability"),
-                    version=platform_dict.get("version"),
-                    num_qubits=platform_dict.get("max_qubit_count"),
-                    metadata=platform_dict.get("metadata"),
-                ))
+                scaleway_backends.append(
+                    QsimBackend(
+                        provider=self,
+                        client=self.__client,
+                        backend_id=platform_dict.get("id"),
+                        name=name,
+                        availability=platform_dict.get("availability"),
+                        version=platform_dict.get("version"),
+                        num_qubits=platform_dict.get("max_qubit_count"),
+                        metadata=platform_dict.get("metadata"),
+                    )
+                )
 
         if filters is not None:
             scaleway_backends = self.filters(scaleway_backends, filters)
