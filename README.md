@@ -87,5 +87,5 @@ This repository is at its early stage and is still in active development. If you
 ## Reach us
 We love feedback. Feel free to reach us on [Scaleway Slack community](https://slack.scaleway.com/), we are waiting for you on [#opensource](https://scaleway-community.slack.com/app_redirect?channel=opensource)..
 
-## Licence
-[License Apache 2.0](LICENCE)
+## License
+[License Apache 2.0](LICENSE)

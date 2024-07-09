@@ -56,7 +56,7 @@ To submit code:
 - Push your commit(s) to your topic branch on your fork
 - Open a pull request against `qiskit-scaleway` master branch that follows [PR guidelines](#pull-request-guidelines)
 
-The [maintainers](MAINTAINERS.md) of `qiskit-scaleway` use a "Let's Get This Merged" (LGTM) message in the pull request to note that the commits are ready to merge.
+The maintainers of `qiskit-scaleway` use a "Let's Get This Merged" (LGTM) message in the pull request to note that the commits are ready to merge.
 After one or more maintainer states LGTM, we will merge.
 If you have questions or comments on your code, feel free to correct these in your branch through new commits.
 
@@ -79,7 +79,5 @@ by GitHub on the pull request page.
 Keep in mind only the **Pull Request Title** will be used as commit message as we stash all commits on merge.
 
 ## Community guidelines
-
-See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 Thank you for reading through all of this, if you have any question feel free to [reach us](README.md#reach-us)!
