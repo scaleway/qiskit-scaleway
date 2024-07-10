@@ -14,6 +14,7 @@
 import os
 
 from dotenv import dotenv_values
+from typing import Optional, List, Dict
 
 from qiskit.providers import ProviderV1 as Provider
 from qiskit.providers.providerutils import filter_backends
@@ -35,7 +36,10 @@ class ScalewayProvider(Provider):
     """
 
     def __init__(
-        self, project_id: str = None, secret_key: str = None, url: str = None
+        self,
+        project_id: Optional[str] = None,
+        secret_key: Optional[str] = None,
+        url: Optional[str] = None,
     ) -> None:
         env_token = dotenv_values().get("QISKIT_SCALEWAY_API_TOKEN") or os.getenv(
             "QISKIT_SCALEWAY_API_TOKEN"
@@ -52,6 +56,7 @@ class ScalewayProvider(Provider):
             raise Exception("secret_key is missing")
 
         project_id = project_id or env_project_id
+
         if project_id is None:
             raise Exception("project_id is missing")
 
@@ -59,7 +64,7 @@ class ScalewayProvider(Provider):
 
         self.__client = QaaSClient(url=api_url, token=token, project_id=project_id)
 
-    def backends(self, name: str = None, **kwargs) -> list[ScalewayBackend]:
+    def backends(self, name: Optional[str] = None, **kwargs) -> List[ScalewayBackend]:
         """Return a list of backends matching the specified filtering.
 
         Args:
@@ -82,28 +87,28 @@ class ScalewayProvider(Provider):
         json_resp = self.__client.list_platforms(name)
 
         for platform_dict in json_resp["platforms"]:
-            name = platform_dict.get("name")
+            backend_name = platform_dict.get("backend_name")
 
-            if name.startswith("aer"):
+            if backend_name == "aer":
                 scaleway_backends.append(
                     AerBackend(
                         provider=self,
                         client=self.__client,
                         backend_id=platform_dict.get("id"),
-                        name=name,
+                        name=platform_dict.get("name"),
                         availability=platform_dict.get("availability"),
                         version=platform_dict.get("version"),
                         num_qubits=platform_dict.get("max_qubit_count"),
                         metadata=platform_dict.get("metadata"),
                     )
                 )
-            elif name.startswith("qsim"):
+            elif backend_name == "qsim":
                 scaleway_backends.append(
                     QsimBackend(
                         provider=self,
                         client=self.__client,
                         backend_id=platform_dict.get("id"),
-                        name=name,
+                        name=platform_dict.get("name"),
                         availability=platform_dict.get("availability"),
                         version=platform_dict.get("version"),
                         num_qubits=platform_dict.get("max_qubit_count"),
@@ -117,8 +122,8 @@ class ScalewayProvider(Provider):
         return filter_backends(scaleway_backends, **kwargs)
 
     def filters(
-        self, backends: list[ScalewayBackend], filters: dict
-    ) -> list[ScalewayBackend]:
+        self, backends: List[ScalewayBackend], filters: Dict
+    ) -> List[ScalewayBackend]:
         operational = filters.get("operational")
         min_num_qubits = filters.get("min_num_qubits")
 
