@@ -67,8 +67,8 @@ def _big_endian_bits_to_int(bits: Iterable[Any]) -> int:
 def _unpack_digits(
     packed_digits: str,
     binary: bool,
-    dtype: Union[None, str],
-    shape: Union[None, Sequence[int]],
+    dtype: Optional[str],
+    shape: Optional[Sequence[int]],
 ) -> np.ndarray:
     if binary:
         dtype = cast(str, dtype)

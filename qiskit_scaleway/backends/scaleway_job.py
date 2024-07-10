@@ -15,6 +15,7 @@ import time
 import httpx
 
 from abc import ABC
+from typing import Dict
 from qiskit.providers import JobV1 as Job
 from qiskit.providers import JobError
 from qiskit.providers import JobTimeoutError
@@ -34,7 +35,7 @@ class ScalewayJob(Job, ABC):
         self._name = name
         self._client = client
 
-    def _extract_payload_from_response(self, result_response: dict) -> str:
+    def _extract_payload_from_response(self, result_response: Dict) -> str:
         result = result_response.get("result", None)
 
         if result is None or result == "":
@@ -50,7 +51,7 @@ class ScalewayJob(Job, ABC):
         else:
             return result
 
-    def _wait_for_result(self, timeout=None, fetch_interval: int = 5) -> dict | None:
+    def _wait_for_result(self, timeout=None, fetch_interval: int = 5) -> Dict | None:
         start_time = time.time()
 
         while True:

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Union
+from typing import Union, Optional
 
 from abc import ABC
 from qiskit.providers import BackendV2 as Backend
@@ -46,8 +46,8 @@ class ScalewayBackend(Backend, ABC):
 
     def start_session(
         self,
-        name: str = None,
-        deduplication_id: str = None,
+        name: Optional[str] = None,
+        deduplication_id: Optional[str] = None,
         max_duration: Union[int, str] = None,
         max_idle_duration: Union[int, str] = None,
     ) -> str:
