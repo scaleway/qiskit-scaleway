@@ -87,7 +87,7 @@ class ScalewayProvider(Provider):
             backend_name = platform_dict.get("backend_name")
             provider_name = platform_dict.get("provider_name")
 
-            if backend_name == "aer":
+            if backend_name == "aer" and provider_name == "qiskit":
                 scaleway_backends.append(
                     AerBackend(
                         provider=self,
