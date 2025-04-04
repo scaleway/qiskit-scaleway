@@ -19,10 +19,10 @@ from qiskit.providers import JobError
 from qiskit.result import Result
 from qiskit import qasm3
 
-from ..utils import QaaSClient
-from ..versions import USER_AGENT
-from .scaleway_job import ScalewayJob
-from .scaleway_models import (
+from ...utils import QaaSClient
+from ...versions import USER_AGENT
+from ..scaleway_job import ScalewayJob
+from ..scaleway_models import (
     JobPayload,
     ClientPayload,
     BackendPayload,

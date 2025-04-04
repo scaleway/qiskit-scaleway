@@ -17,44 +17,18 @@ import warnings
 from typing import Union, List, TypeVar
 
 from qiskit.circuit import QuantumCircuit
-from qiskit.circuit.parameter import Parameter
-from qiskit.circuit.library import RXGate, RXXGate, RZGate
-from qiskit.circuit.measure import Measure
-from qiskit.providers import convert_to_target
+
 from qiskit.providers import Options
 from qiskit.providers.models import BackendConfiguration
 from qiskit.transpiler import Target
+
+from qiskit_aqt_provider.aqt_resource import make_transpiler_target
 
 from .aqt_job import AqtJob
 from ..scaleway_backend import ScalewayBackend
 from ...utils import QaaSClient
 
 TargetT = TypeVar("TargetT", bound=Target)
-
-
-def make_transpiler_target(target_cls: type[TargetT], num_qubits: int) -> TargetT:
-    """Factory for transpilation targets of AQT resources.
-
-    Args:
-        target_cls: base class to use for the returned instance.
-        num_qubits: maximum number of qubits supported by the resource.
-
-    Returns:
-        A Qiskit transpilation target for an AQT resource.
-    """
-    target: TargetT = target_cls(num_qubits=num_qubits)
-
-    theta = Parameter("θ")
-    lam = Parameter("λ")
-
-    # configure the transpiler to use RX/RZ/RXX
-    # the custom scheduling pass rewrites RX to R to comply to the Arnica API format.
-    target.add_instruction(RZGate(lam))
-    target.add_instruction(RXGate(theta))
-    target.add_instruction(RXXGate(theta))
-    target.add_instruction(Measure())
-
-    return target
 
 
 class AqtBackend(ScalewayBackend):
@@ -85,11 +59,10 @@ class AqtBackend(ScalewayBackend):
             {
                 "backend_name": name,
                 "backend_version": 2,
-                "url": str(provider._portal_client.portal_url),
-                "simulator": True,
+                "url": client.url,
                 "local": False,
                 "coupling_map": None,
-                "description": "AQT trapped-ion device simulator",
+                "description": "AQT trapped-ion device",
                 "basis_gates": ["r", "rz", "rxx"],  # the actual basis gates
                 "memory": True,
                 "n_qubits": num_qubits,
@@ -107,9 +80,7 @@ class AqtBackend(ScalewayBackend):
         self._target.num_qubits = num_qubits
         self._target = make_transpiler_target(Target, num_qubits)
 
-        # Set option validators
-        self.options.set_validator("shots", (1, 2000))
-        self.options.set_validator("memory", bool)
+        self._options.set_validator("shots", (1, self._options.max_shots()))
 
     def __repr__(self) -> str:
         return f"<AqtBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
@@ -175,7 +146,6 @@ class AqtBackend(ScalewayBackend):
 
     @classmethod
     def _default_options(self):
-        # https://qiskit.github.io/qiskit-aer/stubs/qiskit_aer.AerSimulator.html
         return Options(
             session_id="auto",
             session_name="aqt-session-from-qiskit",
@@ -183,5 +153,6 @@ class AqtBackend(ScalewayBackend):
             session_max_duration="1h",
             session_max_idle_duration="20m",
             shots=2000,
+            max_shots=2000,
             memory=False,
         )

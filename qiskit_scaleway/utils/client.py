@@ -37,6 +37,10 @@ class QaaSClient:
     def _build_endpoint(self, endpoint: str) -> str:
         return f"{self.__url}{endpoint}"
 
+    @property
+    def url(self):
+        return self.__url
+
     def list_platforms(self, name: str) -> dict:
         filter_by_name = ""
         if name:

@@ -24,8 +24,8 @@ from qiskit_aer.backends.aer_simulator import AerSimulator
 from qiskit_aer.backends.aerbackend import NAME_MAPPING
 
 from .aer_job import AerJob
-from .scaleway_backend import ScalewayBackend
-from ..utils import QaaSClient
+from ..scaleway_backend import ScalewayBackend
+from ...utils import QaaSClient
 
 
 class AerBackend(ScalewayBackend):
