@@ -36,10 +36,10 @@ from qiskit.result import Result
 from qiskit.transpiler.passes import RemoveBarriers
 from qiskit.result.models import ExperimentResult, ExperimentResultData
 
-from ..utils import QaaSClient
-from ..versions import USER_AGENT
-from .scaleway_job import ScalewayJob
-from .scaleway_models import (
+from ...utils import QaaSClient
+from ...versions import USER_AGENT
+from ..scaleway_job import ScalewayJob
+from ..scaleway_models import (
     JobPayload,
     ClientPayload,
     BackendPayload,

@@ -19,7 +19,7 @@ from typing import Optional, List, Dict
 from qiskit.providers import ProviderV1 as Provider
 from qiskit.providers.providerutils import filter_backends
 
-from .backends import ScalewayBackend, AerBackend, QsimBackend
+from .backends import ScalewayBackend, AerBackend, QsimBackend, AqtBackend
 from .utils import QaaSClient
 
 
@@ -88,6 +88,7 @@ class ScalewayProvider(Provider):
 
         for platform_dict in json_resp["platforms"]:
             backend_name = platform_dict.get("backend_name")
+            provider_name = platform_dict.get("provider_name")
 
             if backend_name == "aer":
                 scaleway_backends.append(
@@ -105,6 +106,19 @@ class ScalewayProvider(Provider):
             elif backend_name == "qsim":
                 scaleway_backends.append(
                     QsimBackend(
+                        provider=self,
+                        client=self.__client,
+                        backend_id=platform_dict.get("id"),
+                        name=platform_dict.get("name"),
+                        availability=platform_dict.get("availability"),
+                        version=platform_dict.get("version"),
+                        num_qubits=platform_dict.get("max_qubit_count"),
+                        metadata=platform_dict.get("metadata"),
+                    )
+                )
+            elif provider_name == "aqt":
+                scaleway_backends.append(
+                    AqtBackend(
                         provider=self,
                         client=self.__client,
                         backend_id=platform_dict.get("id"),

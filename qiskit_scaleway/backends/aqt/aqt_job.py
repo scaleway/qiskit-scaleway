@@ -17,19 +17,13 @@ from typing import Union, List
 
 from qiskit.providers import JobError
 from qiskit.result import Result
-from qiskit import qasm3
+from qiskit.circuit import QuantumCircuit
 
-from ..utils import QaaSClient
-from ..versions import USER_AGENT
-from .scaleway_job import ScalewayJob
-from .scaleway_models import (
-    JobPayload,
-    ClientPayload,
-    BackendPayload,
-    RunPayload,
-    SerializationType,
-    CircuitPayload,
-)
+from qiskit_aqt_provider.circuit_to_aqt import circuits_to_aqt_job
+from qiskit_aqt_provider.aqt_job import _partial_qiskit_result_dict
+
+from ...utils import QaaSClient
+from ..scaleway_job import ScalewayJob
 
 
 class AqtJob(ScalewayJob):
@@ -38,7 +32,7 @@ class AqtJob(ScalewayJob):
         name: str,
         backend,
         client: QaaSClient,
-        circuits,
+        circuits: List[QuantumCircuit],
         config,
     ) -> None:
         super().__init__(name, backend, client)
@@ -49,47 +43,12 @@ class AqtJob(ScalewayJob):
         if self._job_id:
             raise RuntimeError(f"Job already submitted (ID: {self._job_id})")
 
-        options = self._config.copy()
-
-        run_opts = RunPayload(
-            options={
-                "shots": options.pop("shots"),
-                "memory": options.pop("memory"),
-                "seed_simulator": options.pop("seed_simulator"),
-            },
-            circuits=list(
-                map(
-                    lambda c: CircuitPayload(
-                        serialization_type=SerializationType.QASM_V3,
-                        circuit_serialization=qasm3.dumps(c),
-                    ),
-                    self._circuits,
-                )
-            ),
-        )
-
-        backend_opts = BackendPayload(
-            name=self.backend().name,
-            version=self.backend().version,
-            options=options,
-        )
-
-        client_opts = ClientPayload(
-            user_agent=USER_AGENT,
-        )
-
-        job_payload = JobPayload.schema().dumps(
-            JobPayload(
-                backend=backend_opts,
-                run=run_opts,
-                client=client_opts,
-            )
-        )
+        aqt_job = circuits_to_aqt_job(self._circuits, self._config.shots)
 
         self._job_id = self._client.create_job(
             name=self._name,
             session_id=session_id,
-            circuits=job_payload,
+            circuits=aqt_job.payload,
         )
 
     def result(
@@ -102,10 +61,22 @@ class AqtJob(ScalewayJob):
 
         def __make_result_from_payload(payload: str) -> Result:
             payload_dict = json.loads(payload)
+            results = []
+
+            for circuit_index, circuit in enumerate(self._circuits):
+                samples = self.status_payload.results[circuit_index]
+                results.append(
+                    _partial_qiskit_result_dict(
+                        samples,
+                        circuit,
+                        shots=self._config.shots,
+                        memory=self._config.memory,
+                    )
+                )
 
             return Result.from_dict(
                 {
-                    "results": payload_dict["results"],
+                    "results": results,
                     "backend_name": payload_dict["backend_name"],
                     "backend_version": payload_dict["backend_version"],
                     "job_id": self._job_id,

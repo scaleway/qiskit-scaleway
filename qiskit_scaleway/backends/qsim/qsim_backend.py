@@ -20,8 +20,8 @@ from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
 
 from .qsim_job import QsimJob
-from .scaleway_backend import ScalewayBackend
-from ..utils import QaaSClient
+from ..scaleway_backend import ScalewayBackend
+from ...utils import QaaSClient
 
 
 class QsimBackend(ScalewayBackend):

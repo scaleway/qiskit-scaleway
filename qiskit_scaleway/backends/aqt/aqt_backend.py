@@ -14,18 +14,47 @@
 import randomname
 import warnings
 
-from typing import Union, List
+from typing import Union, List, TypeVar
 
-from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
+from qiskit.circuit.parameter import Parameter
+from qiskit.circuit.library import RXGate, RXXGate, RZGate
+from qiskit.circuit.measure import Measure
 from qiskit.providers import convert_to_target
-from qiskit.providers.models import QasmBackendConfiguration
-from qiskit_aer.backends.aer_simulator import AerSimulator
-from qiskit_aer.backends.aerbackend import NAME_MAPPING
+from qiskit.providers import Options
+from qiskit.providers.models import BackendConfiguration
+from qiskit.transpiler import Target
 
-from .aer_job import AerJob
-from .scaleway_backend import ScalewayBackend
-from ..utils import QaaSClient
+from .aqt_job import AqtJob
+from ..scaleway_backend import ScalewayBackend
+from ...utils import QaaSClient
+
+TargetT = TypeVar("TargetT", bound=Target)
+
+
+def make_transpiler_target(target_cls: type[TargetT], num_qubits: int) -> TargetT:
+    """Factory for transpilation targets of AQT resources.
+
+    Args:
+        target_cls: base class to use for the returned instance.
+        num_qubits: maximum number of qubits supported by the resource.
+
+    Returns:
+        A Qiskit transpilation target for an AQT resource.
+    """
+    target: TargetT = target_cls(num_qubits=num_qubits)
+
+    theta = Parameter("θ")
+    lam = Parameter("λ")
+
+    # configure the transpiler to use RX/RZ/RXX
+    # the custom scheduling pass rewrites RX to R to comply to the Arnica API format.
+    target.add_instruction(RZGate(lam))
+    target.add_instruction(RXGate(theta))
+    target.add_instruction(RXXGate(theta))
+    target.add_instruction(Measure())
+
+    return target
 
 
 class AqtBackend(ScalewayBackend):
@@ -52,21 +81,41 @@ class AqtBackend(ScalewayBackend):
         self._options = self._default_options()
 
         # Create Target
-        self._configuration = QasmBackendConfiguration.from_dict(
-            AerSimulator._DEFAULT_CONFIGURATION
-        )
-        self._properties = None
-        self._target = convert_to_target(
-            self._configuration, self._properties, None, NAME_MAPPING
+        self._configuration = BackendConfiguration.from_dict(
+            {
+                "backend_name": name,
+                "backend_version": 2,
+                "url": str(provider._portal_client.portal_url),
+                "simulator": True,
+                "local": False,
+                "coupling_map": None,
+                "description": "AQT trapped-ion device simulator",
+                "basis_gates": ["r", "rz", "rxx"],  # the actual basis gates
+                "memory": True,
+                "n_qubits": num_qubits,
+                "conditional": False,
+                "max_shots": self._options.max_shots(),
+                "max_experiments": 1,
+                "open_pulse": False,
+                "gates": [
+                    {"name": "rz", "parameters": ["theta"], "qasm_def": "TODO"},
+                    {"name": "r", "parameters": ["theta", "phi"], "qasm_def": "TODO"},
+                    {"name": "rxx", "parameters": ["theta"], "qasm_def": "TODO"},
+                ],
+            }
         )
         self._target.num_qubits = num_qubits
+        self._target = make_transpiler_target(Target, num_qubits)
 
         # Set option validators
-        self.options.set_validator("shots", (1, 1e6))
+        self.options.set_validator("shots", (1, 2000))
         self.options.set_validator("memory", bool)
 
     def __repr__(self) -> str:
-        return f"<AerBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
+        return f"<AqtBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
+
+    def configuration(self) -> BackendConfiguration:
+        return self._configuration
 
     @property
     def target(self):
@@ -78,11 +127,11 @@ class AqtBackend(ScalewayBackend):
 
     @property
     def max_circuits(self):
-        return 1024
+        return 50
 
     def run(
         self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **run_options
-    ) -> AerJob:
+    ) -> AqtJob:
         if not isinstance(circuits, list):
             circuits = [circuits]
 
@@ -98,7 +147,7 @@ class AqtBackend(ScalewayBackend):
             else:
                 job_config[kwarg] = run_options[kwarg]
 
-        job_name = f"qj-aer-{randomname.get_name()}"
+        job_name = f"qj-aqt-{randomname.get_name()}"
 
         session_id = job_config.get("session_id", None)
 
@@ -108,7 +157,7 @@ class AqtBackend(ScalewayBackend):
         job_config.pop("session_max_duration")
         job_config.pop("session_max_idle_duration")
 
-        job = AerJob(
+        job = AqtJob(
             backend=self,
             client=self._client,
             circuits=circuits,
@@ -133,40 +182,6 @@ class AqtBackend(ScalewayBackend):
             session_deduplication_id="aqt-session-from-qiskit",
             session_max_duration="1h",
             session_max_idle_duration="20m",
-            shots=1000,
+            shots=2000,
             memory=False,
-            seed_simulator=None,
-            method="automatic",
-            precision="double",
-            max_shot_size=None,
-            enable_truncation=True,
-            max_parallel_experiments=1,
-            zero_threshold=1e-10,
-            validation_threshold=1e-8,
-            accept_distributed_results=None,
-            runtime_parameter_bind_enable=False,
-            statevector_parallel_threshold=14,
-            statevector_sample_measure_opt=10,
-            stabilizer_max_snapshot_probabilities=32,
-            extended_stabilizer_sampling_method="resampled_metropolis",
-            extended_stabilizer_metropolis_mixing_time=5000,
-            extended_stabilizer_approximation_error=0.05,
-            extended_stabilizer_norm_estimation_samples=100,
-            extended_stabilizer_norm_estimation_repetitions=3,
-            extended_stabilizer_parallel_threshold=100,
-            extended_stabilizer_probabilities_snapshot_samples=3000,
-            matrix_product_state_max_bond_dimension=None,
-            matrix_product_state_truncation_threshold=1e-16,
-            mps_sample_measure_algorithm="mps_apply_measure",
-            mps_log_data=False,
-            mps_swap_direction="mps_swap_left",
-            chop_threshold=1e-8,
-            mps_parallel_threshold=14,
-            mps_omp_threads=1,
-            tensor_network_num_sampling_qubits=10,
-            use_cuTensorNet_autotuning=False,
-            fusion_enable=True,
-            fusion_verbose=False,
-            fusion_max_qubit=None,
-            fusion_threshold=None,
         )
