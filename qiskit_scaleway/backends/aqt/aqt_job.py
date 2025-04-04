@@ -15,7 +15,7 @@ import json
 
 from typing import Union, List
 
-from qiskit.providers import JobError
+from qiskit.providers import JobError, JobStatus
 from qiskit.result import Result
 from qiskit.circuit import QuantumCircuit
 
@@ -61,10 +61,17 @@ class AqtJob(ScalewayJob):
 
         def __make_result_from_payload(payload: str) -> Result:
             payload_dict = json.loads(payload)
+
+            aqt_results = {
+                int(circuit_index): [[sample.root for sample in shot] for shot in shots]
+                for circuit_index, shots in payload_dict["result"].items()
+            }
+
             results = []
 
             for circuit_index, circuit in enumerate(self._circuits):
-                samples = self.status_payload.results[circuit_index]
+                samples = aqt_results[circuit_index]
+
                 results.append(
                     _partial_qiskit_result_dict(
                         samples,
@@ -77,13 +84,13 @@ class AqtJob(ScalewayJob):
             return Result.from_dict(
                 {
                     "results": results,
-                    "backend_name": payload_dict["backend_name"],
-                    "backend_version": payload_dict["backend_version"],
+                    # "backend_name": payload_dict["backend_name"],
+                    # "backend_version": payload_dict["backend_version"],
                     "job_id": self._job_id,
-                    "qobj_id": ", ".join(x.name for x in self._circuits),
-                    "success": payload_dict["success"],
-                    "header": payload_dict.get("header"),
-                    "metadata": payload_dict.get("metadata"),
+                    "qobj_id": id(self._circuits),
+                    "success": self.status() == JobStatus.DONE,
+                    # "header": payload_dict.get("header"),
+                    # "metadata": payload_dict.get("metadata"),
                 }
             )
 

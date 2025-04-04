@@ -17,9 +17,7 @@ import httpx
 from abc import ABC
 from typing import Dict
 from qiskit.providers import JobV1 as Job
-from qiskit.providers import JobError
-from qiskit.providers import JobTimeoutError
-from qiskit.providers.jobstatus import JobStatus
+from qiskit.providers import JobError, JobTimeoutError, JobStatus
 
 from ..utils import QaaSClient
 
@@ -77,13 +75,10 @@ class ScalewayJob(Job, ABC):
     def status(self) -> JobStatus:
         job = self._client.get_job(self._job_id)
 
-        if job["status"] == "running":
-            status = JobStatus.RUNNING
-        elif job["status"] == "waiting":
-            status = JobStatus.QUEUED
-        elif job["status"] == "completed":
-            status = JobStatus.DONE
-        else:
-            status = JobStatus.ERROR
+        status_mapping = {
+            "running": JobStatus.RUNNING,
+            "waiting": JobStatus.QUEUED,
+            "completed": JobStatus.DONE,
+        }
 
-        return status
+        return status_mapping.get(job["status"], JobStatus.ERROR)

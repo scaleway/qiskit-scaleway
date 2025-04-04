@@ -14,3 +14,5 @@
 from .aer.aer_backend import AerBackend, AerJob
 from .qsim.qsim_backend import QsimBackend, QsimJob
 from .aqt.aqt_backend import AqtBackend, AqtJob
+from .scaleway_backend import ScalewayBackend
+from .scaleway_job import ScalewayJob

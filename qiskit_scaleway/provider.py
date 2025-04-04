@@ -23,9 +23,6 @@ from .backends import ScalewayBackend, AerBackend, QsimBackend, AqtBackend
 from .utils import QaaSClient
 
 
-_ENDPOINT_URL = "https://api.scaleway.com/qaas/v1alpha1"
-
-
 class ScalewayProvider(Provider):
     """
     :param project_id: optional UUID of the Scaleway Project, if the provided ``project_id`` is None, the value is loaded from the SCALEWAY_PROJECT_ID variables in the dotenv file or the QISKIT_SCALEWAY_PROJECT_ID environment variables
@@ -60,7 +57,7 @@ class ScalewayProvider(Provider):
         if project_id is None:
             raise Exception("project_id is missing")
 
-        api_url = url or env_api_url or _ENDPOINT_URL
+        api_url = url or env_api_url
 
         self.__client = QaaSClient(url=api_url, token=token, project_id=project_id)
 
