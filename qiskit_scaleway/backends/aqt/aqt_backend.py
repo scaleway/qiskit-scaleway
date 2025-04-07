@@ -14,12 +14,12 @@
 import randomname
 import warnings
 
-from typing import Union, List, TypeVar
+from typing import Union, List
 
 from qiskit.circuit import QuantumCircuit
 
 from qiskit.providers import Options
-from qiskit.providers.models import BackendConfiguration
+from qiskit.providers.models.backendconfiguration import BackendConfiguration
 from qiskit.transpiler import Target
 
 from qiskit_aqt_provider.aqt_resource import make_transpiler_target
@@ -27,8 +27,6 @@ from qiskit_aqt_provider.aqt_resource import make_transpiler_target
 from .aqt_job import AqtJob
 from ..scaleway_backend import ScalewayBackend
 from ...utils import QaaSClient
-
-TargetT = TypeVar("TargetT", bound=Target)
 
 
 class AqtBackend(ScalewayBackend):
@@ -54,20 +52,20 @@ class AqtBackend(ScalewayBackend):
 
         self._options = self._default_options()
 
-        # Create Target
         self._configuration = BackendConfiguration.from_dict(
             {
                 "backend_name": name,
-                "backend_version": 2,
+                "backend_version": version,
                 "url": client.url,
                 "local": False,
                 "coupling_map": None,
                 "description": "AQT trapped-ion device",
                 "basis_gates": ["r", "rz", "rxx"],  # the actual basis gates
                 "memory": True,
+                "simulator": True,
                 "n_qubits": num_qubits,
                 "conditional": False,
-                "max_shots": self._options.max_shots(),
+                "max_shots": self._options.max_shots,
                 "max_experiments": 1,
                 "open_pulse": False,
                 "gates": [
@@ -77,16 +75,22 @@ class AqtBackend(ScalewayBackend):
                 ],
             }
         )
-        self._target.num_qubits = num_qubits
+        # self._target.num_qubits = num_qubits
         self._target = make_transpiler_target(Target, num_qubits)
 
-        self._options.set_validator("shots", (1, self._options.max_shots()))
+        self._options.set_validator("shots", (1, self._options.max_shots))
 
     def __repr__(self) -> str:
         return f"<AqtBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
 
     def configuration(self) -> BackendConfiguration:
         return self._configuration
+
+    def get_scheduling_stage_plugin(self) -> str:
+        return "aqt"
+
+    def get_translation_stage_plugin(self) -> str:
+        return "aqt"
 
     @property
     def target(self):

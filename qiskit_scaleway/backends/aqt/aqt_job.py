@@ -43,7 +43,7 @@ class AqtJob(ScalewayJob):
         if self._job_id:
             raise RuntimeError(f"Job already submitted (ID: {self._job_id})")
 
-        aqt_job = circuits_to_aqt_job(self._circuits, self._config.shots)
+        aqt_job = circuits_to_aqt_job(self._circuits, self._config["shots"])
 
         self._job_id = self._client.create_job(
             name=self._name,

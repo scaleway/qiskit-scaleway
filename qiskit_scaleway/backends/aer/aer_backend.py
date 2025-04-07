@@ -19,8 +19,8 @@ from typing import Union, List
 from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
 from qiskit.providers import convert_to_target
-from qiskit.providers.models import QasmBackendConfiguration
-from qiskit_aer.backends.aer_simulator import AerSimulator
+from qiskit.providers.models.backendconfiguration import BackendConfiguration
+from qiskit_aer.backends.aer_simulator import BASIS_GATES, AerSimulator
 from qiskit_aer.backends.aerbackend import NAME_MAPPING
 
 from .aer_job import AerJob
@@ -51,15 +51,29 @@ class AerBackend(ScalewayBackend):
 
         self._options = self._default_options()
 
-        # Create Target
-        self._configuration = QasmBackendConfiguration.from_dict(
-            AerSimulator._DEFAULT_CONFIGURATION
+        self._configuration = BackendConfiguration.from_dict(
+            {
+                "open_pulse": False,
+                "backend_name": name,
+                "backend_version": version,
+                "n_qubits": num_qubits,
+                "url": "https://github.com/Qiskit/qiskit-aer",
+                "simulator": True,
+                "local": True,
+                "conditional": True,
+                "memory": True,
+                "max_shots": int(1e6),
+                "description": "A C++ Qasm simulator with noise",
+                "coupling_map": None,
+                "basis_gates": BASIS_GATES["automatic"],
+                "custom_instructions": AerSimulator._CUSTOM_INSTR["automatic"],
+                "gates": [],
+            }
         )
         self._properties = None
         self._target = convert_to_target(
             self._configuration, self._properties, None, NAME_MAPPING
         )
-        self._target.num_qubits = num_qubits
 
         # Set option validators
         self.options.set_validator("shots", (1, 1e6))
