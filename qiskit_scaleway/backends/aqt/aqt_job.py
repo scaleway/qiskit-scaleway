@@ -48,7 +48,7 @@ class AqtJob(ScalewayJob):
         self._job_id = self._client.create_job(
             name=self._name,
             session_id=session_id,
-            circuits=aqt_job.payload,
+            circuits=aqt_job.payload.model_dump_json(),
         )
 
     def result(
