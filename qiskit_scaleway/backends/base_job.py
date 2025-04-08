@@ -15,14 +15,15 @@ import time
 import httpx
 
 from abc import ABC
-from typing import Dict
-from qiskit.providers import JobV1 as Job
+from typing import List
+
+from qiskit.providers import JobV1
 from qiskit.providers import JobError, JobTimeoutError, JobStatus
 
-from qiskit_scaleway.utils import QaaSClient
+from qiskit_scaleway.api import QaaSClient, QaaSJobResult
 
 
-class ScalewayJob(Job, ABC):
+class BaseJob(JobV1, ABC):
     def __init__(
         self,
         name: str,
@@ -33,11 +34,11 @@ class ScalewayJob(Job, ABC):
         self._name = name
         self._client = client
 
-    def _extract_payload_from_response(self, result_response: Dict) -> str:
-        result = result_response.get("result", None)
+    def _extract_payload_from_response(self, job_result: QaaSJobResult) -> str:
+        result = job_result.result
 
         if result is None or result == "":
-            url = result_response.get("url", None)
+            url = job_result.url
 
             if url is not None:
                 resp = httpx.get(url)
@@ -49,7 +50,9 @@ class ScalewayJob(Job, ABC):
         else:
             return result
 
-    def _wait_for_result(self, timeout=None, fetch_interval: int = 5) -> Dict | None:
+    def _wait_for_result(
+        self, timeout=None, fetch_interval: int = 5
+    ) -> List[QaaSJobResult]:
         start_time = time.time()
 
         while True:
@@ -81,4 +84,4 @@ class ScalewayJob(Job, ABC):
             "completed": JobStatus.DONE,
         }
 
-        return status_mapping.get(job["status"], JobStatus.ERROR)
+        return status_mapping.get(job.status, JobStatus.ERROR)

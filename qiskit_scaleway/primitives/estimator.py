@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from qiskit.primitives import BackendEstimatorV2
-from ..backends import AerBackend
+
+from qiskit_scaleway.backends.aer_backend import AerBackend
 
 
 class Estimator(BackendEstimatorV2):

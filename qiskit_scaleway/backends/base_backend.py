@@ -14,29 +14,29 @@
 from typing import Union, Optional
 
 from abc import ABC
-from qiskit.providers import BackendV2 as Backend
+from qiskit.providers import BackendV2
 from pytimeparse.timeparse import timeparse
 
-from qiskit_scaleway.utils import QaaSClient
+from qiskit_scaleway.api import QaaSClient, QaaSPlatform
 
 
-class ScalewayBackend(Backend, ABC):
+class BaseBackend(BackendV2, ABC):
     def __init__(
         self,
         provider,
         client: QaaSClient,
-        backend_id: str,
-        name: str,
-        availability: str,
-        version: str,
+        platform: QaaSPlatform,
         **fields,
     ):
         super().__init__(
-            provider=provider, backend_version=version, name=name, **fields
+            provider=provider,
+            backend_version=platform.version,
+            name=platform.name,
+            **fields,
         )
 
-        self._backend_id = backend_id
-        self._availability = availability
+        self._backend_id = platform.id
+        self._availability = platform.availability
         self._client = client
 
     @property
@@ -78,7 +78,7 @@ class ScalewayBackend(Backend, ABC):
             deduplication_id=deduplication_id,
             max_duration=max_duration,
             max_idle_duration=max_idle_duration,
-        )
+        ).id
 
     def stop_session(self, session_id: str):
         self._client.terminate_session(

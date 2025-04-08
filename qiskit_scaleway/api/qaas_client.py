@@ -13,10 +13,14 @@
 # limitations under the License.
 import httpx
 
-from typing import List, Dict, Union, Optional
+from typing import List, Optional
 
-from qiskit_scaleway.utils.models import Platform, Session, Job
-
+from qiskit_scaleway.api.qaas_models import (
+    QaaSPlatform,
+    QaaSSession,
+    QaaSJob,
+    QaaSJobResult,
+)
 
 _DEFAULT_URL = "https://api.scaleway.com/qaas/v1alpha1"
 
@@ -45,7 +49,7 @@ class QaaSClient:
     def url(self):
         return self.__url
 
-    def list_platforms(self, name: Optional[str]) -> List[Platform]:
+    def list_platforms(self, name: Optional[str]) -> List[QaaSPlatform]:
         filter_by_name = ""
         if name:
             filter_by_name = f"?name={name}"
@@ -55,7 +59,23 @@ class QaaSClient:
         resp = self.__client.get(endpoint)
         resp.raise_for_status()
 
-        return resp.json()
+        platforms = []
+        platforms_json = resp.json().get("platforms", None)
+
+        if not platforms_json:
+            return platforms
+
+        for platform_json in platforms_json:
+            platform = QaaSPlatform.from_dict(platform_json)
+
+            if not platform:
+                raise Exception(
+                    "Failure during platform json deserialization:", platform_json
+                )
+
+            platforms.append(platform)
+
+        return platforms
 
     def create_session(
         self,
@@ -64,7 +84,7 @@ class QaaSClient:
         deduplication_id: str,
         max_duration: str,
         max_idle_duration: str,
-    ) -> str:
+    ) -> QaaSSession:
         payload = {
             "name": name,
             "project_id": self.__project_id,
@@ -79,14 +99,19 @@ class QaaSClient:
         )
 
         response.raise_for_status()
-        response_dict = response.json()
-        session_id = response_dict["id"]
+        session_json = response.json()
+        session = QaaSSession.from_dict(session_json)
 
-        return session_id
+        if not session:
+            raise Exception(
+                "Failure during session json deserialization:", session_json
+            )
+
+        return session
 
     def update_session(
         self, session_id: str, name: str, max_duration: str, max_idle_duration: str
-    ) -> str:
+    ) -> QaaSSession:
         payload = {
             "name": name,
             "max_duration": max_duration,
@@ -98,26 +123,36 @@ class QaaSClient:
         )
 
         response.raise_for_status()
-        response_dict = response.json()
-        session_id = response_dict["id"]
+        session_json = response.json()
+        session = QaaSSession.from_dict(session_json)
 
-        return session_id
+        if not session:
+            raise Exception(
+                "Failure during session json deserialization:", session_json
+            )
 
-    def terminate_session(self, session_id: str) -> str:
+        return session
+
+    def terminate_session(self, session_id: str) -> QaaSSession:
         response = self.__client.post(
             self._build_endpoint(f"{_ENDPOINT_SESSION}/{session_id}/terminate")
         )
 
         response.raise_for_status()
-        response_dict = response.json()
-        session_id = response_dict["id"]
+        session_json = response.json()
+        session = QaaSSession.from_dict(session_json)
 
-        return session_id
+        if not session:
+            raise Exception(
+                "Failure during session json deserialization:", session_json
+            )
+
+        return session
 
     def delete_session(self, session_id: str):
         self.__client.delete(self._build_endpoint(f"{_ENDPOINT_SESSION}/{session_id}"))
 
-    def create_job(self, name: str, session_id: str, circuits: dict) -> str:
+    def create_job(self, name: str, session_id: str, circuits: dict) -> QaaSJob:
         payload = {
             "name": name,
             "session_id": session_id,
@@ -125,26 +160,50 @@ class QaaSClient:
         }
 
         response = self.__client.post(self._build_endpoint(_ENDPOINT_JOB), json=payload)
-
         response.raise_for_status()
-        response_dict = response.json()
 
-        return response_dict["id"]
+        job_json = response.json()
+        job = QaaSJob.from_dict(job_json)
 
-    def get_job(self, job_id: str) -> dict:
+        if not job:
+            raise Exception("Failure during job json deserialization:", job_json)
+
+        return job
+
+    def get_job(self, job_id: str) -> QaaSJob:
         endpoint = f"{self._build_endpoint(_ENDPOINT_JOB)}/{job_id}"
 
-        resp = self.__client.get(endpoint)
-        resp.raise_for_status()
+        response = self.__client.get(endpoint)
+        response.raise_for_status()
+        job_json = response.json()
 
-        return resp.json()
+        job = QaaSJob.from_dict(job_json)
 
-    def get_job_results(self, job_id: str) -> list:
+        if not job:
+            raise Exception("Failure during job json deserialization:", job_json)
+
+        return job
+
+    def get_job_results(self, job_id: str) -> List[QaaSJobResult]:
         endpoint = f"{self._build_endpoint(_ENDPOINT_JOB)}/{job_id}/results"
 
         resp = self.__client.get(endpoint)
         resp.raise_for_status()
 
-        results_dict = resp.json()
+        job_results = []
+        job_results_json = resp.json().get("job_results", None)
 
-        return results_dict["job_results"]
+        if not job_results_json:
+            return job_results
+
+        for job_result_json in job_results_json:
+            job_result = QaaSJobResult.from_dict(job_result_json)
+
+            if not job_result:
+                raise Exception(
+                    "Failure during job_result json deserialization:", job_result_json
+                )
+
+            job_results.append(job_result)
+
+        return job_results

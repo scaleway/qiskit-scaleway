@@ -22,10 +22,18 @@ long_description = io.open("README.md", encoding="utf-8").read()
 requirements = open("requirements.txt").readlines()
 requirements = [r.strip() for r in requirements]
 
+AQT_BRIDGE_PKGS = ["qiskit-aqt-provider==1.11.0"]
+AER_BRIDGE_PKGS = ["qiskit-aer==0.17"]
+QSIM_BRIDGE_PKGS = []
+
 setup(
     name="qiskit_scaleway",
     version="0.1.18",
-    url="http://github.com/scaleway/qiskit-scaleway",
+    project_urls={
+        "Documentation": "https://labs.scaleway.com/en/qaas",
+        "Source": "https://github.com/scaleway/qiskit-scaleway",
+        "Tracker": "https://github.com/scaleway/qiskit-scaleway/issues",
+    },
     author="The Scaleway Developers",
     author_email="vmacheret@scaleway.com",
     packages=find_packages(),
@@ -35,4 +43,10 @@ setup(
     description=description,
     long_description=long_description,
     long_description_content_type="text/markdown",
+    extras_require={
+        "aqt": AQT_BRIDGE_PKGS,
+        "aer": AQT_BRIDGE_PKGS,
+        "qsim": QSIM_BRIDGE_PKGS,
+        "all": AQT_BRIDGE_PKGS + AER_BRIDGE_PKGS + QSIM_BRIDGE_PKGS,
+    },
 )

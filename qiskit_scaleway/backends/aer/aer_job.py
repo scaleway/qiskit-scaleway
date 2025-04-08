@@ -19,10 +19,10 @@ from qiskit.providers import JobError
 from qiskit.result import Result
 from qiskit import qasm3
 
-from qiskit_scaleway.utils import QaaSClient
+from qiskit_scaleway.api import QaaSClient
 from qiskit_scaleway.versions import USER_AGENT
-from qiskit_scaleway.backends.scaleway_job import ScalewayJob
-from qiskit_scaleway.backends.scaleway_models import (
+from qiskit_scaleway.backends import BaseJob
+from qiskit_scaleway.backends.aer.aer_models import (
     JobPayload,
     ClientPayload,
     BackendPayload,
@@ -32,7 +32,7 @@ from qiskit_scaleway.backends.scaleway_models import (
 )
 
 
-class AerJob(ScalewayJob):
+class AerJob(BaseJob):
     def __init__(
         self,
         name: str,
@@ -90,7 +90,7 @@ class AerJob(ScalewayJob):
             name=self._name,
             session_id=session_id,
             circuits=job_payload,
-        )
+        ).id
 
     def result(
         self, timeout=None, fetch_interval: int = 3

@@ -71,4 +71,4 @@ def test_aqt_multiple_circuits():
         for result in results:
             assert result.success
     finally:
-        backend.stop_session(session_id)
+        backend.delete_session(session_id)

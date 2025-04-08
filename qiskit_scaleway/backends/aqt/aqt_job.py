@@ -22,11 +22,11 @@ from qiskit.circuit import QuantumCircuit
 from qiskit_aqt_provider.circuit_to_aqt import circuits_to_aqt_job
 from qiskit_aqt_provider.aqt_job import _partial_qiskit_result_dict
 
-from qiskit_scaleway.utils import QaaSClient
-from qiskit_scaleway.backends.scaleway_job import ScalewayJob
+from qiskit_scaleway.api import QaaSClient
+from qiskit_scaleway.backends import BaseJob
 
 
-class AqtJob(ScalewayJob):
+class AqtJob(BaseJob):
     def __init__(
         self,
         name: str,
@@ -39,7 +39,7 @@ class AqtJob(ScalewayJob):
         self._circuits = circuits
         self._config = config
 
-    def submit(self, session_id: str) -> None:
+    def submit(self, session_id: str):
         if self._job_id:
             raise RuntimeError(f"Job already submitted (ID: {self._job_id})")
 
@@ -49,7 +49,7 @@ class AqtJob(ScalewayJob):
             name=self._name,
             session_id=session_id,
             circuits=aqt_job.payload.model_dump_json(),
-        )
+        ).id
 
     def result(
         self, timeout=None, fetch_interval: int = 3

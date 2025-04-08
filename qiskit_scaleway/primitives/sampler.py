@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from qiskit.primitives import BackendSamplerV2
-from ..backends import AerBackend
+
+from qiskit_scaleway.backends.aer_backend import AerBackend
 
 
 class Sampler(BackendSamplerV2):

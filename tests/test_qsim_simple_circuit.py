@@ -47,4 +47,4 @@ def test_qsim_simple_circuit():
         assert qiskit_result.results[0].shots == shots_count
 
     finally:
-        backend.stop_session(session_id)
+        backend.delete_session(session_id)

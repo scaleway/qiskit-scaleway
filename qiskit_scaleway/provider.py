@@ -15,15 +15,11 @@ import os
 
 from dotenv import dotenv_values
 from typing import Optional, List, Dict
+
 from qiskit.providers.providerutils import filter_backends
 
-from qiskit_scaleway.backends import (
-    ScalewayBackend,
-    AerBackend,
-    QsimBackend,
-    AqtBackend,
-)
-from qiskit_scaleway.utils import QaaSClient
+from qiskit_scaleway.api import QaaSClient, QaaSPlatform
+from qiskit_scaleway.backends import BaseBackend
 
 
 class ScalewayProvider:
@@ -52,6 +48,7 @@ class ScalewayProvider:
         )
 
         token = secret_key or env_token
+
         if token is None:
             raise Exception("secret_key is missing")
 
@@ -75,7 +72,7 @@ class ScalewayProvider:
             Backend: a backend matching the filtering.
 
         Raises:
-            QiskitBackendNotFoundError: if no backend could be found or
+            Exception: if no backend could be found or
                 more than one backend matches the filtering criteria.
         """
         backends = self.backends(name, **kwargs)
@@ -86,7 +83,7 @@ class ScalewayProvider:
 
         return backends[0]
 
-    def backends(self, name: Optional[str] = None, **kwargs) -> List[ScalewayBackend]:
+    def backends(self, name: Optional[str] = None, **kwargs) -> List[BaseBackend]:
         """Return a list of backends matching the specified filtering.
 
         Args:
@@ -106,61 +103,21 @@ class ScalewayProvider:
         if kwargs.get("min_num_qubits") is not None:
             filters["min_num_qubits"] = kwargs.pop("min_num_qubits", None)
 
-        json_resp = self.__client.list_platforms(name)
+        platforms = self.__client.list_platforms(name=name)
 
-        for platform_dict in json_resp["platforms"]:
-            backend_name = platform_dict.get("backend_name")
-            provider_name = platform_dict.get("provider_name")
-
-            if backend_name == "aer" and provider_name == "qiskit":
-                scaleway_backends.append(
-                    AerBackend(
-                        provider=self,
-                        client=self.__client,
-                        backend_id=platform_dict.get("id"),
-                        name=platform_dict.get("name"),
-                        availability=platform_dict.get("availability"),
-                        version=platform_dict.get("version"),
-                        num_qubits=platform_dict.get("max_qubit_count"),
-                        metadata=platform_dict.get("metadata"),
-                    )
-                )
-            elif backend_name == "qsim":
-                scaleway_backends.append(
-                    QsimBackend(
-                        provider=self,
-                        client=self.__client,
-                        backend_id=platform_dict.get("id"),
-                        name=platform_dict.get("name"),
-                        availability=platform_dict.get("availability"),
-                        version=platform_dict.get("version"),
-                        num_qubits=platform_dict.get("max_qubit_count"),
-                        metadata=platform_dict.get("metadata"),
-                    )
-                )
-            elif provider_name == "aqt":
-                scaleway_backends.append(
-                    AqtBackend(
-                        provider=self,
-                        client=self.__client,
-                        backend_id=platform_dict.get("id"),
-                        name=platform_dict.get("name"),
-                        availability=platform_dict.get("availability"),
-                        version=platform_dict.get("version"),
-                        num_qubits=platform_dict.get("max_qubit_count"),
-                        metadata=platform_dict.get("metadata"),
-                        simulator=platform_dict.get("type") == "simulator",
-                    )
-                )
-
+        for platform in platforms:
+            if platform.backend_name == "aer" and platform.provider_name == "qiskit":
+                scaleway_backends.append(self._create_aer_backend(platform))
+            elif platform.backend_name == "qsim":
+                scaleway_backends.append(self._create_qsim_backend(platform))
+            elif platform.provider_name == "aqt":
+                scaleway_backends.append(self._create_aqt_backend(platform))
         if filters is not None:
             scaleway_backends = self.filters(scaleway_backends, filters)
 
         return filter_backends(scaleway_backends, **kwargs)
 
-    def filters(
-        self, backends: List[ScalewayBackend], filters: Dict
-    ) -> List[ScalewayBackend]:
+    def filters(self, backends: List[BaseBackend], filters: Dict) -> List[BaseBackend]:
         operational = filters.get("operational")
         min_num_qubits = filters.get("min_num_qubits")
 
@@ -173,3 +130,40 @@ class ScalewayProvider:
             backends = [b for b in backends if b.num_qubits >= min_num_qubits]
 
         return backends
+
+    def _create_aqt_backend(self, platform: QaaSPlatform) -> BaseBackend:
+        try:
+            from qiskit_scaleway.backends.aqt import AqtBackend
+        except:
+            raise Exception(
+                "Could not import aqt backend. You must install `qiskit_scaleway[aqt]` package"
+            )
+
+        return AqtBackend(
+            provider=self,
+            client=self.__client,
+            platform=platform,
+        )
+
+    def _create_qsim_backend(self, platform: QaaSPlatform) -> BaseBackend:
+        from qiskit_scaleway.backends.qsim import QsimBackend
+
+        return QsimBackend(
+            provider=self,
+            client=self.__client,
+            platform=platform,
+        )
+
+    def _create_aer_backend(self, platform: QaaSPlatform) -> BaseBackend:
+        try:
+            from qiskit_scaleway.backends.aer import AerBackend
+        except:
+            raise Exception(
+                "Could not import aqt backend. You must install `qiskit_scaleway[aqt]` package"
+            )
+
+        return AerBackend(
+            provider=self,
+            client=self.__client,
+            platform=platform,
+        )

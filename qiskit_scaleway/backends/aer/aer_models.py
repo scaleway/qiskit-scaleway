@@ -12,36 +12,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from enum import Enum
-from typing import List, Dict
+from typing import List
 
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 
 
+class SerializationType(Enum):
+    UNKOWN = 0
+    QASM_V1 = 1
+    QASM_V2 = 2
+    QASM_V3 = 3
+    JSON = 4
+
+
 @dataclass_json
 @dataclass
-class Platform:
-    id: str
+class CircuitPayload:
+    serialization_type: SerializationType
+    circuit_serialization: str
+
+
+@dataclass_json
+@dataclass
+class RunPayload:
+    circuits: List[CircuitPayload]
+    options: dict
+
+
+@dataclass_json
+@dataclass
+class BackendPayload:
     name: str
-    metadata: Dict
     version: str
-    max_qubit_count: int
-    availability: str
-    type: str
-    technology: str
+    options: dict
 
 
 @dataclass_json
 @dataclass
-class Session:
-    id: str
-    name: str
-    status: str
+class ClientPayload:
+    user_agent: str
 
 
 @dataclass_json
 @dataclass
-class Job:
-    id: str
-    name: str
-    status: str
+class JobPayload:
+    client: ClientPayload
+    backend: BackendPayload
+    run: RunPayload

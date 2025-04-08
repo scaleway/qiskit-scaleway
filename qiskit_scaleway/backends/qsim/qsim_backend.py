@@ -20,37 +20,27 @@ from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
 
 from qiskit_scaleway.backends.qsim.qsim_job import QsimJob
-from qiskit_scaleway.backends.scaleway_backend import ScalewayBackend
-from qiskit_scaleway.utils import QaaSClient
+from qiskit_scaleway.backends import BaseBackend
+from qiskit_scaleway.api import QaaSClient, QaaSPlatform
 
 
-class QsimBackend(ScalewayBackend):
+class QsimBackend(BaseBackend):
     def __init__(
         self,
         provider,
         client: QaaSClient,
-        backend_id: str,
-        name: str,
-        availability: str,
-        version: str,
-        num_qubits: int,
-        metadata: str,
+        platform: QaaSPlatform,
     ):
         super().__init__(
             provider=provider,
             client=client,
-            backend_id=backend_id,
-            name=name,
-            availability=availability,
-            version=version,
+            platform=platform,
         )
 
         self._options = self._default_options()
+        self.options.set_validator("shots", (1, 1e8))
 
-        # Set option validators
-        self.options.set_validator("shots", (1, 100000000))
-
-        self._max_qubits = num_qubits
+        self._max_qubits = platform.max_qubit_count
 
     def __repr__(self) -> str:
         return f"<QsimBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"

@@ -11,8 +11,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .aer.aer_backend import AerBackend, AerJob
-from .qsim.qsim_backend import QsimBackend, QsimJob
-from .aqt.aqt_backend import AqtBackend, AqtJob
-from .scaleway_backend import ScalewayBackend
-from .scaleway_job import ScalewayJob
+from .base_backend import BaseBackend
+from .base_job import BaseJob

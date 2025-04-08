@@ -20,33 +20,21 @@ from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
 from qiskit.providers import convert_to_target
 from qiskit.providers.models.backendconfiguration import BackendConfiguration
+
 from qiskit_aer.backends.aer_simulator import BASIS_GATES, AerSimulator
 from qiskit_aer.backends.aerbackend import NAME_MAPPING
 
 from qiskit_scaleway.backends.aer.aer_job import AerJob
-from qiskit_scaleway.backends.scaleway_backend import ScalewayBackend
-from qiskit_scaleway.utils import QaaSClient
+from qiskit_scaleway.backends import BaseBackend
+from qiskit_scaleway.api import QaaSClient, QaaSPlatform
 
 
-class AerBackend(ScalewayBackend):
-    def __init__(
-        self,
-        provider,
-        client: QaaSClient,
-        backend_id: str,
-        name: str,
-        availability: str,
-        version: str,
-        num_qubits: int,
-        metadata: str,
-    ):
+class AerBackend(BaseBackend):
+    def __init__(self, provider, client: QaaSClient, platform: QaaSPlatform):
         super().__init__(
             provider=provider,
             client=client,
-            backend_id=backend_id,
-            name=name,
-            availability=availability,
-            version=version,
+            platform=platform,
         )
 
         self._options = self._default_options()
@@ -54,9 +42,9 @@ class AerBackend(ScalewayBackend):
         self._configuration = BackendConfiguration.from_dict(
             {
                 "open_pulse": False,
-                "backend_name": name,
-                "backend_version": version,
-                "n_qubits": num_qubits,
+                "backend_name": platform.name,
+                "backend_version": platform.version,
+                "n_qubits": platform.max_qubit_count,
                 "url": "https://github.com/Qiskit/qiskit-aer",
                 "simulator": True,
                 "local": True,

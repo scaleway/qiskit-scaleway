@@ -22,35 +22,21 @@ from qiskit.transpiler import Target
 
 from qiskit_aqt_provider.aqt_resource import make_transpiler_target
 
+from qiskit_scaleway.backends import BaseBackend
 from qiskit_scaleway.backends.aqt.aqt_job import AqtJob
-from qiskit_scaleway.backends.scaleway_backend import ScalewayBackend
-from qiskit_scaleway.utils import QaaSClient
+from qiskit_scaleway.api import QaaSClient, QaaSPlatform
 
 
-class AqtBackend(ScalewayBackend):
-    def __init__(
-        self,
-        provider,
-        client: QaaSClient,
-        backend_id: str,
-        name: str,
-        availability: str,
-        version: str,
-        num_qubits: int,
-        metadata: str,
-        simulator: bool,
-    ):
+class AqtBackend(BaseBackend):
+    def __init__(self, provider, client: QaaSClient, platform: QaaSPlatform):
         super().__init__(
             provider=provider,
             client=client,
-            backend_id=backend_id,
-            name=name,
-            availability=availability,
-            version=version,
+            platform=platform,
         )
 
         self._options = self._default_options()
-        self._target = make_transpiler_target(Target, num_qubits)
+        self._target = make_transpiler_target(Target, platform.max_qubit_count)
 
         self._options.set_validator("shots", (1, self._options.max_shots))
 
