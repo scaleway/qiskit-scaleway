@@ -17,16 +17,14 @@ import warnings
 from typing import Union, List
 
 from qiskit.circuit import QuantumCircuit
-
 from qiskit.providers import Options
-from qiskit.providers.models.backendconfiguration import BackendConfiguration
 from qiskit.transpiler import Target
 
 from qiskit_aqt_provider.aqt_resource import make_transpiler_target
 
-from .aqt_job import AqtJob
-from ..scaleway_backend import ScalewayBackend
-from ...utils import QaaSClient
+from qiskit_scaleway.backends.aqt.aqt_job import AqtJob
+from qiskit_scaleway.backends.scaleway_backend import ScalewayBackend
+from qiskit_scaleway.utils import QaaSClient
 
 
 class AqtBackend(ScalewayBackend):
@@ -40,6 +38,7 @@ class AqtBackend(ScalewayBackend):
         version: str,
         num_qubits: int,
         metadata: str,
+        simulator: bool,
     ):
         super().__init__(
             provider=provider,
@@ -51,40 +50,12 @@ class AqtBackend(ScalewayBackend):
         )
 
         self._options = self._default_options()
-
-        self._configuration = BackendConfiguration.from_dict(
-            {
-                "backend_name": name,
-                "backend_version": version,
-                "url": client.url,
-                "local": False,
-                "coupling_map": None,
-                "description": "AQT trapped-ion device",
-                "basis_gates": ["r", "rz", "rxx"],  # the actual basis gates
-                "memory": True,
-                "simulator": True,
-                "n_qubits": num_qubits,
-                "conditional": False,
-                "max_shots": self._options.max_shots,
-                "max_experiments": 1,
-                "open_pulse": False,
-                "gates": [
-                    {"name": "rz", "parameters": ["theta"], "qasm_def": "TODO"},
-                    {"name": "r", "parameters": ["theta", "phi"], "qasm_def": "TODO"},
-                    {"name": "rxx", "parameters": ["theta"], "qasm_def": "TODO"},
-                ],
-            }
-        )
-        # self._target.num_qubits = num_qubits
         self._target = make_transpiler_target(Target, num_qubits)
 
         self._options.set_validator("shots", (1, self._options.max_shots))
 
     def __repr__(self) -> str:
         return f"<AqtBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
-
-    def configuration(self) -> BackendConfiguration:
-        return self._configuration
 
     def get_scheduling_stage_plugin(self) -> str:
         return "aqt"
@@ -156,7 +127,20 @@ class AqtBackend(ScalewayBackend):
             session_deduplication_id="aqt-session-from-qiskit",
             session_max_duration="1h",
             session_max_idle_duration="20m",
-            shots=2000,
+            shots=100,
             max_shots=2000,
-            memory=False,
+            memory=True,
+            open_pulse=False,
+            description="AQT trapped-ion device",
+            conditional=False,
+            max_experiments=1,
+            simulator=False,
+            local=False,
+            url="api.scaleway.com",
+            basis_gates=["r", "rz", "rxx"],
+            gates=[
+                {"name": "rz", "parameters": ["theta"], "qasm_def": "TODO"},
+                {"name": "r", "parameters": ["theta", "phi"], "qasm_def": "TODO"},
+                {"name": "rxx", "parameters": ["theta"], "qasm_def": "TODO"},
+            ],
         )

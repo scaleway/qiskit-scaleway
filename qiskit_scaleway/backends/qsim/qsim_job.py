@@ -36,10 +36,10 @@ from qiskit.result import Result
 from qiskit.transpiler.passes import RemoveBarriers
 from qiskit.result.models import ExperimentResult, ExperimentResultData
 
-from ...utils import QaaSClient
-from ...versions import USER_AGENT
-from ..scaleway_job import ScalewayJob
-from ..scaleway_models import (
+from qiskit_scaleway.utils import QaaSClient
+from qiskit_scaleway.versions import USER_AGENT
+from qiskit_scaleway.backends.scaleway_job import ScalewayJob
+from qiskit_scaleway.backends.scaleway_models import (
     JobPayload,
     ClientPayload,
     BackendPayload,
@@ -206,9 +206,6 @@ class QsimJob(ScalewayJob):
                 qobj_id=", ".join(x.name for x in self._circuits),
                 success=True,
                 results=[__make_expresult_from_cirq_result(cirq_result)],
-                status=None,  # TODO
-                header=None,  # TODO
-                date=None,  # TODO
                 cirq_result=payload,
             )
 

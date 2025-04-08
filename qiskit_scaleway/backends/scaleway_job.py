@@ -19,7 +19,7 @@ from typing import Dict
 from qiskit.providers import JobV1 as Job
 from qiskit.providers import JobError, JobTimeoutError, JobStatus
 
-from ..utils import QaaSClient
+from qiskit_scaleway.utils import QaaSClient
 
 
 class ScalewayJob(Job, ABC):

@@ -15,15 +15,18 @@ import os
 
 from dotenv import dotenv_values
 from typing import Optional, List, Dict
-
-from qiskit.providers import ProviderV1 as Provider
 from qiskit.providers.providerutils import filter_backends
 
-from .backends import ScalewayBackend, AerBackend, QsimBackend, AqtBackend
-from .utils import QaaSClient
+from qiskit_scaleway.backends import (
+    ScalewayBackend,
+    AerBackend,
+    QsimBackend,
+    AqtBackend,
+)
+from qiskit_scaleway.utils import QaaSClient
 
 
-class ScalewayProvider(Provider):
+class ScalewayProvider:
     """
     :param project_id: optional UUID of the Scaleway Project, if the provided ``project_id`` is None, the value is loaded from the SCALEWAY_PROJECT_ID variables in the dotenv file or the QISKIT_SCALEWAY_PROJECT_ID environment variables
 
@@ -60,6 +63,28 @@ class ScalewayProvider(Provider):
         api_url = url or env_api_url
 
         self.__client = QaaSClient(url=api_url, token=token, project_id=project_id)
+
+    def get_backend(self, name=None, **kwargs):
+        """Return a single backend matching the specified filtering.
+
+        Args:
+            name (str): name of the backend.
+            **kwargs: dict used for filtering.
+
+        Returns:
+            Backend: a backend matching the filtering.
+
+        Raises:
+            QiskitBackendNotFoundError: if no backend could be found or
+                more than one backend matches the filtering criteria.
+        """
+        backends = self.backends(name, **kwargs)
+        if len(backends) > 1:
+            raise Exception("More than one backend matches the criteria")
+        if not backends:
+            raise Exception("No backend matches the criteria")
+
+        return backends[0]
 
     def backends(self, name: Optional[str] = None, **kwargs) -> List[ScalewayBackend]:
         """Return a list of backends matching the specified filtering.
@@ -124,6 +149,7 @@ class ScalewayProvider(Provider):
                         version=platform_dict.get("version"),
                         num_qubits=platform_dict.get("max_qubit_count"),
                         metadata=platform_dict.get("metadata"),
+                        simulator=platform_dict.get("type") == "simulator",
                     )
                 )
 

@@ -19,9 +19,9 @@ from typing import Union, List
 from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
 
-from .qsim_job import QsimJob
-from ..scaleway_backend import ScalewayBackend
-from ...utils import QaaSClient
+from qiskit_scaleway.backends.qsim.qsim_job import QsimJob
+from qiskit_scaleway.backends.scaleway_backend import ScalewayBackend
+from qiskit_scaleway.utils import QaaSClient
 
 
 class QsimBackend(ScalewayBackend):

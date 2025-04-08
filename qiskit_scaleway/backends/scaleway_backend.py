@@ -17,7 +17,7 @@ from abc import ABC
 from qiskit.providers import BackendV2 as Backend
 from pytimeparse.timeparse import timeparse
 
-from ..utils import QaaSClient
+from qiskit_scaleway.utils import QaaSClient
 
 
 class ScalewayBackend(Backend, ABC):
@@ -29,8 +29,11 @@ class ScalewayBackend(Backend, ABC):
         name: str,
         availability: str,
         version: str,
+        **fields,
     ):
-        super().__init__(provider=provider, backend_version=version, name=name)
+        super().__init__(
+            provider=provider, backend_version=version, name=name, **fields
+        )
 
         self._backend_id = backend_id
         self._availability = availability

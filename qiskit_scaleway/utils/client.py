@@ -13,6 +13,10 @@
 # limitations under the License.
 import httpx
 
+from typing import List, Dict, Union, Optional
+
+from qiskit_scaleway.utils.models import Platform, Session, Job
+
 
 _DEFAULT_URL = "https://api.scaleway.com/qaas/v1alpha1"
 
@@ -22,7 +26,7 @@ _ENDPOINT_JOB = "/jobs"
 
 
 class QaaSClient:
-    def __init__(self, project_id: str, token: str, url: str) -> None:
+    def __init__(self, project_id: str, token: str, url: str):
         self.__token = token
         self.__url = url if url else _DEFAULT_URL
         self.__project_id = project_id
@@ -41,7 +45,7 @@ class QaaSClient:
     def url(self):
         return self.__url
 
-    def list_platforms(self, name: str) -> dict:
+    def list_platforms(self, name: Optional[str]) -> List[Platform]:
         filter_by_name = ""
         if name:
             filter_by_name = f"?name={name}"

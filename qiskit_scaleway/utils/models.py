@@ -1,4 +1,4 @@
-# Copyright 2024 Scaleway
+# Copyright 2025 Scaleway
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,45 +18,30 @@ from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 
 
-class SerializationType(Enum):
-    UNKOWN = 0
-    QASM_V1 = 1
-    QASM_V2 = 2
-    QASM_V3 = 3
-    JSON = 4
-
-
 @dataclass_json
 @dataclass
-class CircuitPayload:
-    serialization_type: SerializationType
-    circuit_serialization: str
-
-
-@dataclass_json
-@dataclass
-class RunPayload:
-    circuits: List[CircuitPayload]
-    options: dict
-
-
-@dataclass_json
-@dataclass
-class BackendPayload:
+class Platform:
+    id: str
     name: str
+    metadata: Dict
     version: str
-    options: dict
+    max_qubit_count: int
+    availability: str
+    type: str
+    technology: str
 
 
 @dataclass_json
 @dataclass
-class ClientPayload:
-    user_agent: str
+class Session:
+    id: str
+    name: str
+    status: str
 
 
 @dataclass_json
 @dataclass
-class JobPayload:
-    client: ClientPayload
-    backend: BackendPayload
-    run: RunPayload
+class Job:
+    id: str
+    name: str
+    status: str

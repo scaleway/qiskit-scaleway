@@ -23,9 +23,9 @@ from qiskit.providers.models.backendconfiguration import BackendConfiguration
 from qiskit_aer.backends.aer_simulator import BASIS_GATES, AerSimulator
 from qiskit_aer.backends.aerbackend import NAME_MAPPING
 
-from .aer_job import AerJob
-from ..scaleway_backend import ScalewayBackend
-from ...utils import QaaSClient
+from qiskit_scaleway.backends.aer.aer_job import AerJob
+from qiskit_scaleway.backends.scaleway_backend import ScalewayBackend
+from qiskit_scaleway.utils import QaaSClient
 
 
 class AerBackend(ScalewayBackend):

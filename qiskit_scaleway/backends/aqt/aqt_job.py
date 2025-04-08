@@ -22,8 +22,8 @@ from qiskit.circuit import QuantumCircuit
 from qiskit_aqt_provider.circuit_to_aqt import circuits_to_aqt_job
 from qiskit_aqt_provider.aqt_job import _partial_qiskit_result_dict
 
-from ...utils import QaaSClient
-from ..scaleway_job import ScalewayJob
+from qiskit_scaleway.utils import QaaSClient
+from qiskit_scaleway.backends.scaleway_job import ScalewayJob
 
 
 class AqtJob(ScalewayJob):
@@ -61,36 +61,29 @@ class AqtJob(ScalewayJob):
 
         def __make_result_from_payload(payload: str) -> Result:
             payload_dict = json.loads(payload)
-
-            aqt_results = {
-                int(circuit_index): [[sample.root for sample in shot] for shot in shots]
-                for circuit_index, shots in payload_dict["result"].items()
-            }
-
             results = []
 
-            for circuit_index, circuit in enumerate(self._circuits):
-                samples = aqt_results[circuit_index]
+            for circuit_idx_str, samples in payload_dict.items():
+                circuit_idx = int(circuit_idx_str)
+                circuit = self._circuits[circuit_idx]
 
                 results.append(
                     _partial_qiskit_result_dict(
                         samples,
                         circuit,
-                        shots=self._config.shots,
-                        memory=self._config.memory,
+                        shots=self._config["shots"],
+                        memory=self._config["memory"],
                     )
                 )
 
             return Result.from_dict(
                 {
                     "results": results,
-                    # "backend_name": payload_dict["backend_name"],
-                    # "backend_version": payload_dict["backend_version"],
+                    "backend_name": self.backend().name,
+                    "backend_version": self.backend().version,
                     "job_id": self._job_id,
                     "qobj_id": id(self._circuits),
                     "success": self.status() == JobStatus.DONE,
-                    # "header": payload_dict.get("header"),
-                    # "metadata": payload_dict.get("metadata"),
                 }
             )
 
