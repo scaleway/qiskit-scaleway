@@ -39,7 +39,7 @@ class QaaSClient:
             headers={"X-Auth-Token": self.__token},
             base_url=self.__url,
             timeout=10.0,
-            verify=False,
+            verify="https" in url,
         )
 
     def _build_endpoint(self, endpoint: str) -> str:

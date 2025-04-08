@@ -13,17 +13,19 @@
 # limitations under the License.
 from qiskit.primitives import BackendEstimatorV2
 
-from qiskit_scaleway.backends.aer_backend import AerBackend
+from qiskit_scaleway.backends.qsim_backend import QsimBackend
 
 
 class Estimator(BackendEstimatorV2):
     def __init__(
         self,
-        backend: AerBackend,
+        backend,
         options: dict | None = None,
     ):
-        if not isinstance(backend, AerBackend):
-            raise Exception("backend must be instance of qiskit_scaleway.AerBackend")
+        if isinstance(backend, QsimBackend):
+            raise Exception(
+                "backend must be instance of qiskit_scaleway.AerBackend or qiskit_scaleway.AqtBackend"
+            )
 
         super().__init__(
             backend=backend,

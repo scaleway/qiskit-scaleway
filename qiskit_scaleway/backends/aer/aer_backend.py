@@ -19,9 +19,8 @@ from typing import Union, List
 from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
 from qiskit.providers import convert_to_target
-from qiskit.providers.models.backendconfiguration import BackendConfiguration
 
-from qiskit_aer.backends.aer_simulator import BASIS_GATES, AerSimulator
+from qiskit_aer.backends.aer_simulator import BASIS_GATES, AerBackendConfiguration
 from qiskit_aer.backends.aerbackend import NAME_MAPPING
 
 from qiskit_scaleway.backends.aer.aer_job import AerJob
@@ -39,7 +38,7 @@ class AerBackend(BaseBackend):
 
         self._options = self._default_options()
 
-        self._configuration = BackendConfiguration.from_dict(
+        self._configuration = AerBackendConfiguration.from_dict(
             {
                 "open_pulse": False,
                 "backend_name": platform.name,
@@ -54,7 +53,6 @@ class AerBackend(BaseBackend):
                 "description": "A C++ Qasm simulator with noise",
                 "coupling_map": None,
                 "basis_gates": BASIS_GATES["automatic"],
-                "custom_instructions": AerSimulator._CUSTOM_INSTR["automatic"],
                 "gates": [],
             }
         )
@@ -62,10 +60,6 @@ class AerBackend(BaseBackend):
         self._target = convert_to_target(
             self._configuration, self._properties, None, NAME_MAPPING
         )
-
-        # Set option validators
-        self.options.set_validator("shots", (1, 1e6))
-        self.options.set_validator("memory", bool)
 
     def __repr__(self) -> str:
         return f"<AerBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
