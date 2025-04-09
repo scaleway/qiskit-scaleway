@@ -31,7 +31,7 @@ from typing import (
 )
 
 from qiskit import qasm2, QuantumCircuit
-from qiskit.providers import JobError
+from qiskit.providers import JobError, JobStatus
 from qiskit.result import Result
 from qiskit.transpiler.passes import RemoveBarriers
 from qiskit.result.models import ExperimentResult, ExperimentResultData
@@ -204,7 +204,7 @@ class QsimJob(BaseJob):
                 backend_version=self.backend().version,
                 job_id=self._job_id,
                 qobj_id=", ".join(x.name for x in self._circuits),
-                success=True,
+                success=self.status() == JobStatus.DONE,
                 results=[__make_expresult_from_cirq_result(cirq_result)],
                 cirq_result=payload,
             )

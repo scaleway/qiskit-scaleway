@@ -45,7 +45,7 @@ setup(
     long_description_content_type="text/markdown",
     extras_require={
         "aqt": AQT_BRIDGE_PKGS,
-        "aer": AQT_BRIDGE_PKGS,
+        "aer": AER_BRIDGE_PKGS,
         "qsim": QSIM_BRIDGE_PKGS,
         "all": AQT_BRIDGE_PKGS + AER_BRIDGE_PKGS + QSIM_BRIDGE_PKGS,
     },

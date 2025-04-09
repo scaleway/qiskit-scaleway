@@ -46,7 +46,7 @@ class AerBackend(BaseBackend):
                 "n_qubits": platform.max_qubit_count,
                 "url": "https://github.com/Qiskit/qiskit-aer",
                 "simulator": True,
-                "local": True,
+                "local": False,
                 "conditional": True,
                 "memory": True,
                 "max_shots": int(1e6),

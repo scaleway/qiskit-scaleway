@@ -106,8 +106,8 @@ class AerJob(BaseJob):
             return Result.from_dict(
                 {
                     "results": payload_dict["results"],
-                    "backend_name": payload_dict["backend_name"],
-                    "backend_version": payload_dict["backend_version"],
+                    "backend_name": self.backend().name,
+                    "backend_version": self.backend().version,
                     "job_id": self._job_id,
                     "qobj_id": ", ".join(x.name for x in self._circuits),
                     "success": payload_dict["success"],

@@ -106,7 +106,7 @@ class ScalewayProvider:
         platforms = self.__client.list_platforms(name=name)
 
         for platform in platforms:
-            if platform.backend_name == "aer" and platform.provider_name == "qiskit":
+            if platform.backend_name == "aer":
                 scaleway_backends.append(self._create_aer_backend(platform))
             elif platform.backend_name == "qsim":
                 scaleway_backends.append(self._create_qsim_backend(platform))
@@ -159,7 +159,7 @@ class ScalewayProvider:
             from qiskit_scaleway.backends.aer import AerBackend
         except:
             raise Exception(
-                "Could not import aqt backend. You must install `qiskit_scaleway[aqt]` package"
+                "Could not import aqt backend. You must install `qiskit_scaleway[aer]` package"
             )
 
         return AerBackend(
