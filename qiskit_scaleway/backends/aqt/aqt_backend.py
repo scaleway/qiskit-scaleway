@@ -38,7 +38,7 @@ class AqtBackend(BaseBackend):
         self._options = self._default_options()
         self._target = make_transpiler_target(Target, platform.max_qubit_count)
 
-        self._options.set_validator("shots", (1, self._options.max_shots))
+        self._options.set_validator("shots", (1, platform.max_shot_count))
 
     def __repr__(self) -> str:
         return f"<AqtBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"

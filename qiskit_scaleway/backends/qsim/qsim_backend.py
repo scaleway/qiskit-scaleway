@@ -38,7 +38,7 @@ class QsimBackend(BaseBackend):
         )
 
         self._options = self._default_options()
-        self.options.set_validator("shots", (1, 1e8))
+        self.options.set_validator("shots", (1, platform.max_shot_count))
 
         self._max_qubits = platform.max_qubit_count
 

@@ -49,7 +49,7 @@ class AerBackend(BaseBackend):
                 "local": False,
                 "conditional": True,
                 "memory": True,
-                "max_shots": int(1e6),
+                "max_shots": platform.max_shot_count,
                 "description": "A C++ Qasm simulator with noise",
                 "coupling_map": None,
                 "basis_gates": BASIS_GATES["automatic"],

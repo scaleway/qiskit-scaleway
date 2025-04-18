@@ -23,6 +23,8 @@ class QaaSPlatform:
     metadata: str
     version: str
     max_qubit_count: int
+    max_shot_count: int
+    max_circuit_count: int
     availability: str
     type: str
     technology: str

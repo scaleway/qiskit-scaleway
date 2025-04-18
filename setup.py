@@ -28,9 +28,9 @@ QSIM_BRIDGE_PKGS = []
 
 setup(
     name="qiskit_scaleway",
-    version="0.1.18",
+    version="0.2.1",
     project_urls={
-        "Documentation": "https://labs.scaleway.com/en/qaas",
+        "Documentation": "https://www.scaleway.com/en/quantum-as-a-service/",
         "Source": "https://github.com/scaleway/qiskit-scaleway",
         "Tracker": "https://github.com/scaleway/qiskit-scaleway/issues",
     },
