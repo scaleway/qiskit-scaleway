@@ -60,7 +60,7 @@ def test_aqt_multiple_circuits():
     session_id = backend.start_session(
         name="my-aqt-session-autotest",
         deduplication_id=f"my-aqt-session-autotest-{random.randint(1, 1000)}",
-        max_duration="10m",
+        max_duration="15m",
     )
 
     assert session_id is not None

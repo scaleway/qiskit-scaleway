@@ -37,7 +37,7 @@ def test_sampler():
     session_id = backend.start_session(
         name="my-sampler-session-autotest",
         deduplication_id=f"my-sampler-session-autotest-{random.randint(1, 1000)}",
-        max_duration="5m",
+        max_duration="15m",
     )
 
     assert session_id is not None

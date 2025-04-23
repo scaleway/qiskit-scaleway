@@ -39,7 +39,7 @@ def test_estimator():
     session_id = backend.start_session(
         name="my-estimator-session-autotest",
         deduplication_id=f"my-estimator-session-autotest-{random.randint(1, 1000)}",
-        max_duration="5m",
+        max_duration="15m",
     )
 
     assert session_id is not None

@@ -32,7 +32,7 @@ def test_qsim_simple_circuit():
     session_id = backend.start_session(
         name="my-qsim-session-autotest",
         deduplication_id=f"my-qsim-session-autotest-{random.randint(1, 1000)}",
-        max_duration="2m",
+        max_duration="15m",
     )
 
     assert session_id is not None
