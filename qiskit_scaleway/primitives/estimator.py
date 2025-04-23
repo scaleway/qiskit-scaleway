@@ -17,8 +17,6 @@ from qiskit.primitives.backend_estimator import (
     _run_circuits,
 )
 
-from qiskit_scaleway.backends.qsim_backend import QsimBackend
-
 
 class Estimator(BackendEstimatorV2):
     def __init__(
@@ -27,11 +25,6 @@ class Estimator(BackendEstimatorV2):
         session_id: str,
         options: dict | None = None,
     ):
-        if isinstance(backend, QsimBackend):
-            raise Exception(
-                "backend must be instance of qiskit_scaleway.AerBackend or qiskit_scaleway.AqtBackend"
-            )
-
         if not session_id:
             raise Exception("session_id must be not None")
 

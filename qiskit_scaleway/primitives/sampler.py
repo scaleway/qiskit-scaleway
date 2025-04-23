@@ -13,8 +13,6 @@
 # limitations under the License.
 from qiskit.primitives import BackendSamplerV2
 
-from qiskit_scaleway.backends.qsim_backend import QsimBackend
-
 
 class Sampler(BackendSamplerV2):
     def __init__(
@@ -23,11 +21,6 @@ class Sampler(BackendSamplerV2):
         session_id: str,
         options: dict | None = None,
     ):
-        if isinstance(backend, QsimBackend):
-            raise Exception(
-                "backend must be instance of qiskit_scaleway.AerBackend or qiskit_scaleway.QsimBackend"
-            )
-
         if not session_id:
             raise Exception("session_id must be not None")
 
