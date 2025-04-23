@@ -20,12 +20,25 @@ class Sampler(BackendSamplerV2):
     def __init__(
         self,
         backend,
+        session_id: str,
         options: dict | None = None,
     ):
         if isinstance(backend, QsimBackend):
             raise Exception(
                 "backend must be instance of qiskit_scaleway.AerBackend or qiskit_scaleway.QsimBackend"
             )
+
+        if not session_id:
+            raise Exception("session_id must be not None")
+
+        if not options:
+            options = {}
+
+        if not options.get("run_options"):
+            options["run_options"] = {}
+
+        if not options["run_options"].get("session_id"):
+            options["run_options"]["session_id"] = session_id
 
         super().__init__(
             backend=backend,
