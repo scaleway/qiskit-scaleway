@@ -1,6 +1,7 @@
 pytest
 pytest-dependency
 pytest-progress
+pytest-httpx
 numpy
 scipy
 qiskit-aqt-provider==1.11.0
