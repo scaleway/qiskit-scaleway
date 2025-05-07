@@ -53,7 +53,7 @@ def test_aqt_multiple_circuits():
         url=os.environ["QISKIT_SCALEWAY_API_URL"],
     )
 
-    backend = provider.get_backend("aqt_ibex_simulation")
+    backend = provider.get_backend("aqt_ibex_simulation_pop_c16m128")
 
     assert backend is not None
 
