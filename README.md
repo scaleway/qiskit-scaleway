@@ -4,7 +4,7 @@
 
 To run circuits over [Quandela](https://www.quandela.com/) backends provided by Scaleway, you must use [Perceval SDK](https://perceval.quandela.net/) through the [Scaleway provider](https://perceval.quandela.net/docs/providers.html).
 
-More info on the [Quantum service web page](https://labs.scaleway.com/en/qaas/).
+More info on the [Quantum service web page](https://www.scaleway.com/en/quantum-as-a-service/).
 
 ## Installation
 

@@ -19,51 +19,47 @@ from typing import Union, List
 from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
 from qiskit.providers import convert_to_target
-from qiskit.providers.models import QasmBackendConfiguration
-from qiskit_aer.backends.aer_simulator import AerSimulator
+
+from qiskit_aer.backends.aer_simulator import BASIS_GATES, AerBackendConfiguration
 from qiskit_aer.backends.aerbackend import NAME_MAPPING
 
-from .aer_job import AerJob
-from .scaleway_backend import ScalewayBackend
-from ..utils import QaaSClient
+from qiskit_scaleway.backends.aer.aer_job import AerJob
+from qiskit_scaleway.backends import BaseBackend
+from qiskit_scaleway.api import QaaSClient, QaaSPlatform
 
 
-class AerBackend(ScalewayBackend):
-    def __init__(
-        self,
-        provider,
-        client: QaaSClient,
-        backend_id: str,
-        name: str,
-        availability: str,
-        version: str,
-        num_qubits: int,
-        metadata: str,
-    ):
+class AerBackend(BaseBackend):
+    def __init__(self, provider, client: QaaSClient, platform: QaaSPlatform):
         super().__init__(
             provider=provider,
             client=client,
-            backend_id=backend_id,
-            name=name,
-            availability=availability,
-            version=version,
+            platform=platform,
         )
 
         self._options = self._default_options()
 
-        # Create Target
-        self._configuration = QasmBackendConfiguration.from_dict(
-            AerSimulator._DEFAULT_CONFIGURATION
+        self._configuration = AerBackendConfiguration.from_dict(
+            {
+                "open_pulse": False,
+                "backend_name": platform.name,
+                "backend_version": platform.version,
+                "n_qubits": platform.max_qubit_count,
+                "url": "https://github.com/Qiskit/qiskit-aer",
+                "simulator": True,
+                "local": False,
+                "conditional": True,
+                "memory": True,
+                "max_shots": platform.max_shot_count,
+                "description": "A C++ Qasm simulator with noise",
+                "coupling_map": None,
+                "basis_gates": BASIS_GATES["automatic"],
+                "gates": [],
+            }
         )
         self._properties = None
         self._target = convert_to_target(
             self._configuration, self._properties, None, NAME_MAPPING
         )
-        self._target.num_qubits = num_qubits
-
-        # Set option validators
-        self.options.set_validator("shots", (1, 1e6))
-        self.options.set_validator("memory", bool)
 
     def __repr__(self) -> str:
         return f"<AerBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"

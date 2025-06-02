@@ -31,15 +31,15 @@ from typing import (
 )
 
 from qiskit import qasm2, QuantumCircuit
-from qiskit.providers import JobError
+from qiskit.providers import JobError, JobStatus
 from qiskit.result import Result
 from qiskit.transpiler.passes import RemoveBarriers
 from qiskit.result.models import ExperimentResult, ExperimentResultData
 
-from ..utils import QaaSClient
-from ..versions import USER_AGENT
-from .scaleway_job import ScalewayJob
-from .scaleway_models import (
+from qiskit_scaleway.api import QaaSClient
+from qiskit_scaleway.versions import USER_AGENT
+from qiskit_scaleway.backends import BaseJob
+from qiskit_scaleway.backends.qsim.qsim_models import (
     JobPayload,
     ClientPayload,
     BackendPayload,
@@ -90,7 +90,7 @@ def _unpack_bits(packed_bits: str, dtype: str, shape: Sequence[int]) -> np.ndarr
     return bits[: np.prod(shape).item()].reshape(shape).astype(dtype)
 
 
-class QsimJob(ScalewayJob):
+class QsimJob(BaseJob):
     def __init__(
         self,
         name: str,
@@ -150,7 +150,7 @@ class QsimJob(ScalewayJob):
             name=self._name,
             session_id=session_id,
             circuits=job_payload,
-        )
+        ).id
 
     def __to_cirq_result(self, job_results) -> "cirq.Result":
         try:
@@ -204,11 +204,8 @@ class QsimJob(ScalewayJob):
                 backend_version=self.backend().version,
                 job_id=self._job_id,
                 qobj_id=", ".join(x.name for x in self._circuits),
-                success=True,
+                success=self.status() == JobStatus.DONE,
                 results=[__make_expresult_from_cirq_result(cirq_result)],
-                status=None,  # TODO
-                header=None,  # TODO
-                date=None,  # TODO
                 cirq_result=payload,
             )
 

@@ -46,35 +46,34 @@ def _random_qiskit_circuit(size: int) -> QuantumCircuit:
     return qc
 
 
-def test_aer_multiple_circuits():
+def test_aqt_multiple_circuits():
     provider = ScalewayProvider(
         project_id=os.environ["QISKIT_SCALEWAY_PROJECT_ID"],
         secret_key=os.environ["QISKIT_SCALEWAY_API_TOKEN"],
         url=os.environ["QISKIT_SCALEWAY_API_URL"],
     )
 
-    backend = provider.get_backend("aer_simulation_pop_c16m128")
+    backend = provider.get_backend("aqt_ibex_simulation_pop_c16m128")
 
     assert backend is not None
 
     session_id = backend.start_session(
-        name="my-aer-session-autotest",
-        deduplication_id=f"my-aer-session-autotest-{random.randint(1, 1000)}",
+        name="my-aqt-session-autotest",
+        deduplication_id=f"my-aqt-session-autotest-{random.randint(1, 1000)}",
         max_duration="15m",
     )
 
     assert session_id is not None
 
     try:
-        qc1 = _random_qiskit_circuit(20)
-        qc2 = _random_qiskit_circuit(15)
-        qc3 = _random_qiskit_circuit(21)
-        qc4 = _random_qiskit_circuit(17)
+        qc1 = _random_qiskit_circuit(10)
+        qc2 = _random_qiskit_circuit(12)
+        qc3 = _random_qiskit_circuit(9)
+        qc4 = _random_qiskit_circuit(10)
 
         run_result = backend.run(
             [qc1, qc2, qc3, qc4],
-            shots=1000,
-            max_parallel_experiments=0,
+            shots=20,
             session_id=session_id,
         ).result()
 

@@ -16,17 +16,13 @@ import os
 from dotenv import dotenv_values
 from typing import Optional, List, Dict
 
-from qiskit.providers import ProviderV1 as Provider
 from qiskit.providers.providerutils import filter_backends
 
-from .backends import ScalewayBackend, AerBackend, QsimBackend
-from .utils import QaaSClient
+from qiskit_scaleway.api import QaaSClient, QaaSPlatform
+from qiskit_scaleway.backends import BaseBackend
 
 
-_ENDPOINT_URL = "https://api.scaleway.com/qaas/v1alpha1"
-
-
-class ScalewayProvider(Provider):
+class ScalewayProvider:
     """
     :param project_id: optional UUID of the Scaleway Project, if the provided ``project_id`` is None, the value is loaded from the SCALEWAY_PROJECT_ID variables in the dotenv file or the QISKIT_SCALEWAY_PROJECT_ID environment variables
 
@@ -52,6 +48,7 @@ class ScalewayProvider(Provider):
         )
 
         token = secret_key or env_token
+
         if token is None:
             raise Exception("secret_key is missing")
 
@@ -60,11 +57,33 @@ class ScalewayProvider(Provider):
         if project_id is None:
             raise Exception("project_id is missing")
 
-        api_url = url or env_api_url or _ENDPOINT_URL
+        api_url = url or env_api_url
 
         self.__client = QaaSClient(url=api_url, token=token, project_id=project_id)
 
-    def backends(self, name: Optional[str] = None, **kwargs) -> List[ScalewayBackend]:
+    def get_backend(self, name=None, **kwargs):
+        """Return a single backend matching the specified filtering.
+
+        Args:
+            name (str): name of the backend.
+            **kwargs: dict used for filtering.
+
+        Returns:
+            Backend: a backend matching the filtering.
+
+        Raises:
+            Exception: if no backend could be found or
+                more than one backend matches the filtering criteria.
+        """
+        backends = self.backends(name, **kwargs)
+        if len(backends) > 1:
+            raise Exception("More than one backend matches the criteria")
+        if not backends:
+            raise Exception("No backend matches the criteria")
+
+        return backends[0]
+
+    def backends(self, name: Optional[str] = None, **kwargs) -> List[BaseBackend]:
         """Return a list of backends matching the specified filtering.
 
         Args:
@@ -84,46 +103,21 @@ class ScalewayProvider(Provider):
         if kwargs.get("min_num_qubits") is not None:
             filters["min_num_qubits"] = kwargs.pop("min_num_qubits", None)
 
-        json_resp = self.__client.list_platforms(name)
+        platforms = self.__client.list_platforms(name=name)
 
-        for platform_dict in json_resp["platforms"]:
-            backend_name = platform_dict.get("backend_name")
-
-            if backend_name == "aer":
-                scaleway_backends.append(
-                    AerBackend(
-                        provider=self,
-                        client=self.__client,
-                        backend_id=platform_dict.get("id"),
-                        name=platform_dict.get("name"),
-                        availability=platform_dict.get("availability"),
-                        version=platform_dict.get("version"),
-                        num_qubits=platform_dict.get("max_qubit_count"),
-                        metadata=platform_dict.get("metadata"),
-                    )
-                )
-            elif backend_name == "qsim":
-                scaleway_backends.append(
-                    QsimBackend(
-                        provider=self,
-                        client=self.__client,
-                        backend_id=platform_dict.get("id"),
-                        name=platform_dict.get("name"),
-                        availability=platform_dict.get("availability"),
-                        version=platform_dict.get("version"),
-                        num_qubits=platform_dict.get("max_qubit_count"),
-                        metadata=platform_dict.get("metadata"),
-                    )
-                )
-
+        for platform in platforms:
+            if platform.backend_name == "aer":
+                scaleway_backends.append(self._create_aer_backend(platform))
+            elif platform.backend_name == "qsim":
+                scaleway_backends.append(self._create_qsim_backend(platform))
+            elif platform.provider_name == "aqt":
+                scaleway_backends.append(self._create_aqt_backend(platform))
         if filters is not None:
             scaleway_backends = self.filters(scaleway_backends, filters)
 
         return filter_backends(scaleway_backends, **kwargs)
 
-    def filters(
-        self, backends: List[ScalewayBackend], filters: Dict
-    ) -> List[ScalewayBackend]:
+    def filters(self, backends: List[BaseBackend], filters: Dict) -> List[BaseBackend]:
         operational = filters.get("operational")
         min_num_qubits = filters.get("min_num_qubits")
 
@@ -136,3 +130,40 @@ class ScalewayProvider(Provider):
             backends = [b for b in backends if b.num_qubits >= min_num_qubits]
 
         return backends
+
+    def _create_aqt_backend(self, platform: QaaSPlatform) -> BaseBackend:
+        try:
+            from qiskit_scaleway.backends.aqt import AqtBackend
+        except:
+            raise Exception(
+                "Could not import aqt backend. You must install `qiskit_scaleway[aqt]` package"
+            )
+
+        return AqtBackend(
+            provider=self,
+            client=self.__client,
+            platform=platform,
+        )
+
+    def _create_qsim_backend(self, platform: QaaSPlatform) -> BaseBackend:
+        from qiskit_scaleway.backends.qsim import QsimBackend
+
+        return QsimBackend(
+            provider=self,
+            client=self.__client,
+            platform=platform,
+        )
+
+    def _create_aer_backend(self, platform: QaaSPlatform) -> BaseBackend:
+        try:
+            from qiskit_scaleway.backends.aer import AerBackend
+        except:
+            raise Exception(
+                "Could not import aqt backend. You must install `qiskit_scaleway[aer]` package"
+            )
+
+        return AerBackend(
+            provider=self,
+            client=self.__client,
+            platform=platform,
+        )

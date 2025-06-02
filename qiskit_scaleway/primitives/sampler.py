@@ -12,17 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from qiskit.primitives import BackendSamplerV2
-from ..backends import AerBackend
 
 
 class Sampler(BackendSamplerV2):
     def __init__(
         self,
-        backend: AerBackend,
+        backend,
+        session_id: str,
         options: dict | None = None,
     ):
-        if not isinstance(backend, AerBackend):
-            raise Exception("backend must be instance of qiskit_scaleway.AerBackend")
+        if not session_id:
+            raise Exception("session_id must be not None")
+
+        if not options:
+            options = {}
+
+        if not options.get("run_options"):
+            options["run_options"] = {}
+
+        if not options["run_options"].get("session_id"):
+            options["run_options"]["session_id"] = session_id
 
         super().__init__(
             backend=backend,

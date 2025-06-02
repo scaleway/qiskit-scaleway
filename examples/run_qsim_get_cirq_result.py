@@ -50,5 +50,5 @@ cirq.plot_state_histogram(cirq_result, plt.subplot())
 plt.show()
 
 # Revoke manually the QPU's session if needed
-# If not done, will be revoked automatically after 2 hours
+# If not done, will be revoked automatically after `max_duration`
 backend.stop_session(session_id)
