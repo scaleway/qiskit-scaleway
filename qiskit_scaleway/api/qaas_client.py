@@ -56,11 +56,13 @@ class QaaSClient:
 
         endpoint = f"{self._build_endpoint(_ENDPOINT_PLATFORM)}{filter_by_name}"
 
-        resp = self.__client.get(endpoint)
-        resp.raise_for_status()
+        response = self.__client.get(endpoint)
+
+        if response.is_error:
+            raise Exception("Request error", response.json())
 
         platforms = []
-        platforms_json = resp.json().get("platforms", None)
+        platforms_json = response.json().get("platforms", None)
 
         if not platforms_json:
             return platforms
@@ -98,7 +100,9 @@ class QaaSClient:
             self._build_endpoint(_ENDPOINT_SESSION), json=payload
         )
 
-        response.raise_for_status()
+        if response.is_error:
+            raise Exception("Request error", response.json())
+
         session_json = response.json()
         session = QaaSSession.from_dict(session_json)
 
@@ -122,7 +126,9 @@ class QaaSClient:
             self._build_endpoint(f"{_ENDPOINT_SESSION}/{session_id}"), json=payload
         )
 
-        response.raise_for_status()
+        if response.is_error:
+            raise Exception("Request error", response.json())
+
         session_json = response.json()
         session = QaaSSession.from_dict(session_json)
 
@@ -138,7 +144,9 @@ class QaaSClient:
             self._build_endpoint(f"{_ENDPOINT_SESSION}/{session_id}/terminate")
         )
 
-        response.raise_for_status()
+        if response.is_error:
+            raise Exception("Request error", response.json())
+
         session_json = response.json()
         session = QaaSSession.from_dict(session_json)
 
@@ -160,7 +168,9 @@ class QaaSClient:
         }
 
         response = self.__client.post(self._build_endpoint(_ENDPOINT_JOB), json=payload)
-        response.raise_for_status()
+
+        if response.is_error:
+            raise Exception("Request error", response.json())
 
         job_json = response.json()
         job = QaaSJob.from_dict(job_json)
@@ -174,9 +184,11 @@ class QaaSClient:
         endpoint = f"{self._build_endpoint(_ENDPOINT_JOB)}/{job_id}"
 
         response = self.__client.get(endpoint)
-        response.raise_for_status()
-        job_json = response.json()
 
+        if response.is_error:
+            raise Exception("Request error", response.json())
+
+        job_json = response.json()
         job = QaaSJob.from_dict(job_json)
 
         if not job:
@@ -187,11 +199,13 @@ class QaaSClient:
     def get_job_results(self, job_id: str) -> List[QaaSJobResult]:
         endpoint = f"{self._build_endpoint(_ENDPOINT_JOB)}/{job_id}/results"
 
-        resp = self.__client.get(endpoint)
-        resp.raise_for_status()
+        response = self.__client.get(endpoint)
+
+        if response.is_error:
+            raise Exception("Request error", response.json())
 
         job_results = []
-        job_results_json = resp.json().get("job_results", None)
+        job_results_json = response.json().get("job_results", None)
 
         if not job_results_json:
             return job_results

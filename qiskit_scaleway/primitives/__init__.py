@@ -12,4 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from .estimator import Estimator
+from .estimator_v1 import Estimator as EstimatorV1
 from .sampler import Sampler
