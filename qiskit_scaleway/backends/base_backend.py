@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Union, Optional
-
 from abc import ABC
-from qiskit.providers import BackendV2
+
 from pytimeparse.timeparse import timeparse
+
+from qiskit.transpiler import PassManager
+from qiskit.providers import BackendV2
 
 from qiskit_scaleway.api import QaaSClient, QaaSPlatform
 
@@ -46,6 +48,9 @@ class BaseBackend(BackendV2, ABC):
     @property
     def availability(self):
         return self._availability
+
+    def get_pass_manager(self) -> PassManager:
+        return None
 
     def start_session(
         self,
