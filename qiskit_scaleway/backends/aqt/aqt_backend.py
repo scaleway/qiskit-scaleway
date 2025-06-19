@@ -18,9 +18,10 @@ from typing import Union, List
 
 from qiskit.circuit import QuantumCircuit
 from qiskit.providers import Options
-from qiskit.transpiler import Target
+from qiskit.transpiler import Target, PassManager
 
 from qiskit_aqt_provider.aqt_resource import make_transpiler_target
+from qiskit_aqt_provider.transpiler_plugin import bound_pass_manager
 
 from qiskit_scaleway.backends import BaseBackend
 from qiskit_scaleway.backends.aqt.aqt_job import AqtJob
@@ -48,6 +49,9 @@ class AqtBackend(BaseBackend):
 
     def get_translation_stage_plugin(self) -> str:
         return "aqt"
+
+    def get_pass_manager(self) -> PassManager:
+        return bound_pass_manager()
 
     @property
     def target(self):

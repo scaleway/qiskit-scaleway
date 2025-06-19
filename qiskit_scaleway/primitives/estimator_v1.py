@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from qiskit.primitives import BackendEstimator
-from qiskit_aqt_provider import transpiler_plugin
 
 
 class Estimator(BackendEstimator):
@@ -31,7 +30,7 @@ class Estimator(BackendEstimator):
 
         super().__init__(
             backend,
-            bound_pass_manager=transpiler_plugin.bound_pass_manager(),
+            bound_pass_manager=backend.get_pass_manager(),
             options=options,
             abelian_grouping=abelian_grouping,
             skip_transpilation=skip_transpilation,
@@ -40,8 +39,3 @@ class Estimator(BackendEstimator):
     def _run(self, circuits, observables, parameter_values, **run_options):
         run_options["session_id"] = self._session_id
         return super()._run(circuits, observables, parameter_values, **run_options)
-
-    @property
-    def backend(self):
-        """Computing resource used for circuit evaluation."""
-        return self._backend
