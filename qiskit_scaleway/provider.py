@@ -112,6 +112,8 @@ class ScalewayProvider:
                 scaleway_backends.append(self._create_qsim_backend(platform))
             elif platform.provider_name == "aqt":
                 scaleway_backends.append(self._create_aqt_backend(platform))
+            elif platform.provider_name == "iqm":
+                scaleway_backends.append(self._create_iqm_backend(platform))
         if filters is not None:
             scaleway_backends = self.filters(scaleway_backends, filters)
 
@@ -131,13 +133,17 @@ class ScalewayProvider:
 
         return backends
 
+    def _create_iqm_backend(self, platform: QaaSPlatform) -> BaseBackend:
+        from qiskit_scaleway.backends.aqt import IqmBackend
+
+        return IqmBackend(
+            provider=self,
+            client=self.__client,
+            platform=platform,
+        )
+
     def _create_aqt_backend(self, platform: QaaSPlatform) -> BaseBackend:
-        try:
-            from qiskit_scaleway.backends.aqt import AqtBackend
-        except:
-            raise Exception(
-                "Could not import aqt backend. You must install `qiskit_scaleway[aqt]` package"
-            )
+        from qiskit_scaleway.backends.aqt import AqtBackend
 
         return AqtBackend(
             provider=self,
@@ -155,12 +161,7 @@ class ScalewayProvider:
         )
 
     def _create_aer_backend(self, platform: QaaSPlatform) -> BaseBackend:
-        try:
-            from qiskit_scaleway.backends.aer import AerBackend
-        except:
-            raise Exception(
-                "Could not import aqt backend. You must install `qiskit_scaleway[aer]` package"
-            )
+        from qiskit_scaleway.backends.aer import AerBackend
 
         return AerBackend(
             provider=self,

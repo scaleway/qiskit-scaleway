@@ -1,4 +1,4 @@
-# Copyright 2024 Scaleway
+# Copyright 2025 Scaleway
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,22 +16,20 @@ import warnings
 
 from typing import Union, List
 
-from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
-from qiskit.transpiler import Target
+from qiskit.providers import Options
+from qiskit.transpiler import Target, PassManager
 
-from qiskit_scaleway.backends.qsim.qsim_job import QsimJob
+from qiskit_aqt_provider.aqt_resource import make_transpiler_target
+from qiskit_aqt_provider.transpiler_plugin import bound_pass_manager
+
 from qiskit_scaleway.backends import BaseBackend
+from qiskit_scaleway.backends.aqt.aqt_job import AqtJob
 from qiskit_scaleway.api import QaaSClient, QaaSPlatform
 
 
-class QsimBackend(BaseBackend):
-    def __init__(
-        self,
-        provider,
-        client: QaaSClient,
-        platform: QaaSPlatform,
-    ):
+class AqtBackend(BaseBackend):
+    def __init__(self, provider, client: QaaSClient, platform: QaaSPlatform):
         super().__init__(
             provider=provider,
             client=client,
@@ -39,14 +37,21 @@ class QsimBackend(BaseBackend):
         )
 
         self._options = self._default_options()
-        self.options.set_validator("shots", (1, platform.max_shot_count))
+        self._target = make_transpiler_target(Target, platform.max_qubit_count)
 
-        self._target = Target(
-            num_qubits=platform.max_qubit_count
-        )
+        self._options.set_validator("shots", (1, platform.max_shot_count))
 
     def __repr__(self) -> str:
-        return f"<QsimBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
+        return f"<AqtBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
+
+    def get_scheduling_stage_plugin(self) -> str:
+        return "aqt"
+
+    def get_translation_stage_plugin(self) -> str:
+        return "aqt"
+
+    def get_pass_manager(self) -> PassManager:
+        return bound_pass_manager()
 
     @property
     def target(self):
@@ -58,17 +63,17 @@ class QsimBackend(BaseBackend):
 
     @property
     def max_circuits(self):
-        return 1
+        return 50
 
     def run(
-        self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **kwargs
-    ) -> QsimJob:
+        self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **run_options
+    ) -> AqtJob:
         if not isinstance(circuits, list):
             circuits = [circuits]
 
         job_config = dict(self._options.items())
 
-        for kwarg in kwargs:
+        for kwarg in run_options:
             if not hasattr(self.options, kwarg):
                 warnings.warn(
                     f"Option {kwarg} is not used by this backend",
@@ -76,9 +81,9 @@ class QsimBackend(BaseBackend):
                     stacklevel=2,
                 )
             else:
-                job_config[kwarg] = kwargs[kwarg]
+                job_config[kwarg] = run_options[kwarg]
 
-        job_name = f"qj-qsim-{randomname.get_name()}"
+        job_name = f"qj-aqt-{randomname.get_name()}"
 
         session_id = job_config.get("session_id", None)
 
@@ -88,7 +93,7 @@ class QsimBackend(BaseBackend):
         job_config.pop("session_max_duration")
         job_config.pop("session_max_idle_duration")
 
-        job = QsimJob(
+        job = AqtJob(
             backend=self,
             client=self._client,
             circuits=circuits,
@@ -108,13 +113,24 @@ class QsimBackend(BaseBackend):
     def _default_options(self):
         return Options(
             session_id="auto",
-            session_name="qsim-session-from-qiskit",
-            session_deduplication_id="qsim-session-from-qiskit",
+            session_name="iqm-session-from-qiskit",
+            session_deduplication_id="iqm-session-from-qiskit",
             session_max_duration="1h",
             session_max_idle_duration="20m",
-            shots=1000,
-            circuit_memoization_size=0,
-            max_fused_gate_size=2,
-            ev_noisy_repetitions=1,
-            denormals_are_zeros=False,
+            shots=100,
+            max_shots=500,
+            memory=True,
+            open_pulse=False,
+            description="AQT trapped-ion device",
+            conditional=False,
+            max_experiments=1,
+            simulator=False,
+            local=False,
+            url="api.scaleway.com",
+            basis_gates=["r", "rz", "rxx"],
+            gates=[
+                {"name": "rz", "parameters": ["theta"], "qasm_def": "TODO"},
+                {"name": "r", "parameters": ["theta", "phi"], "qasm_def": "TODO"},
+                {"name": "rxx", "parameters": ["theta"], "qasm_def": "TODO"},
+            ],
         )
