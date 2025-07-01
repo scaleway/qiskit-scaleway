@@ -16,19 +16,15 @@ import warnings
 
 from typing import Union, List
 
-from qiskit.circuit import QuantumCircuit
 from qiskit.providers import Options
-from qiskit.transpiler import Target, PassManager
+from qiskit.circuit import QuantumCircuit
 
-from qiskit_aqt_provider.aqt_resource import make_transpiler_target
-from qiskit_aqt_provider.transpiler_plugin import bound_pass_manager
-
+from qiskit_scaleway.backends.iqm.iqm_job import IqmJob
 from qiskit_scaleway.backends import BaseBackend
-from qiskit_scaleway.backends.aqt.aqt_job import AqtJob
 from qiskit_scaleway.api import QaaSClient, QaaSPlatform
 
 
-class AqtBackend(BaseBackend):
+class IqmBackend(BaseBackend):
     def __init__(self, provider, client: QaaSClient, platform: QaaSPlatform):
         super().__init__(
             provider=provider,
@@ -37,37 +33,22 @@ class AqtBackend(BaseBackend):
         )
 
         self._options = self._default_options()
-        self._target = make_transpiler_target(Target, platform.max_qubit_count)
-
-        self._options.set_validator("shots", (1, platform.max_shot_count))
+        self._platform = platform
 
     def __repr__(self) -> str:
-        return f"<AqtBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
-
-    def get_scheduling_stage_plugin(self) -> str:
-        return "aqt"
-
-    def get_translation_stage_plugin(self) -> str:
-        return "aqt"
-
-    def get_pass_manager(self) -> PassManager:
-        return bound_pass_manager()
-
-    @property
-    def target(self):
-        return self._target
+        return f"<IqmBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
 
     @property
     def num_qubits(self) -> int:
-        return self._target.num_qubits
+        return self._platform.max_qubit_count
 
     @property
     def max_circuits(self):
-        return 50
+        return self._platform.max_circuit_count
 
     def run(
         self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **run_options
-    ) -> AqtJob:
+    ) -> IqmJob:
         if not isinstance(circuits, list):
             circuits = [circuits]
 
@@ -83,7 +64,7 @@ class AqtBackend(BaseBackend):
             else:
                 job_config[kwarg] = run_options[kwarg]
 
-        job_name = f"qj-aqt-{randomname.get_name()}"
+        job_name = f"qj-iqm-{randomname.get_name()}"
 
         session_id = job_config.get("session_id", None)
 
@@ -93,7 +74,7 @@ class AqtBackend(BaseBackend):
         job_config.pop("session_max_duration")
         job_config.pop("session_max_idle_duration")
 
-        job = AqtJob(
+        job = IqmJob(
             backend=self,
             client=self._client,
             circuits=circuits,
@@ -115,22 +96,7 @@ class AqtBackend(BaseBackend):
             session_id="auto",
             session_name="iqm-session-from-qiskit",
             session_deduplication_id="iqm-session-from-qiskit",
-            session_max_duration="1h",
+            session_max_duration="59h",
             session_max_idle_duration="20m",
-            shots=100,
-            max_shots=500,
-            memory=True,
-            open_pulse=False,
-            description="AQT trapped-ion device",
-            conditional=False,
-            max_experiments=1,
-            simulator=False,
-            local=False,
-            url="api.scaleway.com",
-            basis_gates=["r", "rz", "rxx"],
-            gates=[
-                {"name": "rz", "parameters": ["theta"], "qasm_def": "TODO"},
-                {"name": "r", "parameters": ["theta", "phi"], "qasm_def": "TODO"},
-                {"name": "rxx", "parameters": ["theta"], "qasm_def": "TODO"},
-            ],
+            shots=1000,
         )

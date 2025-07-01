@@ -41,9 +41,7 @@ class QsimBackend(BaseBackend):
         self._options = self._default_options()
         self.options.set_validator("shots", (1, platform.max_shot_count))
 
-        self._target = Target(
-            num_qubits=platform.max_qubit_count
-        )
+        self._target = Target(num_qubits=platform.max_qubit_count)
 
     def __repr__(self) -> str:
         return f"<QsimBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"

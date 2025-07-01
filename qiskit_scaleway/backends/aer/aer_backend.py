@@ -16,9 +16,8 @@ import warnings
 
 from typing import Union, List
 
-from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
-from qiskit.providers import convert_to_target
+from qiskit.providers import Options, convert_to_target
 
 from qiskit_aer.backends.aer_simulator import BASIS_GATES, AerBackendConfiguration
 from qiskit_aer.backends.aerbackend import NAME_MAPPING
