@@ -54,7 +54,6 @@ class IqmJob(BaseJob):
         run_opts = RunPayload(
             options={
                 "shots": options.pop("shots"),
-                "memory": options.pop("memory"),
             },
             circuits=list(
                 map(

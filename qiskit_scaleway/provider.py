@@ -134,7 +134,7 @@ class ScalewayProvider:
         return backends
 
     def _create_iqm_backend(self, platform: QaaSPlatform) -> BaseBackend:
-        from qiskit_scaleway.backends.aqt import IqmBackend
+        from qiskit_scaleway.backends.iqm import IqmBackend
 
         return IqmBackend(
             provider=self,

@@ -18,10 +18,10 @@ from typing import Union, List
 
 from qiskit.circuit import QuantumCircuit
 from qiskit.providers import Options
-from qiskit.transpiler import Target, PassManager
+from qiskit.transpiler import Target
 
-from qiskit_aqt_provider.aqt_resource import make_transpiler_target
-from qiskit_aqt_provider.transpiler_plugin import bound_pass_manager
+# from qiskit_aqt_provider.aqt_resource import make_transpiler_target
+# from qiskit_aqt_provider.transpiler_plugin import bound_pass_manager
 
 from qiskit_scaleway.backends import BaseBackend
 from qiskit_scaleway.backends.aqt.aqt_job import AqtJob
@@ -37,21 +37,23 @@ class AqtBackend(BaseBackend):
         )
 
         self._options = self._default_options()
-        self._target = make_transpiler_target(Target, platform.max_qubit_count)
+        self._platform = platform
+        self._target = Target(num_qubits=platform.max_qubit_count)
+        # self._target = make_transpiler_target(Target, platform.max_qubit_count)
 
         self._options.set_validator("shots", (1, platform.max_shot_count))
 
     def __repr__(self) -> str:
         return f"<AqtBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
 
-    def get_scheduling_stage_plugin(self) -> str:
-        return "aqt"
+    # def get_scheduling_stage_plugin(self) -> str:
+    #     return "aqt"
 
-    def get_translation_stage_plugin(self) -> str:
-        return "aqt"
+    # def get_translation_stage_plugin(self) -> str:
+    #     return "aqt"
 
-    def get_pass_manager(self) -> PassManager:
-        return bound_pass_manager()
+    # def get_pass_manager(self) -> PassManager:
+    #     return bound_pass_manager()
 
     @property
     def target(self):
@@ -59,11 +61,11 @@ class AqtBackend(BaseBackend):
 
     @property
     def num_qubits(self) -> int:
-        return self._target.num_qubits
+        return self._platform.max_qubit_count
 
     @property
     def max_circuits(self):
-        return 50
+        return self._platform.max_circuit_count
 
     def run(
         self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **run_options

@@ -46,6 +46,10 @@ class IqmBackend(BaseBackend):
     def max_circuits(self):
         return self._platform.max_circuit_count
 
+    @property
+    def target(self):
+        return None
+
     def run(
         self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **run_options
     ) -> IqmJob:
