@@ -22,7 +22,7 @@ from qiskit.circuit import QuantumCircuit
 from qiskit_scaleway.backends.iqm.iqm_job import IqmJob
 from qiskit_scaleway.backends import BaseBackend
 from qiskit_scaleway.api import QaaSClient, QaaSPlatform
-
+from qiskit_scaleway.utils import create_target_from_platform
 
 class IqmBackend(BaseBackend):
     def __init__(self, provider, client: QaaSClient, platform: QaaSPlatform):
@@ -34,9 +34,17 @@ class IqmBackend(BaseBackend):
 
         self._options = self._default_options()
         self._platform = platform
+        self._target = create_target_from_platform(self._platform)
+
+        self._options.max_shots = platform.max_shot_count
+        self._options.set_validator("shots", (1, platform.max_shot_count))
 
     def __repr__(self) -> str:
         return f"<IqmBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
+
+    @property
+    def target(self):
+        return self._target
 
     @property
     def num_qubits(self) -> int:
@@ -45,10 +53,6 @@ class IqmBackend(BaseBackend):
     @property
     def max_circuits(self):
         return self._platform.max_circuit_count
-
-    @property
-    def target(self):
-        return None
 
     def run(
         self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **run_options

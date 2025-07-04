@@ -41,9 +41,7 @@ class BaseJob(JobV1, ABC):
             url = job_result.url
 
             if url is not None:
-                url = url.replace("http//s3:", "http//localhost")
-
-                resp = httpx.get(url)
+                resp = httpx.get(url.replace("http://s3", "http://localhost"))
                 resp.raise_for_status()
 
                 return resp.text

@@ -20,12 +20,10 @@ from qiskit.circuit import QuantumCircuit
 from qiskit.providers import Options
 from qiskit.transpiler import Target
 
-# from qiskit_aqt_provider.aqt_resource import make_transpiler_target
-# from qiskit_aqt_provider.transpiler_plugin import bound_pass_manager
-
 from qiskit_scaleway.backends import BaseBackend
 from qiskit_scaleway.backends.aqt.aqt_job import AqtJob
 from qiskit_scaleway.api import QaaSClient, QaaSPlatform
+from qiskit_scaleway.utils import create_target_from_platform
 
 
 class AqtBackend(BaseBackend):
@@ -38,22 +36,13 @@ class AqtBackend(BaseBackend):
 
         self._options = self._default_options()
         self._platform = platform
-        self._target = Target(num_qubits=platform.max_qubit_count)
-        # self._target = make_transpiler_target(Target, platform.max_qubit_count)
+        self._target = create_target_from_platform(self._platform)
 
+        self._options.max_shots = platform.max_shot_count
         self._options.set_validator("shots", (1, platform.max_shot_count))
 
     def __repr__(self) -> str:
         return f"<AqtBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
-
-    # def get_scheduling_stage_plugin(self) -> str:
-    #     return "aqt"
-
-    # def get_translation_stage_plugin(self) -> str:
-    #     return "aqt"
-
-    # def get_pass_manager(self) -> PassManager:
-    #     return bound_pass_manager()
 
     @property
     def target(self):
@@ -120,7 +109,7 @@ class AqtBackend(BaseBackend):
             session_max_duration="1h",
             session_max_idle_duration="20m",
             shots=100,
-            max_shots=2000,
+            # max_shots=2000,
             memory=True,
             open_pulse=False,
             description="AQT trapped-ion device",
@@ -129,10 +118,10 @@ class AqtBackend(BaseBackend):
             simulator=False,
             local=False,
             url="api.scaleway.com",
-            basis_gates=["r", "rz", "rxx"],
-            gates=[
-                {"name": "rz", "parameters": ["theta"], "qasm_def": "TODO"},
-                {"name": "r", "parameters": ["theta", "phi"], "qasm_def": "TODO"},
-                {"name": "rxx", "parameters": ["theta"], "qasm_def": "TODO"},
-            ],
+            # basis_gates=["r", "rz", "rxx"],
+            # gates=[
+            #     {"name": "rz", "parameters": ["theta"], "qasm_def": "TODO"},
+            #     {"name": "r", "parameters": ["theta", "phi"], "qasm_def": "TODO"},
+            #     {"name": "rxx", "parameters": ["theta"], "qasm_def": "TODO"},
+            # ],
         )
