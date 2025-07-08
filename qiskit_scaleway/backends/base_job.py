@@ -47,7 +47,7 @@ class BaseJob(JobV1):
         name: Optional[str] = None,
     ) -> None:
         super().__init__(backend, None)
-        self._name = name if name else f"qj-qiskit{randomname.get_name()}"
+        self._name = name if name else f"qj-qiskit-{randomname.get_name()}"
         self._client = client
         self._circuits = circuits
         self._config = config
