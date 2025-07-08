@@ -14,10 +14,11 @@
 import time
 import httpx
 import json
+import randomname
 
-from typing import List, Union
+from typing import List, Union, Optional, Dict
 
-from qiskit import qasm3
+from qiskit import qasm3, QuantumCircuit
 from qiskit.result import Result
 from qiskit.providers import JobV1
 from qiskit.providers import JobError, JobTimeoutError, JobStatus
@@ -39,13 +40,17 @@ from scaleway_qaas_client import (
 class BaseJob(JobV1):
     def __init__(
         self,
-        name: str,
         backend,
         client: QaaSClient,
+        circuits: Union[List[QuantumCircuit], QuantumCircuit],
+        config: Dict,
+        name: Optional[str] = None,
     ) -> None:
         super().__init__(backend, None)
-        self._name = name
+        self._name = name if name else f"qj-qiskit{randomname.get_name()}"
         self._client = client
+        self._circuits = circuits
+        self._config = config
 
     @property
     def name(self):
@@ -110,7 +115,7 @@ class BaseJob(JobV1):
         ).id
 
     def result(
-        self, timeout=None, fetch_interval: int = 3
+        self, timeout: Optional[int] = None, fetch_interval: int = 3
     ) -> Union[Result, List[Result]]:
         if self._job_id == None:
             raise JobError("Job ID error")
@@ -164,7 +169,7 @@ class BaseJob(JobV1):
             return result
 
     def _wait_for_result(
-        self, timeout=None, fetch_interval: int = 5
+        self, timeout: Optional[int], fetch_interval: int
     ) -> List[QaaSJobResult]:
         start_time = time.time()
 

@@ -69,7 +69,7 @@ class BaseBackend(BackendV2, ABC):
     def run(
         self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **run_options
     ) -> BaseJob:
-        if not isinstance(circuits, list):
+        if not isinstance(circuits, List):
             circuits = [circuits]
 
         job_config = dict(self._options.items())
@@ -92,7 +92,7 @@ class BaseBackend(BackendV2, ABC):
         job_config.pop("session_max_duration")
         job_config.pop("session_max_idle_duration")
 
-        job = self.job_cls()(
+        job: BaseJob = self.job_cls()(
             backend=self,
             client=self._client,
             circuits=circuits,

@@ -121,7 +121,7 @@ class QsimJob(BaseJob):
             options={"shots": options.pop("shots")},
             circuits=[
                 QaaSCircuitData(
-                    serialization_type=QaaSCircuitSerializationFormat.QASM_V2,
+                    serialization_format=QaaSCircuitSerializationFormat.QASM_V2,
                     circuit_serialization=qasm2.dumps(circuit),
                 )
             ],
