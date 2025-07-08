@@ -13,17 +13,30 @@
 # limitations under the License.
 import time
 import httpx
+import json
 
-from abc import ABC
-from typing import List
+from typing import List, Union
 
+from qiskit import qasm3
+from qiskit.result import Result
 from qiskit.providers import JobV1
 from qiskit.providers import JobError, JobTimeoutError, JobStatus
 
-from qiskit_scaleway.api import QaaSClient, QaaSJobResult
+from qiskit_scaleway.versions import USER_AGENT
+
+from scaleway_qaas_client import (
+    QaaSClient,
+    QaaSJobResult,
+    QaaSJobData,
+    QaaSJobClientData,
+    QaaSCircuitData,
+    QaaSJobRunData,
+    QaaSJobBackendData,
+    QaaSCircuitSerializationFormat,
+)
 
 
-class BaseJob(JobV1, ABC):
+class BaseJob(JobV1):
     def __init__(
         self,
         name: str,
@@ -33,6 +46,106 @@ class BaseJob(JobV1, ABC):
         super().__init__(backend, None)
         self._name = name
         self._client = client
+
+    @property
+    def name(self):
+        return self._name
+
+    def status(self) -> JobStatus:
+        job = self._client.get_job(self._job_id)
+
+        status_mapping = {
+            "running": JobStatus.RUNNING,
+            "waiting": JobStatus.QUEUED,
+            "completed": JobStatus.DONE,
+        }
+
+        return status_mapping.get(job.status, JobStatus.ERROR)
+
+    def submit(self, session_id: str) -> None:
+        if self._job_id:
+            raise RuntimeError(f"Job already submitted (ID: {self._job_id})")
+
+        options = self._config.copy()
+
+        run_opts = QaaSJobRunData(
+            options={
+                "shots": options.pop("shots"),
+                "memory": options.pop("memory"),
+                "seed_simulator": options.pop("seed_simulator"),
+            },
+            circuits=list(
+                map(
+                    lambda c: QaaSCircuitData(
+                        serialization_format=QaaSCircuitSerializationFormat.QASM_V3,
+                        circuit_serialization=qasm3.dumps(c),
+                    ),
+                    self._circuits,
+                )
+            ),
+        )
+
+        backend_opts = QaaSJobBackendData(
+            name=self.backend().name,
+            version=self.backend().version,
+            options=options,
+        )
+
+        client_opts = QaaSJobClientData(
+            user_agent=USER_AGENT,
+        )
+
+        job_payload = QaaSJobData.schema().dumps(
+            QaaSJobData(
+                backend=backend_opts,
+                run=run_opts,
+                client=client_opts,
+            )
+        )
+
+        self._job_id = self._client.create_job(
+            name=self._name,
+            session_id=session_id,
+            circuits=job_payload,
+        ).id
+
+    def result(
+        self, timeout=None, fetch_interval: int = 3
+    ) -> Union[Result, List[Result]]:
+        if self._job_id == None:
+            raise JobError("Job ID error")
+
+        job_results = self._wait_for_result(timeout, fetch_interval)
+
+        def __make_result_from_payload(payload: str) -> Result:
+            payload_dict = json.loads(payload)
+
+            return Result.from_dict(
+                {
+                    "results": payload_dict["results"],
+                    "backend_name": self.backend().name,
+                    "backend_version": self.backend().version,
+                    "job_id": self._job_id,
+                    "qobj_id": ", ".join(x.name for x in self._circuits),
+                    "success": payload_dict["success"],
+                    "header": payload_dict.get("header"),
+                    "metadata": payload_dict.get("metadata"),
+                }
+            )
+
+        qiskit_results = list(
+            map(
+                lambda r: __make_result_from_payload(
+                    self._extract_payload_from_response(r)
+                ),
+                job_results,
+            )
+        )
+
+        if len(qiskit_results) == 1:
+            return qiskit_results[0]
+
+        return qiskit_results
 
     def _extract_payload_from_response(self, job_result: QaaSJobResult) -> str:
         result = job_result.result
@@ -64,24 +177,9 @@ class BaseJob(JobV1, ABC):
             status = self.status()
 
             if status == JobStatus.DONE:
-                return self._client.get_job_results(self._job_id)
+                return self._client.list_job_results(self._job_id)
 
             if status == JobStatus.ERROR:
                 raise JobError("Job error")
 
             time.sleep(fetch_interval)
-
-    @property
-    def name(self):
-        return self._name
-
-    def status(self) -> JobStatus:
-        job = self._client.get_job(self._job_id)
-
-        status_mapping = {
-            "running": JobStatus.RUNNING,
-            "waiting": JobStatus.QUEUED,
-            "completed": JobStatus.DONE,
-        }
-
-        return status_mapping.get(job.status, JobStatus.ERROR)

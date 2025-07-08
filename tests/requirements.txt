@@ -4,5 +4,4 @@ pytest-progress
 pytest-httpx
 numpy
 scipy
-qiskit-aqt-provider==1.11.0
 qiskit-aer==0.17

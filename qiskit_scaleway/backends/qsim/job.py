@@ -36,16 +36,17 @@ from qiskit.result import Result
 from qiskit.transpiler.passes import RemoveBarriers
 from qiskit.result.models import ExperimentResult, ExperimentResultData
 
-from qiskit_scaleway.api import QaaSClient
 from qiskit_scaleway.versions import USER_AGENT
 from qiskit_scaleway.backends import BaseJob
-from qiskit_scaleway.backends.qsim.qsim_models import (
-    JobPayload,
-    ClientPayload,
-    BackendPayload,
-    RunPayload,
-    SerializationType,
-    CircuitPayload,
+
+from scaleway_qaas_client import (
+    QaaSClient,
+    QaaSJobData,
+    QaaSJobClientData,
+    QaaSCircuitData,
+    QaaSJobRunData,
+    QaaSJobBackendData,
+    QaaSCircuitSerializationFormat,
 )
 
 
@@ -116,11 +117,11 @@ class QsimJob(BaseJob):
         # Note 2: Qsim can only handle one circuit at a time
         circuit = RemoveBarriers()(self._circuits[0])
 
-        run_opts = RunPayload(
+        run_opts = QaaSJobRunData(
             options={"shots": options.pop("shots")},
             circuits=[
-                CircuitPayload(
-                    serialization_type=SerializationType.QASM_V2,
+                QaaSCircuitData(
+                    serialization_type=QaaSCircuitSerializationFormat.QASM_V2,
                     circuit_serialization=qasm2.dumps(circuit),
                 )
             ],
@@ -128,18 +129,18 @@ class QsimJob(BaseJob):
 
         options.pop("circuit_memoization_size")
 
-        backend_opts = BackendPayload(
+        backend_opts = QaaSJobBackendData(
             name=self.backend().name,
             version=self.backend().version,
             options=options,
         )
 
-        client_opts = ClientPayload(
+        client_opts = QaaSJobClientData(
             user_agent=USER_AGENT,
         )
 
-        job_payload = JobPayload.schema().dumps(
-            JobPayload(
+        job_payload = QaaSJobData.schema().dumps(
+            QaaSJobData(
                 backend=backend_opts,
                 run=run_opts,
                 client=client_opts,

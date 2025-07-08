@@ -1,4 +1,4 @@
-# Copyright 2025 Scaleway
+# Copyright 2024 Scaleway
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,51 +18,63 @@ from typing import Union, List
 
 from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
+from qiskit.transpiler import Target
 
-from qiskit_scaleway.backends.iqm.iqm_job import IqmJob
+from qiskit_scaleway.backends.qsim.job import QsimJob
 from qiskit_scaleway.backends import BaseBackend
-from qiskit_scaleway.api import QaaSClient, QaaSPlatform
-from qiskit_scaleway.utils import create_target_from_platform
 
-class IqmBackend(BaseBackend):
-    def __init__(self, provider, client: QaaSClient, platform: QaaSPlatform):
+from scaleway_qaas_client import QaaSClient, QaaSPlatform
+
+
+class QsimBackend(BaseBackend):
+    def __init__(
+        self,
+        provider,
+        client: QaaSClient,
+        platform: QaaSPlatform,
+    ):
         super().__init__(
             provider=provider,
             client=client,
             platform=platform,
         )
 
-        self._options = self._default_options()
-        self._platform = platform
-        self._target = create_target_from_platform(self._platform)
+        self._options = Options(
+            session_id="auto",
+            session_name="qsim-session-from-qiskit",
+            session_deduplication_id="qsim-session-from-qiskit",
+            session_max_duration="59m",
+            session_max_idle_duration="20m",
+            shots=1000,
+            circuit_memoization_size=0,
+            max_fused_gate_size=2,
+            ev_noisy_repetitions=1,
+            denormals_are_zeros=False,
+        )
+        self.options.set_validator("shots", (1, platform.max_shot_count))
 
-        self._options.max_shots = platform.max_shot_count
-        self._options.set_validator("shots", (1, platform.max_shot_count))
+        self._target = Target(num_qubits=platform.max_qubit_count)
 
     def __repr__(self) -> str:
-        return f"<IqmBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
+        return f"<QsimBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
 
     @property
     def target(self):
         return self._target
 
     @property
-    def num_qubits(self) -> int:
-        return self._platform.max_qubit_count
-
-    @property
-    def max_circuits(self):
-        return self._platform.max_circuit_count
+    def job_cls(self):
+        return QsimJob
 
     def run(
-        self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **run_options
-    ) -> IqmJob:
+        self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **kwargs
+    ) -> QsimJob:
         if not isinstance(circuits, list):
             circuits = [circuits]
 
         job_config = dict(self._options.items())
 
-        for kwarg in run_options:
+        for kwarg in kwargs:
             if not hasattr(self.options, kwarg):
                 warnings.warn(
                     f"Option {kwarg} is not used by this backend",
@@ -70,9 +82,9 @@ class IqmBackend(BaseBackend):
                     stacklevel=2,
                 )
             else:
-                job_config[kwarg] = run_options[kwarg]
+                job_config[kwarg] = kwargs[kwarg]
 
-        job_name = f"qj-iqm-{randomname.get_name()}"
+        job_name = f"qj-qsim-{randomname.get_name()}"
 
         session_id = job_config.get("session_id", None)
 
@@ -82,7 +94,7 @@ class IqmBackend(BaseBackend):
         job_config.pop("session_max_duration")
         job_config.pop("session_max_idle_duration")
 
-        job = IqmJob(
+        job = QsimJob(
             backend=self,
             client=self._client,
             circuits=circuits,
@@ -97,14 +109,3 @@ class IqmBackend(BaseBackend):
         job.submit(session_id)
 
         return job
-
-    @classmethod
-    def _default_options(self):
-        return Options(
-            session_id="auto",
-            session_name="iqm-session-from-qiskit",
-            session_deduplication_id="iqm-session-from-qiskit",
-            session_max_duration="59h",
-            session_max_idle_duration="20m",
-            shots=1000,
-        )

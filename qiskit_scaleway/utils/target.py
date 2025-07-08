@@ -7,28 +7,33 @@ from qiskit.circuit.library import get_standard_gate_name_mapping
 
 from qiskit_scaleway.api import QaaSPlatform
 
+
 @dataclass_json
 @dataclass
 class _QiskitInstructionData:
     name: str
     params: List[str] = field(default=None)
 
+
 @dataclass_json
 @dataclass
 class _QiskitTargetData:
     instructions: List[_QiskitInstructionData]
+
 
 @dataclass_json
 @dataclass
 class _QiskitClientData:
     target: _QiskitTargetData
 
+
 @dataclass_json
 @dataclass
 class _PlatformMetadata:
     qiskit: _QiskitClientData
 
-def create_target_from_platform(platform : QaaSPlatform) -> Target:
+
+def create_target_from_platform(platform: QaaSPlatform) -> Target:
     target = Target(num_qubits=platform.max_qubit_count)
 
     if not platform.metadata:

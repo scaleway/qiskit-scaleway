@@ -11,5 +11,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .aer_backend import AerBackend
-from .aer_job import AerJob
+from .backend import AerBackend

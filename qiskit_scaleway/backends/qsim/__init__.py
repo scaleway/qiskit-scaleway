@@ -11,5 +11,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .qsim_backend import QsimBackend
-from .qsim_job import QsimJob
+from .backend import QsimBackend
+from .job import QsimJob

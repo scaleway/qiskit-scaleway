@@ -11,15 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import warnings
+
 from typing import Union, Optional
 from abc import ABC
 
+from typing import Union, List
+
 from pytimeparse.timeparse import timeparse
 
-from qiskit.transpiler import PassManager
 from qiskit.providers import BackendV2
+from qiskit.circuit import QuantumCircuit
 
 from qiskit_scaleway.api import QaaSClient, QaaSPlatform
+
+from .base_job import BaseJob
 
 
 class BaseBackend(BackendV2, ABC):
@@ -37,20 +43,69 @@ class BaseBackend(BackendV2, ABC):
             **fields,
         )
 
-        self._backend_id = platform.id
-        self._availability = platform.availability
+        self._platform = platform
         self._client = client
 
     @property
+    def num_qubits(self) -> int:
+        return self._platform.max_qubit_count
+
+    @property
+    def max_circuits(self):
+        return self._platform.max_circuit_count
+
+    @property
     def id(self):
-        return self._backend_id
+        return self._platform.id
 
     @property
     def availability(self):
-        return self._availability
+        return self._platform.availability
 
-    def get_pass_manager(self) -> PassManager:
-        return None
+    @property
+    def job_cls(self):
+        return BaseJob
+
+    def run(
+        self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **run_options
+    ) -> BaseJob:
+        if not isinstance(circuits, list):
+            circuits = [circuits]
+
+        job_config = dict(self._options.items())
+
+        for kwarg in run_options:
+            if not hasattr(self.options, kwarg):
+                warnings.warn(
+                    f"Option {kwarg} is not used by this backend",
+                    UserWarning,
+                    stacklevel=2,
+                )
+            else:
+                job_config[kwarg] = run_options[kwarg]
+
+        session_id = job_config.get("session_id", None)
+
+        job_config.pop("session_id")
+        job_config.pop("session_name")
+        job_config.pop("session_deduplication_id")
+        job_config.pop("session_max_duration")
+        job_config.pop("session_max_idle_duration")
+
+        job = self.job_cls()(
+            backend=self,
+            client=self._client,
+            circuits=circuits,
+            config=job_config,
+        )
+
+        if session_id in ["auto", None]:
+            session_id = self.start_session(name=f"auto-{self._options.session_name}")
+            assert session_id is not None
+
+        job.submit(session_id)
+
+        return job
 
     def start_session(
         self,

@@ -18,8 +18,9 @@ from typing import Optional, List, Dict
 
 from qiskit.providers.providerutils import filter_backends
 
-from qiskit_scaleway.api import QaaSClient, QaaSPlatform
 from qiskit_scaleway.backends import BaseBackend
+
+from scaleway_qaas_client import QaaSClient, QaaSPlatform
 
 
 class ScalewayProvider:
