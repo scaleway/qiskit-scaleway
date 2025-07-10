@@ -37,7 +37,7 @@ class AqtBackend(BaseBackend):
             shots=100,
             memory=True,
             open_pulse=False,
-            description="AQT trapped-ion device",
+            description=platform.description,
             conditional=False,
             max_experiments=1,
             simulator=False,
@@ -57,73 +57,3 @@ class AqtBackend(BaseBackend):
     @property
     def target(self):
         return self._target
-
-    # def run(
-    #     self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **run_options
-    # ) -> AqtJob:
-    #     if not isinstance(circuits, list):
-    #         circuits = [circuits]
-
-    #     job_config = dict(self._options.items())
-
-    #     for kwarg in run_options:
-    #         if not hasattr(self.options, kwarg):
-    #             warnings.warn(
-    #                 f"Option {kwarg} is not used by this backend",
-    #                 UserWarning,
-    #                 stacklevel=2,
-    #             )
-    #         else:
-    #             job_config[kwarg] = run_options[kwarg]
-
-    #     job_name = f"qj-aqt-{randomname.get_name()}"
-
-    #     session_id = job_config.get("session_id", None)
-
-    #     job_config.pop("session_id")
-    #     job_config.pop("session_name")
-    #     job_config.pop("session_deduplication_id")
-    #     job_config.pop("session_max_duration")
-    #     job_config.pop("session_max_idle_duration")
-
-    #     job = AqtJob(
-    #         backend=self,
-    #         client=self._client,
-    #         circuits=circuits,
-    #         config=job_config,
-    #         name=job_name,
-    #     )
-
-    #     if session_id in ["auto", None]:
-    #         session_id = self.start_session(name=f"auto-{self._options.session_name}")
-    #         assert session_id is not None
-
-    #     job.submit(session_id)
-
-    #     return job
-
-    # @classmethod
-    # def _default_options(self):
-    #     return Options(
-    #         session_id="auto",
-    #         session_name="aqt-session-from-qiskit",
-    #         session_deduplication_id="aqt-session-from-qiskit",
-    #         session_max_duration="1h",
-    #         session_max_idle_duration="20m",
-    #         shots=100,
-    #         # max_shots=2000,
-    #         memory=True,
-    #         open_pulse=False,
-    #         description="AQT trapped-ion device",
-    #         conditional=False,
-    #         max_experiments=1,
-    #         simulator=False,
-    #         local=False,
-    #         url="api.scaleway.com",
-    #         # basis_gates=["r", "rz", "rxx"],
-    #         # gates=[
-    #         #     {"name": "rz", "parameters": ["theta"], "qasm_def": "TODO"},
-    #         #     {"name": "r", "parameters": ["theta", "phi"], "qasm_def": "TODO"},
-    #         #     {"name": "rxx", "parameters": ["theta"], "qasm_def": "TODO"},
-    #         # ],
-    #     )

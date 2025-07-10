@@ -18,12 +18,10 @@ from abc import ABC
 
 from typing import Union, List
 
-from pytimeparse.timeparse import timeparse
-
 from qiskit.providers import BackendV2
 from qiskit.circuit import QuantumCircuit
 
-from qiskit_scaleway.api import QaaSClient, QaaSPlatform
+from scaleway_qaas_client import QaaSClient, QaaSPlatform
 
 from .base_job import BaseJob
 
@@ -118,19 +116,13 @@ class BaseBackend(BackendV2, ABC):
             name = self._options.session_name
 
         if deduplication_id is None:
-            deduplication_id = self._options.session_deduplication_id
+            deduplication_id = self._options.get("session_deduplication_id", None)
 
         if max_duration is None:
-            max_duration = self._options.session_max_duration
+            max_duration = self._options.get("session_max_duration", "59m")
 
         if max_idle_duration is None:
-            max_idle_duration = self._options.session_max_idle_duration
-
-        if isinstance(max_duration, str):
-            max_duration = f"{timeparse(max_duration)}s"
-
-        if isinstance(max_idle_duration, str):
-            max_idle_duration = f"{timeparse(max_idle_duration)}s"
+            max_idle_duration = self._options.get("session_max_idle_duration", "25m")
 
         return self._client.create_session(
             name,

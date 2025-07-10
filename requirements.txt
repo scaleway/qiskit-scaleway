@@ -3,6 +3,5 @@ qiskit-aer==0.17
 randomname==0.2.1
 dataclasses-json>=0.6.4
 dataclasses>=0.6
-pytimeparse==1.1.8
 python-dotenv==1.0.1
-scaleway-qaas-client==0.1.1
+scaleway-qaas-client==0.1.7
