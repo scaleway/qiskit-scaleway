@@ -39,7 +39,7 @@ class ScalewayProvider:
     ) -> None:
         secret_key = secret_key or os.getenv("QISKIT_SCALEWAY_API_SECRET_KEY")
         project_id = project_id or os.getenv("QISKIT_SCALEWAY_PROJECT_ID")
-        url = os.getenv("QISKIT_SCALEWAY_API_URL")
+        url = url or os.getenv("QISKIT_SCALEWAY_API_URL")
 
         if secret_key is None:
             raise Exception("secret_key is missing")

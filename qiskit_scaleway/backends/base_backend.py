@@ -113,10 +113,10 @@ class BaseBackend(BackendV2, ABC):
         max_idle_duration: Union[int, str] = None,
     ) -> str:
         if name is None:
-            name = self._options.session_name
+            name = self._options.get("session_name")
 
         if deduplication_id is None:
-            deduplication_id = self._options.get("session_deduplication_id", None)
+            deduplication_id = self._options.get("session_deduplication_id")
 
         if max_duration is None:
             max_duration = self._options.get("session_max_duration", "59m")
