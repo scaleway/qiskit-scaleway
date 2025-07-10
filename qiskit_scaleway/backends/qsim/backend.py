@@ -39,18 +39,7 @@ class QsimBackend(BaseBackend):
             platform=platform,
         )
 
-        self._options = Options(
-            session_id="auto",
-            session_name="qsim-session-from-qiskit",
-            session_deduplication_id="qsim-session-from-qiskit",
-            session_max_duration="59m",
-            session_max_idle_duration="20m",
-            shots=1000,
-            circuit_memoization_size=0,
-            max_fused_gate_size=2,
-            ev_noisy_repetitions=1,
-            denormals_are_zeros=False,
-        )
+        self._options = self._default_options()
         self.options.set_validator("shots", (1, platform.max_shot_count))
 
         self._target = Target(num_qubits=platform.max_qubit_count)
@@ -109,3 +98,18 @@ class QsimBackend(BaseBackend):
         job.submit(session_id)
 
         return job
+
+    @classmethod
+    def _default_options(self):
+        return Options(
+            session_id="auto",
+            session_name="qsim-session-from-qiskit",
+            session_deduplication_id="qsim-session-from-qiskit",
+            session_max_duration="59m",
+            session_max_idle_duration="20m",
+            shots=1000,
+            circuit_memoization_size=0,
+            max_fused_gate_size=2,
+            ev_noisy_repetitions=1,
+            denormals_are_zeros=False,
+        )

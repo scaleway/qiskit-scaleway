@@ -29,7 +29,40 @@ class AerBackend(BaseBackend):
             platform=platform,
         )
 
-        self._options = Options(
+        self._options = self._default_options()
+        self._configuration = AerBackendConfiguration.from_dict(
+            {
+                "open_pulse": False,
+                "backend_name": platform.name,
+                "backend_version": platform.version,
+                "n_qubits": platform.max_qubit_count,
+                "url": "https://github.com/Qiskit/qiskit-aer",
+                "simulator": True,
+                "local": False,
+                "conditional": True,
+                "memory": True,
+                "max_shots": platform.max_shot_count,
+                "description": platform.description,
+                "coupling_map": None,
+                "basis_gates": BASIS_GATES["automatic"],
+                "gates": [],
+            }
+        )
+        self._properties = None
+        self._target = convert_to_target(
+            self._configuration, self._properties, None, NAME_MAPPING
+        )
+
+    def __repr__(self) -> str:
+        return f"<AerBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
+
+    @property
+    def target(self):
+        return self._target
+
+    @classmethod
+    def _default_options(self):
+        return Options(
             session_id="auto",
             session_name="aer-session-from-qiskit",
             session_deduplication_id="aer-session-from-qiskit",
@@ -72,33 +105,3 @@ class AerBackend(BaseBackend):
             fusion_max_qubit=None,
             fusion_threshold=None,
         )
-
-        self._configuration = AerBackendConfiguration.from_dict(
-            {
-                "open_pulse": False,
-                "backend_name": platform.name,
-                "backend_version": platform.version,
-                "n_qubits": platform.max_qubit_count,
-                "url": "https://github.com/Qiskit/qiskit-aer",
-                "simulator": True,
-                "local": False,
-                "conditional": True,
-                "memory": True,
-                "max_shots": platform.max_shot_count,
-                "description": platform.description,
-                "coupling_map": None,
-                "basis_gates": BASIS_GATES["automatic"],
-                "gates": [],
-            }
-        )
-        self._properties = None
-        self._target = convert_to_target(
-            self._configuration, self._properties, None, NAME_MAPPING
-        )
-
-    def __repr__(self) -> str:
-        return f"<AerBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
-
-    @property
-    def target(self):
-        return self._target

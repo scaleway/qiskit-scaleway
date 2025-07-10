@@ -28,23 +28,7 @@ class AqtBackend(BaseBackend):
             platform=platform,
         )
 
-        self._options = Options(
-            session_id="auto",
-            session_name="aqt-session-from-qiskit",
-            session_deduplication_id="aqt-session-from-qiskit",
-            session_max_duration="59m",
-            session_max_idle_duration="20m",
-            shots=100,
-            memory=True,
-            open_pulse=False,
-            description=platform.description,
-            conditional=False,
-            max_experiments=1,
-            simulator=False,
-            local=False,
-            url="api.scaleway.com",
-            max_shots=platform.max_shot_count,
-        )
+        self._options = self._default_options()
 
         self._platform = platform
         self._target = create_target_from_platform(self._platform)
@@ -57,3 +41,23 @@ class AqtBackend(BaseBackend):
     @property
     def target(self):
         return self._target
+
+    @classmethod
+    def _default_options(self):
+        return Options(
+            session_id="auto",
+            session_name="aqt-session-from-qiskit",
+            session_deduplication_id="aqt-session-from-qiskit",
+            session_max_duration="59m",
+            session_max_idle_duration="20m",
+            shots=100,
+            memory=True,
+            open_pulse=False,
+            description="AQT trapped-ion platform",
+            conditional=False,
+            max_experiments=1,
+            simulator=False,
+            local=False,
+            url="api.scaleway.com",
+            max_shots=2000,
+        )

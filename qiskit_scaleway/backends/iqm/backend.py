@@ -27,14 +27,7 @@ class IqmBackend(BaseBackend):
             platform=platform,
         )
 
-        self._options = Options(
-            session_id="auto",
-            session_name="iqm-session-from-qiskit",
-            session_deduplication_id="iqm-session-from-qiskit",
-            session_max_duration="59h",
-            session_max_idle_duration="20m",
-            shots=1000,
-        )
+        self._options = self._default_options()
 
         self._platform = platform
         self._target = create_target_from_platform(self._platform)
@@ -48,3 +41,14 @@ class IqmBackend(BaseBackend):
     @property
     def target(self):
         return self._target
+
+    @classmethod
+    def _default_options(self):
+        return Options(
+            session_id="auto",
+            session_name="iqm-session-from-qiskit",
+            session_deduplication_id="iqm-session-from-qiskit",
+            session_max_duration="59h",
+            session_max_idle_duration="20m",
+            shots=1000,
+        )
