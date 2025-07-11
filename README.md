@@ -71,6 +71,9 @@ qc.cx(0, 2)
 qc.cx(0, 3)
 qc.measure_all()
 
+## DO NOT USE TRANSPILATION
+## Transpilation is done server side on QaaS service
+
 # Create and send a job to a new QPU's session (or on an existing one)
 result = backend.run(qc, method="statevector", shots=1000).result()
 

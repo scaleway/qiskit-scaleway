@@ -49,20 +49,16 @@ class BaseBackend(BackendV2, ABC):
         return self._platform.max_qubit_count
 
     @property
-    def max_circuits(self):
+    def max_circuits(self) -> int:
         return self._platform.max_circuit_count
 
     @property
-    def id(self):
+    def id(self) -> str:
         return self._platform.id
 
     @property
     def availability(self):
         return self._platform.availability
-
-    @property
-    def job_cls(self):
-        return BaseJob
 
     def run(
         self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **run_options
@@ -90,7 +86,7 @@ class BaseBackend(BackendV2, ABC):
         job_config.pop("session_max_duration")
         job_config.pop("session_max_idle_duration")
 
-        job: BaseJob = self.job_cls()(
+        job = BaseJob(
             backend=self,
             client=self._client,
             circuits=circuits,
@@ -125,7 +121,7 @@ class BaseBackend(BackendV2, ABC):
             max_idle_duration = self._options.get("session_max_idle_duration", "25m")
 
         return self._client.create_session(
-            name,
+            name=name,
             platform_id=self.id,
             deduplication_id=deduplication_id,
             max_duration=max_duration,

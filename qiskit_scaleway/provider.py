@@ -17,16 +17,22 @@ from typing import Optional, List, Dict
 
 from qiskit.providers.providerutils import filter_backends
 
-from qiskit_scaleway.backends import BaseBackend
+from qiskit_scaleway.backends import (
+    BaseBackend,
+    IqmBackend,
+    AqtBackend,
+    QsimBackend,
+    AerBackend,
+)
 
-from scaleway_qaas_client import QaaSClient, QaaSPlatform
+from scaleway_qaas_client import QaaSClient
 
 
 class ScalewayProvider:
     """
     :param project_id: optional UUID of the Scaleway Project, if the provided ``project_id`` is None, the value is loaded from the QISKIT_SCALEWAY_PROJECT_ID environment variables
 
-    :param secret_key: optional authentication token required to access the Scaleway API, if the provided ``secret_key`` is None, the value is loaded from the QISKIT_SCALEWAY_API_SECRET_KEY environment variables
+    :param secret_key: optional authentication token required to access the Scaleway API, if the provided ``secret_key`` is None, the value is loaded from the QISKIT_SCALEWAY_SECRET_KEY environment variables
 
     :param url: optional value, endpoint URL of the API, if the provided ``url`` is None, the value is loaded from the QISKIT_SCALEWAY_API_URL environment variables
     """
@@ -37,7 +43,7 @@ class ScalewayProvider:
         secret_key: Optional[str] = None,
         url: Optional[str] = None,
     ) -> None:
-        secret_key = secret_key or os.getenv("QISKIT_SCALEWAY_API_SECRET_KEY")
+        secret_key = secret_key or os.getenv("QISKIT_SCALEWAY_SECRET_KEY")
         project_id = project_id or os.getenv("QISKIT_SCALEWAY_PROJECT_ID")
         url = url or os.getenv("QISKIT_SCALEWAY_API_URL")
 
@@ -97,13 +103,38 @@ class ScalewayProvider:
 
         for platform in platforms:
             if platform.backend_name == "aer":
-                scaleway_backends.append(self._create_aer_backend(platform))
+                scaleway_backends.append(
+                    AerBackend(
+                        provider=self,
+                        client=self.__client,
+                        platform=platform,
+                    )
+                )
             elif platform.backend_name == "qsim":
-                scaleway_backends.append(self._create_qsim_backend(platform))
+                scaleway_backends.append(
+                    QsimBackend(
+                        provider=self,
+                        client=self.__client,
+                        platform=platform,
+                    )
+                )
             elif platform.provider_name == "aqt":
-                scaleway_backends.append(self._create_aqt_backend(platform))
+                scaleway_backends.append(
+                    AqtBackend(
+                        provider=self,
+                        client=self.__client,
+                        platform=platform,
+                    )
+                )
             elif platform.provider_name == "iqm":
-                scaleway_backends.append(self._create_iqm_backend(platform))
+                scaleway_backends.append(
+                    IqmBackend(
+                        provider=self,
+                        client=self.__client,
+                        platform=platform,
+                    )
+                )
+
         if filters is not None:
             scaleway_backends = self.filters(scaleway_backends, filters)
 
@@ -122,39 +153,3 @@ class ScalewayProvider:
             backends = [b for b in backends if b.num_qubits >= min_num_qubits]
 
         return backends
-
-    def _create_iqm_backend(self, platform: QaaSPlatform) -> BaseBackend:
-        from qiskit_scaleway.backends.iqm import IqmBackend
-
-        return IqmBackend(
-            provider=self,
-            client=self.__client,
-            platform=platform,
-        )
-
-    def _create_aqt_backend(self, platform: QaaSPlatform) -> BaseBackend:
-        from qiskit_scaleway.backends.aqt import AqtBackend
-
-        return AqtBackend(
-            provider=self,
-            client=self.__client,
-            platform=platform,
-        )
-
-    def _create_qsim_backend(self, platform: QaaSPlatform) -> BaseBackend:
-        from qiskit_scaleway.backends.qsim import QsimBackend
-
-        return QsimBackend(
-            provider=self,
-            client=self.__client,
-            platform=platform,
-        )
-
-    def _create_aer_backend(self, platform: QaaSPlatform) -> BaseBackend:
-        from qiskit_scaleway.backends.aer import AerBackend
-
-        return AerBackend(
-            provider=self,
-            client=self.__client,
-            platform=platform,
-        )

@@ -100,7 +100,7 @@ class BaseJob(JobV1):
             user_agent=USER_AGENT,
         )
 
-        job_payload = QaaSJobData.schema().dumps(
+        data = QaaSJobData.schema().dumps(
             QaaSJobData(
                 backend=backend_opts,
                 run=run_opts,
@@ -111,7 +111,7 @@ class BaseJob(JobV1):
         self._job_id = self._client.create_job(
             name=self._name,
             session_id=session_id,
-            circuits=job_payload,
+            payload=data,
         ).id
 
     def result(
