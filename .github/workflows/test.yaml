@@ -39,5 +39,5 @@ jobs:
       run: pytest -s --showprogress -vv tests/
       env:
         QISKIT_SCALEWAY_PROJECT_ID: ${{ secrets.STG_QISKIT_SCALEWAY_PROJECT_ID }}
-        QISKIT_SCALEWAY_API_TOKEN: ${{ secrets.STG_QISKIT_SCALEWAY_API_TOKEN }}
+        QISKIT_SCALEWAY_SECRET_KEY: ${{ secrets.STG_QISKIT_SCALEWAY_API_TOKEN }}
         QISKIT_SCALEWAY_API_URL: ${{ secrets.STG_QISKIT_SCALEWAY_API_URL }}

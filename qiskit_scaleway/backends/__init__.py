@@ -13,3 +13,7 @@
 # limitations under the License.
 from .base_backend import BaseBackend
 from .base_job import BaseJob
+from .aer.backend import AerBackend
+from .qsim.backend import QsimBackend
+from .aqt.backend import AqtBackend
+from .iqm.backend import IqmBackend

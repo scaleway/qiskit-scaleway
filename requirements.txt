@@ -1,9 +1,6 @@
 qiskit==1.4.2
-randomname==0.2.1
-httpx==0.27.0
-dataclasses-json==0.6.4
-dataclasses==0.6
-pytimeparse==1.1.8
-python-dotenv==1.0.1
-qiskit-aqt-provider==1.12.0
 qiskit-aer==0.17
+randomname==0.2.1
+dataclasses-json>=0.6.4
+dataclasses>=0.6
+scaleway-qaas-client==0.1.10

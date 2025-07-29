@@ -18,19 +18,16 @@ from typing import Union, List
 
 from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
+from qiskit.transpiler import Target
 
-from qiskit_scaleway.backends.qsim.qsim_job import QsimJob
+from qiskit_scaleway.backends.qsim.job import QsimJob
 from qiskit_scaleway.backends import BaseBackend
-from qiskit_scaleway.api import QaaSClient, QaaSPlatform
+
+from scaleway_qaas_client import QaaSClient, QaaSPlatform
 
 
 class QsimBackend(BaseBackend):
-    def __init__(
-        self,
-        provider,
-        client: QaaSClient,
-        platform: QaaSPlatform,
-    ):
+    def __init__(self, provider, client: QaaSClient, platform: QaaSPlatform):
         super().__init__(
             provider=provider,
             client=client,
@@ -40,27 +37,23 @@ class QsimBackend(BaseBackend):
         self._options = self._default_options()
         self.options.set_validator("shots", (1, platform.max_shot_count))
 
-        self._max_qubits = platform.max_qubit_count
+        self._target = Target(num_qubits=platform.max_qubit_count)
 
     def __repr__(self) -> str:
         return f"<QsimBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
 
     @property
     def target(self):
-        return None
+        return self._target
 
     @property
-    def num_qubits(self) -> int:
-        return self._max_qubits
-
-    @property
-    def max_circuits(self):
-        return 1
+    def job_cls(self):
+        return QsimJob
 
     def run(
         self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **kwargs
     ) -> QsimJob:
-        if not isinstance(circuits, list):
+        if not isinstance(circuits, List):
             circuits = [circuits]
 
         job_config = dict(self._options.items())
@@ -107,7 +100,7 @@ class QsimBackend(BaseBackend):
             session_id="auto",
             session_name="qsim-session-from-qiskit",
             session_deduplication_id="qsim-session-from-qiskit",
-            session_max_duration="1h",
+            session_max_duration="59m",
             session_max_idle_duration="20m",
             shots=1000,
             circuit_memoization_size=0,

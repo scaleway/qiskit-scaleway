@@ -11,21 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import randomname
-import warnings
-
-from typing import Union, List
-
-from qiskit.providers import Options
-from qiskit.circuit import QuantumCircuit
-from qiskit.providers import convert_to_target
+from qiskit.providers import Options, convert_to_target
 
 from qiskit_aer.backends.aer_simulator import BASIS_GATES, AerBackendConfiguration
 from qiskit_aer.backends.aerbackend import NAME_MAPPING
 
-from qiskit_scaleway.backends.aer.aer_job import AerJob
 from qiskit_scaleway.backends import BaseBackend
-from qiskit_scaleway.api import QaaSClient, QaaSPlatform
+
+from scaleway_qaas_client import QaaSClient, QaaSPlatform
 
 
 class AerBackend(BaseBackend):
@@ -37,7 +30,6 @@ class AerBackend(BaseBackend):
         )
 
         self._options = self._default_options()
-
         self._configuration = AerBackendConfiguration.from_dict(
             {
                 "open_pulse": False,
@@ -50,7 +42,7 @@ class AerBackend(BaseBackend):
                 "conditional": True,
                 "memory": True,
                 "max_shots": platform.max_shot_count,
-                "description": "A C++ Qasm simulator with noise",
+                "description": platform.description,
                 "coupling_map": None,
                 "basis_gates": BASIS_GATES["automatic"],
                 "gates": [],
@@ -68,66 +60,13 @@ class AerBackend(BaseBackend):
     def target(self):
         return self._target
 
-    @property
-    def num_qubits(self) -> int:
-        return self._target.num_qubits
-
-    @property
-    def max_circuits(self):
-        return 1024
-
-    def run(
-        self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **run_options
-    ) -> AerJob:
-        if not isinstance(circuits, list):
-            circuits = [circuits]
-
-        job_config = dict(self._options.items())
-
-        for kwarg in run_options:
-            if not hasattr(self.options, kwarg):
-                warnings.warn(
-                    f"Option {kwarg} is not used by this backend",
-                    UserWarning,
-                    stacklevel=2,
-                )
-            else:
-                job_config[kwarg] = run_options[kwarg]
-
-        job_name = f"qj-aer-{randomname.get_name()}"
-
-        session_id = job_config.get("session_id", None)
-
-        job_config.pop("session_id")
-        job_config.pop("session_name")
-        job_config.pop("session_deduplication_id")
-        job_config.pop("session_max_duration")
-        job_config.pop("session_max_idle_duration")
-
-        job = AerJob(
-            backend=self,
-            client=self._client,
-            circuits=circuits,
-            config=job_config,
-            name=job_name,
-        )
-
-        if session_id in ["auto", None]:
-            session_id = self.start_session(name=f"auto-{self._options.session_name}")
-            assert session_id is not None
-
-        job.submit(session_id)
-
-        return job
-
     @classmethod
     def _default_options(self):
-        # https://qiskit.github.io/qiskit-aer/stubs/qiskit_aer.AerSimulator.html
         return Options(
             session_id="auto",
             session_name="aer-session-from-qiskit",
             session_deduplication_id="aer-session-from-qiskit",
-            session_max_duration="1h",
+            session_max_duration="59m",
             session_max_idle_duration="20m",
             shots=1000,
             memory=False,
