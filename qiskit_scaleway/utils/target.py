@@ -5,7 +5,7 @@ from typing import List
 from qiskit.transpiler import Target
 from qiskit.circuit.library import get_standard_gate_name_mapping
 
-from qiskit_scaleway.api import QaaSPlatform
+from scaleway_qaas_client import QaaSPlatform
 
 
 @dataclass_json
