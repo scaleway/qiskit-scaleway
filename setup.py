@@ -15,9 +15,7 @@
 import io
 from setuptools import setup, find_packages
 
-description = (
-    "A Qiskit package to simulate and connect to Scaleway Quantum as a Service",
-)
+description = "A Qiskit package to connect to Scaleway Quantum as a Service"
 long_description = io.open("README.md", encoding="utf-8").read()
 requirements = open("requirements.txt").readlines()
 requirements = [r.strip() for r in requirements]

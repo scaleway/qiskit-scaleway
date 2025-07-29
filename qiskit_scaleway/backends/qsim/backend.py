@@ -27,12 +27,7 @@ from scaleway_qaas_client import QaaSClient, QaaSPlatform
 
 
 class QsimBackend(BaseBackend):
-    def __init__(
-        self,
-        provider,
-        client: QaaSClient,
-        platform: QaaSPlatform,
-    ):
+    def __init__(self, provider, client: QaaSClient, platform: QaaSPlatform):
         super().__init__(
             provider=provider,
             client=client,
@@ -58,7 +53,7 @@ class QsimBackend(BaseBackend):
     def run(
         self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **kwargs
     ) -> QsimJob:
-        if not isinstance(circuits, list):
+        if not isinstance(circuits, List):
             circuits = [circuits]
 
         job_config = dict(self._options.items())

@@ -28,6 +28,7 @@ from typing import (
     Tuple,
     Union,
     cast,
+    Dict,
 )
 
 from qiskit import qasm2, QuantumCircuit
@@ -97,14 +98,12 @@ class QsimJob(BaseJob):
         name: str,
         backend,
         client: QaaSClient,
-        circuits,
-        config,
+        circuits: Union[List[QuantumCircuit], QuantumCircuit],
+        config: Dict,
     ) -> None:
-        super().__init__(name, backend, client)
-        assert circuits is QuantumCircuit or list
-
-        self._circuits = circuits
-        self._config = config
+        super().__init__(
+            name=name, backend=backend, client=client, config=config, circuits=circuits
+        )
 
     def submit(self, session_id: str) -> None:
         if self._job_id:
@@ -117,7 +116,7 @@ class QsimJob(BaseJob):
         # Note 2: Qsim can only handle one circuit at a time
         circuit = RemoveBarriers()(self._circuits[0])
 
-        run_opts = QaaSJobRunData(
+        run_data = QaaSJobRunData(
             options={"shots": options.pop("shots")},
             circuits=[
                 QaaSCircuitData(
@@ -129,28 +128,28 @@ class QsimJob(BaseJob):
 
         options.pop("circuit_memoization_size")
 
-        backend_opts = QaaSJobBackendData(
+        backend_data = QaaSJobBackendData(
             name=self.backend().name,
             version=self.backend().version,
             options=options,
         )
 
-        client_opts = QaaSJobClientData(
+        client_data = QaaSJobClientData(
             user_agent=USER_AGENT,
         )
 
-        job_payload = QaaSJobData.schema().dumps(
+        data = QaaSJobData.schema().dumps(
             QaaSJobData(
-                backend=backend_opts,
-                run=run_opts,
-                client=client_opts,
+                backend=backend_data,
+                run=run_data,
+                client=client_data,
             )
         )
 
         self._job_id = self._client.create_job(
             name=self._name,
             session_id=session_id,
-            circuits=job_payload,
+            payload=data,
         ).id
 
     def __to_cirq_result(self, job_results) -> "cirq.Result":

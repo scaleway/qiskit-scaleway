@@ -73,11 +73,10 @@ class BaseJob(JobV1):
 
         options = self._config.copy()
 
-        run_opts = QaaSJobRunData(
+        run_data = QaaSJobRunData(
             options={
                 "shots": options.pop("shots"),
-                "memory": options.pop("memory"),
-                "seed_simulator": options.pop("seed_simulator"),
+                "memory": options.pop("memory", False),
             },
             circuits=list(
                 map(
@@ -90,21 +89,21 @@ class BaseJob(JobV1):
             ),
         )
 
-        backend_opts = QaaSJobBackendData(
+        backend_data = QaaSJobBackendData(
             name=self.backend().name,
             version=self.backend().version,
             options=options,
         )
 
-        client_opts = QaaSJobClientData(
+        client_data = QaaSJobClientData(
             user_agent=USER_AGENT,
         )
 
         data = QaaSJobData.schema().dumps(
             QaaSJobData(
-                backend=backend_opts,
-                run=run_opts,
-                client=client_opts,
+                backend=backend_data,
+                run=run_data,
+                client=client_data,
             )
         )
 
