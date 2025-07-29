@@ -1,6 +1,10 @@
 # Scaleway provider for Qiskit
 
-**Qiskit Scaleway** is a Python package to run quantum circuits on [Scaleway](https://www.scaleway.com/en/) infrastructure, providing access to [Aer](https://github.com/Qiskit/qiskit-aer) and [Qsim](https://github.com/quantumlib/qsim) simulators on powerful hardware (CPU and GPU).
+**Qiskit Scaleway** is a Python package to run quantum circuits on [Scaleway](https://www.scaleway.com/en/) infrastructure, providing access to:
+- [AQT](https://www.aqt.eu/) ion-trapped quantum computers
+- [IQM](https://meetiqm.com/) superconducting quantum computers
+- [Aer](https://github.com/Qiskit/qiskit-aer) state vector and tensor network multi-GPU emulators
+- [Qsim](https://github.com/quantumlib/qsim) NISQ emulators
 
 To run circuits over [Quandela](https://www.quandela.com/) backends provided by Scaleway, you must use [Perceval SDK](https://perceval.quandela.net/) through the [Scaleway provider](https://perceval.quandela.net/docs/providers.html).
 
@@ -32,7 +36,7 @@ Alternatively, the Scaleway Provider can discover your access token from environ
 
 ```
 export QISKIT_SCALEWAY_PROJECT_ID="project_id"
-export QISKIT_SCALEWAY_API_TOKEN="token"
+export QISKIT_SCALEWAY_SECRET_KEY="token"
 ```
 
 Then you can instantiate the provider without any arguments:
@@ -57,7 +61,7 @@ backends = provider.backends(min_num_qubits=35)
 print(backends)
 
 # Retrieve a backend by providing search criteria. The search must have a single match
-backend = provider.get_backend("aer_simulation_h100")
+backend = provider.get_backend("aer_simulation_h100") # Or any gate-based compatible QPU
 ```
 
 Define a quantum circuit and run it
