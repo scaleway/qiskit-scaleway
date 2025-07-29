@@ -38,8 +38,7 @@ n_qubits = 5
 circuit = IQP(np.real(random_hermitian(n_qubits, seed=1234)))
 circuit.measure_all()
 
-isa_circuit = transpile(circuit, backend=backend, optimization_level=1)
-job = sampler.run([isa_circuit], shots=100)
+job = sampler.run([circuit], shots=100)
 result = job.result()
 
 print(f"> bitstrings: {result[0].data.meas.get_bitstrings()}")
