@@ -22,7 +22,7 @@ requirements = [r.strip() for r in requirements]
 
 setup(
     name="qiskit_scaleway",
-    version="0.2.4",
+    version="0.2.6",
     project_urls={
         "Documentation": "https://www.scaleway.com/en/quantum-as-a-service/",
         "Source": "https://github.com/scaleway/qiskit-scaleway",
@@ -32,7 +32,7 @@ setup(
     author_email="vmacheret@scaleway.com",
     packages=find_packages(),
     install_requires=requirements,
-    python_requires=(">=3.10.0"),
+    python_requires=(">=3.12.0"),
     license="Apache 2",
     description=description,
     long_description=long_description,

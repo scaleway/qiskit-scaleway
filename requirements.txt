@@ -1,6 +1,6 @@
 qiskit==1.4.2
 qiskit-aer==0.17
-randomname==0.2.1
+randomname>=0.2.1
 dataclasses-json>=0.6.4
 dataclasses>=0.6
-scaleway-qaas-client==0.1.10
+scaleway-qaas-client>=0.1.12

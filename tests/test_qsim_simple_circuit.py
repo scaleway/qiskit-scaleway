@@ -21,7 +21,7 @@ from qiskit_scaleway import ScalewayProvider
 def test_qsim_simple_circuit():
     provider = ScalewayProvider(
         project_id=os.environ["QISKIT_SCALEWAY_PROJECT_ID"],
-        secret_key=os.environ["QISKIT_SCALEWAY_API_TOKEN"],
+        secret_key=os.environ["QISKIT_SCALEWAY_SECRET_KEY"],
         url=os.environ["QISKIT_SCALEWAY_API_URL"],
     )
 
