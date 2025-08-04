@@ -18,7 +18,7 @@ from qiskit_aer.backends.aerbackend import NAME_MAPPING
 
 from qiskit_scaleway.backends import BaseBackend
 
-from scaleway_qaas_client import QaaSClient, QaaSPlatform
+from scaleway_qaas_client.v1alpha1 import QaaSClient, QaaSPlatform
 
 
 class AerBackend(BaseBackend):
