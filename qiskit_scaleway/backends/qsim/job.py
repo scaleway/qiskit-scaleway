@@ -40,7 +40,7 @@ from qiskit.result.models import ExperimentResult, ExperimentResultData
 from qiskit_scaleway.versions import USER_AGENT
 from qiskit_scaleway.backends import BaseJob
 
-from scaleway_qaas_client import (
+from scaleway_qaas_client.v1alpha1 import (
     QaaSClient,
     QaaSJobData,
     QaaSJobClientData,

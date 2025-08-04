@@ -21,7 +21,7 @@ from typing import Union, List
 from qiskit.providers import BackendV2
 from qiskit.circuit import QuantumCircuit
 
-from scaleway_qaas_client import QaaSClient, QaaSPlatform
+from scaleway_qaas_client.v1alpha1 import QaaSClient, QaaSPlatform
 
 from .base_job import BaseJob
 

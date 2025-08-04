@@ -17,7 +17,7 @@ from qiskit.providers import Options
 from qiskit_scaleway.backends import BaseBackend
 from qiskit_scaleway.utils import create_target_from_platform
 
-from scaleway_qaas_client import QaaSClient, QaaSPlatform
+from scaleway_qaas_client.v1alpha1 import QaaSClient, QaaSPlatform
 
 
 class AqtBackend(BaseBackend):

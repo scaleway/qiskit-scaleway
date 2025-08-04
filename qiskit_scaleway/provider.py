@@ -25,7 +25,7 @@ from qiskit_scaleway.backends import (
     AerBackend,
 )
 
-from scaleway_qaas_client import QaaSClient
+from scaleway_qaas_client.v1alpha1 import QaaSClient
 
 
 class ScalewayProvider:

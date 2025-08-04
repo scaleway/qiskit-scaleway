@@ -25,7 +25,7 @@ from qiskit.providers import JobError, JobTimeoutError, JobStatus
 
 from qiskit_scaleway.versions import USER_AGENT
 
-from scaleway_qaas_client import (
+from scaleway_qaas_client.v1alpha1 import (
     QaaSClient,
     QaaSJobResult,
     QaaSJobData,

@@ -23,7 +23,7 @@ from qiskit.transpiler import Target
 from qiskit_scaleway.backends.qsim.job import QsimJob
 from qiskit_scaleway.backends import BaseBackend
 
-from scaleway_qaas_client import QaaSClient, QaaSPlatform
+from scaleway_qaas_client.v1alpha1 import QaaSClient, QaaSPlatform
 
 
 class QsimBackend(BaseBackend):
