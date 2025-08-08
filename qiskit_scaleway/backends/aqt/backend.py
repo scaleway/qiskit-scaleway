@@ -46,10 +46,10 @@ class AqtBackend(BaseBackend):
     def _default_options(self):
         return Options(
             session_id="auto",
-            session_name="aqt-session-from-qiskit",
-            session_deduplication_id="aqt-session-from-qiskit",
+            session_name="qs-qiskit-aqt",
+            session_deduplication_id="qs-qiskit-aqt",
             session_max_duration="59m",
-            session_max_idle_duration="20m",
+            session_max_idle_duration="59m",
             shots=100,
             memory=True,
             open_pulse=False,

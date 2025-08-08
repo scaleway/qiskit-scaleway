@@ -64,10 +64,10 @@ class AerBackend(BaseBackend):
     def _default_options(self):
         return Options(
             session_id="auto",
-            session_name="aer-session-from-qiskit",
-            session_deduplication_id="aer-session-from-qiskit",
+            session_name="qs-qiskit-aer",
+            session_deduplication_id="qs-qiskit-aer",
             session_max_duration="59m",
-            session_max_idle_duration="20m",
+            session_max_idle_duration="59m",
             shots=1000,
             memory=False,
             seed_simulator=None,

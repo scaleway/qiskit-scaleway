@@ -146,10 +146,15 @@ class QsimJob(BaseJob):
             )
         )
 
-        self._job_id = self._client.create_job(
-            name=self._name,
-            session_id=session_id,
+        model = self._client.create_model(
             payload=data,
+        )
+
+        if not model:
+            raise RuntimeError("Failed to push circuit data")
+
+        self._job_id = self._client.create_job(
+            name=self._name, session_id=session_id, model_id=model.id
         ).id
 
     def __to_cirq_result(self, job_results) -> "cirq.Result":

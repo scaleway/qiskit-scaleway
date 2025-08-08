@@ -98,10 +98,10 @@ class QsimBackend(BaseBackend):
     def _default_options(self):
         return Options(
             session_id="auto",
-            session_name="qsim-session-from-qiskit",
-            session_deduplication_id="qsim-session-from-qiskit",
+            session_name="qs-qiskit-qsim",
+            session_deduplication_id="qs-qiskit-qsim",
             session_max_duration="59m",
-            session_max_idle_duration="20m",
+            session_max_idle_duration="59m",
             shots=1000,
             circuit_memoization_size=0,
             max_fused_gate_size=2,

@@ -46,9 +46,9 @@ class IqmBackend(BaseBackend):
     def _default_options(self):
         return Options(
             session_id="auto",
-            session_name="iqm-session-from-qiskit",
-            session_deduplication_id="iqm-session-from-qiskit",
+            session_name="qs-qiskit-iqm",
+            session_deduplication_id="qs-qiskit-iqm",
             session_max_duration="59h",
-            session_max_idle_duration="20m",
+            session_max_idle_duration="59m",
             shots=1000,
         )
