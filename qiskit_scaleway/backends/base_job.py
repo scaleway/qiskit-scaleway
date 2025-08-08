@@ -47,7 +47,7 @@ class BaseJob(JobV1):
         name: Optional[str] = None,
     ) -> None:
         super().__init__(backend, None)
-        self._name = name if name else f"qj-qiskit-{randomname.get_name()}"
+        self._name = name or f"qj-qiskit-{randomname.get_name()}"
         self._client = client
         self._circuits = circuits
         self._config = config
@@ -107,10 +107,17 @@ class BaseJob(JobV1):
             )
         )
 
+        model = self._client.create_model(
+            payload=data,
+        )
+
+        if not model:
+            raise RuntimeError("Failed to push circuit data")
+
         self._job_id = self._client.create_job(
             name=self._name,
             session_id=session_id,
-            payload=data,
+            model_id=model.id,
         ).id
 
     def result(

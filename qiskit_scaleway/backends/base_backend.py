@@ -118,7 +118,7 @@ class BaseBackend(BackendV2, ABC):
             max_duration = self._options.get("session_max_duration", "59m")
 
         if max_idle_duration is None:
-            max_idle_duration = self._options.get("session_max_idle_duration", "25m")
+            max_idle_duration = self._options.get("session_max_idle_duration", "59m")
 
         return self._client.create_session(
             name=name,
