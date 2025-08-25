@@ -29,7 +29,7 @@ def test_estimator():
     provider = ScalewayProvider(
         project_id=os.environ["QISKIT_SCALEWAY_PROJECT_ID"],
         secret_key=os.environ["QISKIT_SCALEWAY_SECRET_KEY"],
-        url=os.environ["QISKIT_SCALEWAY_API_URL"],
+        url=os.getenv("QISKIT_SCALEWAY_API_URL"),
     )
 
     backend = provider.get_backend("aer_simulation_pop_c16m128")

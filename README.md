@@ -32,7 +32,7 @@ provider = ScalewayProvider(
 )
 ```
 
-Alternatively, the Scaleway Provider can discover your access token from environment variables or from your .env file
+Alternatively, the Scaleway Provider can discover your access token from environment variables:
 
 ```
 export QISKIT_SCALEWAY_PROJECT_ID="project_id"
@@ -48,7 +48,7 @@ from qiskit_scaleway import ScalewayProvider
 provider = ScalewayProvider()
 ```
 
-Now you can have acces to the supported backends:
+Now you can have access to the supported backends:
 
 
 ```python
