@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json
-from typing import List
+from typing import List, Optional
 
 from qiskit.transpiler import Target
 from qiskit.circuit.library import get_standard_gate_name_mapping
@@ -12,7 +12,7 @@ from scaleway_qaas_client.v1alpha1 import QaaSPlatform
 @dataclass
 class _QiskitInstructionData:
     name: str
-    params: List[str] = field(default=None)
+    params: Optional[List[str]] = field(default=None)
 
 
 @dataclass_json
