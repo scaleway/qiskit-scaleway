@@ -165,7 +165,7 @@ class BaseJob(JobV1):
             url = job_result.url
 
             if url is not None:
-                resp = httpx.get(url.replace("http://s3", "http://localhost"))
+                resp = httpx.get(url)
                 resp.raise_for_status()
 
                 return resp.text
