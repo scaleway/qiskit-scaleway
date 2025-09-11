@@ -71,6 +71,7 @@ class AerBackend(BaseBackend):
             shots=1000,
             memory=False,
             seed_simulator=None,
+            noise_model=None,
             method="automatic",
             precision="double",
             max_shot_size=None,
