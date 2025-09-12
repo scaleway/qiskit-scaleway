@@ -89,7 +89,7 @@ class BaseJob(JobV1):
             ),
         )
 
-        if options.get("noise_model"):
+        if options and options.get("noise_model"):
             options["noise_model"] = options["noise_model"].to_dict(True)
 
         backend_data = QaaSJobBackendData(
