@@ -96,7 +96,7 @@ def test_aer_multiple_circuits():
 def _get_noise_model():
     import qiskit_aer.noise as noise
 
-    # Error probabilities
+    # Error probabilities (exaggerated to get a noticeable effect for demonstration)
     prob_1 = 0.01  # 1-qubit gate
     prob_2 = 0.1   # 2-qubit gate
 
@@ -175,4 +175,3 @@ def test_aer_with_noise_model():
             assert len(ideal_result.data.counts) < len(noisy_results[i].data.counts)
     finally:
         backend.delete_session(session_id)
-

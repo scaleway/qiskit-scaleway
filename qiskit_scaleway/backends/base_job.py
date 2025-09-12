@@ -34,6 +34,7 @@ from scaleway_qaas_client.v1alpha1 import (
     QaaSJobRunData,
     QaaSJobBackendData,
     QaaSCircuitSerializationFormat,
+    QaaSNoiseModelData,
 )
 
 
@@ -89,8 +90,7 @@ class BaseJob(JobV1):
             ),
         )
 
-        if options and options.get("noise_model"):
-            options["noise_model"] = options["noise_model"].to_dict(True)
+        noise_model = QaaSNoiseModelData(noise_model=options.pop("noise_model", None).to_dict(True)) if options.get("noise_model") else None
 
         backend_data = QaaSJobBackendData(
             name=self.backend().name,
@@ -107,6 +107,7 @@ class BaseJob(JobV1):
                 backend=backend_data,
                 run=run_data,
                 client=client_data,
+                noise_model=noise_model,
             )
         )
 
