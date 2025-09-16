@@ -12,15 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-from typing import Literal
 import numpy as np
 import random
-import dotenv
 
 from qiskit import QuantumCircuit
 from qiskit_scaleway import ScalewayProvider
-
-dotenv.load_dotenv()
 
 
 def _random_qiskit_circuit(size: int) -> QuantumCircuit:
