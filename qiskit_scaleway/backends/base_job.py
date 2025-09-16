@@ -90,7 +90,11 @@ class BaseJob(JobV1):
             ),
         )
 
-        noise_model = QaaSNoiseModelData(noise_model=options.pop("noise_model", None).to_dict(True)) if options.get("noise_model") else None
+        if options.get("noise_model"):
+            noise_model = QaaSNoiseModelData(
+                serialization_format = QaaSCircuitSerializationFormat.JSON,
+                noise_model_serialization = json.dumps(noise_model.to_dict(True))
+            )
 
         backend_data = QaaSJobBackendData(
             name=self.backend().name,
