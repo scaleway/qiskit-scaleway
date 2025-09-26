@@ -14,6 +14,7 @@
 import time
 import httpx
 import json
+import numpy as np
 import randomname
 
 from typing import List, Union, Optional, Dict
@@ -94,9 +95,13 @@ class BaseJob(JobV1):
         noise_model = options.pop("noise_model", None)
         if noise_model:
             noise_model = QaaSNoiseModelData(
-                serialization_format = QaaSNoiseModelSerializationFormat.JSON,
-                noise_model_serialization = json.dumps(noise_model.to_dict(True))
+                serialization_format = QaaSNoiseModelSerializationFormat.PATCHED_JSON,
+                noise_model_serialization = json.dumps(_encode_numpy_complex(noise_model.to_dict(False)))
             )
+            # noise_model = QaaSNoiseModelData(
+            #     serialization_format = QaaSNoiseModelSerializationFormat.JSON,
+            #     noise_model_serialization = json.dumps(noise_model.to_dict(True))
+            # )
 
         backend_data = QaaSJobBackendData(
             name=self.backend().name,
@@ -204,3 +209,29 @@ class BaseJob(JobV1):
                 raise JobError("Job error")
 
             time.sleep(fetch_interval)
+
+
+def _encode_numpy_complex(obj):
+    """
+    Recursively traverses a structure and converts numpy arrays and
+    complex numbers into a JSON-serializable format.
+    """
+    if isinstance(obj, np.ndarray):
+        return {
+            '__ndarray__': True,
+            'data': _encode_numpy_complex(obj.tolist()), # Recursively encode data
+            'dtype': obj.dtype.name,
+            'shape': obj.shape,
+        }
+    elif isinstance(obj, (complex, np.complex128)):
+        return {
+            '__complex__': True,
+            'real': obj.real,
+            'imag': obj.imag
+        }
+    elif isinstance(obj, dict):
+        return {key: _encode_numpy_complex(value) for key, value in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [_encode_numpy_complex(item) for item in obj]
+    else:
+        return obj
