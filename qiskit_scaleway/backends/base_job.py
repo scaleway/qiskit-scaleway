@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import time
+import zlib
 import httpx
 import json
 import numpy as np
@@ -94,14 +95,17 @@ class BaseJob(JobV1):
 
         noise_model = options.pop("noise_model", None)
         if noise_model:
+            noise_model_dict = _encode_numpy_complex(noise_model.to_dict(False))
             noise_model = QaaSNoiseModelData(
                 serialization_format = QaaSNoiseModelSerializationFormat.PATCHED_JSON,
-                noise_model_serialization = json.dumps(_encode_numpy_complex(noise_model.to_dict(False)))
+                noise_model_serialization = zlib.compress(json.dumps(noise_model_dict).encode()),
             )
+            ### Uncomment to use standard JSON serialization, provided there is no more issue with AER deserialization logic
             # noise_model = QaaSNoiseModelData(
             #     serialization_format = QaaSNoiseModelSerializationFormat.JSON,
-            #     noise_model_serialization = json.dumps(noise_model.to_dict(True))
+            #     noise_model_serialization = json.dumps(noise_model.to_dict(True)).encode()
             # )
+            ###
 
         backend_data = QaaSJobBackendData(
             name=self.backend().name,
