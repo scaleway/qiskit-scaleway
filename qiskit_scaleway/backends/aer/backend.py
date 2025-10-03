@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from qiskit.providers import Options, convert_to_target
+from typing import List
+from qiskit.providers import Options
+from qiskit.transpiler import Target
 
 from qiskit_aer.backends.aer_simulator import BASIS_GATES, AerBackendConfiguration
 from qiskit_aer.backends.aerbackend import NAME_MAPPING
@@ -49,9 +51,14 @@ class AerBackend(BaseBackend):
             }
         )
         self._properties = None
-        self._target = convert_to_target(
-            self._configuration, self._properties, None, NAME_MAPPING
-        )
+
+        self._target = self._convert_to_target()
+
+        ### LEGACY qiskit 1.4
+        # self._target = convert_to_target(
+        #     self._configuration, properties=self._properties, defaults=None, custom_name_mapping=NAME_MAPPING
+        # )
+        ###
 
     def __repr__(self) -> str:
         return f"<AerBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
@@ -106,3 +113,21 @@ class AerBackend(BaseBackend):
             fusion_max_qubit=None,
             fusion_threshold=None,
         )
+
+    def _convert_to_target(self) -> Target:
+        args_lis: List[str] = [
+            "basis_gates",
+            "num_qubits",
+            "coupling_map",
+            "instruction_durations",
+            "concurrent_measurements",
+            "dt",
+            "timing_constraints",
+            "custom_name_mapping",
+        ]
+
+        conf_dict = self._configuration.to_dict()
+        if conf_dict.get("custom_name_mapping") is None:
+            conf_dict["custom_name_mapping"] = NAME_MAPPING
+
+        return Target.from_configuration(**{k: conf_dict[k] for k in args_lis if k in conf_dict})

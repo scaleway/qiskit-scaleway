@@ -1,4 +1,4 @@
-qiskit==1.4.2
+qiskit~=2.1
 qiskit-aer==0.17
 randomname>=0.2.1
 dataclasses-json>=0.6.4

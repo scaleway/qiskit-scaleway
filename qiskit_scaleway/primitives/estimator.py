@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from qiskit.primitives import BackendEstimatorV2
-from qiskit.primitives.backend_estimator import (
+from qiskit.primitives.backend_estimator_v2 import (
     _prepare_counts,
     _run_circuits,
 )
