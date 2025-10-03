@@ -14,11 +14,10 @@
 from qiskit.providers import Options
 
 from qiskit_scaleway.backends import BaseBackend
+from qiskit_scaleway.backends.iqm.move_gate import MoveGate
 from qiskit_scaleway.utils import create_target_from_platform
 
 from scaleway_qaas_client.v1alpha1 import QaaSClient, QaaSPlatform
-
-from .move_gate import MoveGate
 
 
 class IqmBackend(BaseBackend):
