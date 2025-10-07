@@ -14,6 +14,7 @@
 from qiskit.providers import Options
 
 from qiskit_scaleway.backends import BaseBackend
+from qiskit_scaleway.backends.iqm.move_gate import MoveGate
 from qiskit_scaleway.utils import create_target_from_platform
 
 from scaleway_qaas_client.v1alpha1 import QaaSClient, QaaSPlatform
@@ -30,7 +31,9 @@ class IqmBackend(BaseBackend):
         self._options = self._default_options()
 
         self._platform = platform
-        self._target = create_target_from_platform(self._platform)
+        self._target = create_target_from_platform(
+            self._platform, additional_gates={"move": MoveGate()}
+        )
 
         self._options.max_shots = platform.max_shot_count
         self._options.set_validator("shots", (1, platform.max_shot_count))
