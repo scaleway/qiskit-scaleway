@@ -22,7 +22,7 @@ requirements = [r.strip() for r in requirements]
 
 setup(
     name="qiskit_scaleway",
-    version="0.2.10",
+    version="0.2.12",
     project_urls={
         "Documentation": "https://www.scaleway.com/en/quantum-as-a-service/",
         "Source": "https://github.com/scaleway/qiskit-scaleway",

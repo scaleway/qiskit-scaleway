@@ -76,10 +76,11 @@ class BaseJob(JobV1):
             raise RuntimeError(f"Job already submitted (ID: {self._job_id})")
 
         options = self._config.copy()
+        shots = options.pop("shots")
 
         run_data = QaaSJobRunData(
             options={
-                "shots": options.pop("shots"),
+                "shots": shots,
                 "memory": options.pop("memory", False),
             },
             circuits=list(
@@ -137,6 +138,7 @@ class BaseJob(JobV1):
             name=self._name,
             session_id=session_id,
             model_id=model.id,
+            parameters={"shots": shots},
         ).id
 
     def result(
@@ -184,7 +186,7 @@ class BaseJob(JobV1):
             url = job_result.url
 
             if url is not None:
-                resp = httpx.get(url.replace("http://s3", "http://localhost"))
+                resp = httpx.get(url)
                 resp.raise_for_status()
 
                 return resp.text
