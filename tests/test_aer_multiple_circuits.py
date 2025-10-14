@@ -54,7 +54,9 @@ def test_aer_multiple_circuits():
         url=os.getenv("QISKIT_SCALEWAY_API_URL"),
     )
 
-    backend = provider.get_backend(os.getenv("QISKIT_SCALEWAY_BACKEND_NAME", "aer_simulation_pop_c16m128"))
+    backend = provider.get_backend(
+        os.getenv("QISKIT_SCALEWAY_BACKEND_NAME", "aer_simulation_pop_c16m128")
+    )
 
     assert backend is not None
 
@@ -94,7 +96,7 @@ def _get_noise_model():
 
     # Error probabilities (exaggerated to get a noticeable effect for demonstration)
     prob_1 = 0.01  # 1-qubit gate
-    prob_2 = 0.1   # 2-qubit gate
+    prob_2 = 0.1  # 2-qubit gate
 
     # Depolarizing quantum errors
     error_1 = noise.depolarizing_error(prob_1, 1)
@@ -102,8 +104,8 @@ def _get_noise_model():
 
     # Add errors to noise model
     noise_model = noise.NoiseModel()
-    noise_model.add_all_qubit_quantum_error(error_1, ['rz', 'sx', 'x'])
-    noise_model.add_all_qubit_quantum_error(error_2, ['cx'])
+    noise_model.add_all_qubit_quantum_error(error_1, ["rz", "sx", "x"])
+    noise_model.add_all_qubit_quantum_error(error_2, ["cx"])
 
     return noise_model
 
@@ -131,7 +133,9 @@ def test_aer_with_noise_model():
         url=os.getenv("QISKIT_SCALEWAY_API_URL"),
     )
 
-    backend = provider.get_backend(os.getenv("QISKIT_SCALEWAY_BACKEND_NAME", "aer_simulation_pop_c16m128"))
+    backend = provider.get_backend(
+        os.getenv("QISKIT_SCALEWAY_BACKEND_NAME", "aer_simulation_pop_c16m128")
+    )
 
     assert backend is not None
 
@@ -159,7 +163,7 @@ def test_aer_with_noise_model():
             shots=1000,
             max_parallel_experiments=0,
             session_id=session_id,
-            noise_model=_get_noise_model()
+            noise_model=_get_noise_model(),
         ).result()
 
         ideal_results = run_ideal_result.results

@@ -29,7 +29,9 @@ def test_sampler():
         url=os.getenv("QISKIT_SCALEWAY_API_URL"),
     )
 
-    backend = provider.get_backend(os.getenv("QISKIT_SCALEWAY_BACKEND_NAME", "aer_simulation_pop_c16m128"))
+    backend = provider.get_backend(
+        os.getenv("QISKIT_SCALEWAY_BACKEND_NAME", "aer_simulation_pop_c16m128")
+    )
 
     assert backend is not None
 
@@ -49,8 +51,6 @@ def test_sampler():
         circuit = iqp(mat)
         circuit.measure_all()
 
-        # isa_circuit = transpile(circuit, backend=backend, optimization_level=1)
-        # job = sampler.run([isa_circuit], shots=100)
         job = sampler.run([circuit], shots=100)
         result = job.result()
 

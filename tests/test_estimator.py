@@ -32,7 +32,9 @@ def test_estimator():
         url=os.getenv("QISKIT_SCALEWAY_API_URL"),
     )
 
-    backend = provider.get_backend(os.getenv("QISKIT_SCALEWAY_BACKEND_NAME", "aer_simulation_pop_c16m128"))
+    backend = provider.get_backend(
+        os.getenv("QISKIT_SCALEWAY_BACKEND_NAME", "aer_simulation_pop_c16m128")
+    )
 
     assert backend is not None
 

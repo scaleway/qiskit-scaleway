@@ -98,8 +98,10 @@ class BaseJob(JobV1):
         if noise_model:
             noise_model_dict = _encode_numpy_complex(noise_model.to_dict(False))
             noise_model = QaaSNoiseModelData(
-                serialization_format = QaaSNoiseModelSerializationFormat.PATCHED_JSON,
-                noise_model_serialization = zlib.compress(json.dumps(noise_model_dict).encode()),
+                serialization_format=QaaSNoiseModelSerializationFormat.AER_COMPRESSED_JSON,
+                noise_model_serialization=zlib.compress(
+                    json.dumps(noise_model_dict).encode()
+                ),
             )
             ### Uncomment to use standard JSON serialization, provided there is no more issue with AER deserialization logic
             # noise_model = QaaSNoiseModelData(
@@ -224,17 +226,13 @@ def _encode_numpy_complex(obj):
     """
     if isinstance(obj, np.ndarray):
         return {
-            '__ndarray__': True,
-            'data': _encode_numpy_complex(obj.tolist()), # Recursively encode data
-            'dtype': obj.dtype.name,
-            'shape': obj.shape,
+            "__ndarray__": True,
+            "data": _encode_numpy_complex(obj.tolist()),  # Recursively encode data
+            "dtype": obj.dtype.name,
+            "shape": obj.shape,
         }
     elif isinstance(obj, (complex, np.complex128)):
-        return {
-            '__complex__': True,
-            'real': obj.real,
-            'imag': obj.imag
-        }
+        return {"__complex__": True, "real": obj.real, "imag": obj.imag}
     elif isinstance(obj, dict):
         return {key: _encode_numpy_complex(value) for key, value in obj.items()}
     elif isinstance(obj, (list, tuple)):

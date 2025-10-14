@@ -54,12 +54,6 @@ class AerBackend(BaseBackend):
 
         self._target = self._convert_to_target()
 
-        ### LEGACY qiskit 1.4
-        # self._target = convert_to_target(
-        #     self._configuration, properties=self._properties, defaults=None, custom_name_mapping=NAME_MAPPING
-        # )
-        ###
-
     def __repr__(self) -> str:
         return f"<AerBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
 
@@ -130,4 +124,6 @@ class AerBackend(BaseBackend):
         if conf_dict.get("custom_name_mapping") is None:
             conf_dict["custom_name_mapping"] = NAME_MAPPING
 
-        return Target.from_configuration(**{k: conf_dict[k] for k in args_lis if k in conf_dict})
+        return Target.from_configuration(
+            **{k: conf_dict[k] for k in args_lis if k in conf_dict}
+        )
