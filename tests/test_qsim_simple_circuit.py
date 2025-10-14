@@ -25,7 +25,7 @@ def test_qsim_simple_circuit():
         url=os.getenv("QISKIT_SCALEWAY_API_URL"),
     )
 
-    backend = provider.get_backend("qsim_simulation_pop_c16m128")
+    backend = provider.get_backend(os.getenv("QSIM_SCALEWAY_BACKEND_NAME", "qsim_simulation_pop_c16m128"))
 
     assert backend is not None
 
