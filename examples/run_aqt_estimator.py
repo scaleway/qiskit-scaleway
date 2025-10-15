@@ -19,7 +19,7 @@ from qiskit.quantum_info import SparsePauliOp
 from qiskit.circuit.library import n_local
 
 from qiskit_scaleway import ScalewayProvider
-from qiskit_scaleway.primitives import EstimatorV1
+from qiskit_scaleway.primitives import Estimator
 
 provider = ScalewayProvider(
     project_id="<your-scaleway-project-id>",
@@ -33,7 +33,7 @@ backend = provider.get_backend("aqt_ibex_simulation_l4")
 session_id = backend.start_session(name="test-session", deduplication_id="my-workshop")
 
 # Create an estimator (v1) with the backend and the session
-estimator = EstimatorV1(backend=backend, session_id=session_id)
+estimator = Estimator(backend=backend, session_id=session_id)
 
 # Specify the problem Hamiltonian
 hamiltonian = SparsePauliOp.from_list(
@@ -56,7 +56,7 @@ def cost_function(
     params,
     ansatz: QuantumCircuit,
     hamiltonian: BaseOperator,
-    estimator: EstimatorV1,
+    estimator: Estimator,
 ) -> float:
     """Cost function for the VQE.
 
@@ -64,7 +64,7 @@ def cost_function(
     on the state prepared by the Ansatz circuit.
     """
     return float(
-        estimator.run(ansatz, hamiltonian, parameter_values=params).result().values[0]
+        estimator.run([(ansatz, hamiltonian, params)]).result().values[0]
     )
 
 
