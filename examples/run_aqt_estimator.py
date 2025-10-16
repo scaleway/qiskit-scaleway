@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import math
 from scipy.optimize import minimize
 
 from qiskit import QuantumCircuit
@@ -63,8 +64,13 @@ def cost_function(
     Return the estimated expectation value of the Hamiltonian
     on the state prepared by the Ansatz circuit.
     """
+    max_shots = 100
+    precision = 1 / math.sqrt(max_shots - 1)
+
     return float(
-        estimator.run([(ansatz, hamiltonian, params)]).result().values[0]
+        estimator.run([(ansatz, hamiltonian, params)], precision=precision)
+        .result()[0]
+        .data["evs"]
     )
 
 
