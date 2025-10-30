@@ -63,9 +63,7 @@ def cost_function(
     Return the estimated expectation value of the Hamiltonian
     on the state prepared by the Ansatz circuit.
     """
-    return float(
-        estimator.run([(ansatz, hamiltonian, params)]).result().values[0]
-    )
+    return float(estimator.run([(ansatz, hamiltonian, params)]).result().values[0])
 
 
 # Run the VQE using the SciPy minimizer routine

@@ -4,3 +4,4 @@ randomname>=0.2.1
 dataclasses-json>=0.6.4
 dataclasses>=0.6
 scaleway-qaas-client>=0.1.23
+qio>=0.1.0
