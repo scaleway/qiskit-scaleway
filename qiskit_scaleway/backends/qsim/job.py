@@ -62,13 +62,10 @@ class QsimJob(BaseJob):
         # Note 2: Qsim can only handle one circuit at a time
         circuit = RemoveBarriers()(self._circuits[0])
 
-        programs = [
-            QuantumProgram.from_qiskit_circuit(
-                circuit, QuantumProgramSerializationFormat.QASM_V2
-            )
-        ]
+        programs = [QuantumProgram.from_qiskit_circuit(circuit)]
 
         options.pop("circuit_memoization_size")
+        shots = options.pop("shots")
 
         backend_data = BackendData(
             name=self.backend().name,
@@ -87,7 +84,7 @@ class QsimJob(BaseJob):
         ).to_json_str()
 
         computation_parameters_json = QuantumComputationParameters(
-            shots=options.pop("shots"),
+            shots=shots,
         ).to_json_str()
 
         model = self._client.create_model(
