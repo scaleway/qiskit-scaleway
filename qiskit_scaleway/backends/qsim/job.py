@@ -74,28 +74,24 @@ class QsimJob(BaseJob):
             name=self.backend().name,
             version=self.backend().version,
             options=options,
-            frozenset=True,
         )
 
         client_data = ClientData(
             user_agent=USER_AGENT,
-            frozenset=True,
         )
 
-        computation_model_dict = QuantumComputationModel(
+        computation_model_json = QuantumComputationModel(
             programs=programs,
             backend=backend_data,
             client=client_data,
-            frozenset=True,
-        ).to_dict()
+        ).to_json_str()
 
-        computation_parameters_dict = QuantumComputationParameters(
+        computation_parameters_json = QuantumComputationParameters(
             shots=options.pop("shots"),
-            frozenset=True,
-        ).to_dict()
+        ).to_json_str()
 
         model = self._client.create_model(
-            payload=computation_model_dict,
+            payload=computation_model_json,
         )
 
         if not model:
@@ -105,7 +101,7 @@ class QsimJob(BaseJob):
             name=self._name,
             session_id=session_id,
             model_id=model.id,
-            parameters=computation_parameters_dict,
+            parameters=computation_parameters_json,
         ).id
 
     def __to_cirq_result(self, program_result: QuantumProgramResult) -> "cirq.Result":
@@ -143,11 +139,14 @@ class QsimJob(BaseJob):
 
         conv_method = match.get(format, self.__to_qiskit_result)
 
-        results = list(
+        program_results = list(
             map(
                 lambda r: conv_method(self._extract_payload_from_response(r)),
                 job_results,
             )
         )
 
-        return results
+        if len(program_results) == 1:
+            return program_results[0]
+
+        return program_results

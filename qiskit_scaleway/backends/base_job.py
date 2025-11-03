@@ -87,29 +87,25 @@ class BaseJob(JobV1):
             name=self.backend().name,
             version=self.backend().version,
             options=options,
-            frozenset=True,
         )
 
         client_data = ClientData(
             user_agent=USER_AGENT,
-            frozenset=True,
         )
 
-        computation_model_dict = QuantumComputationModel(
+        computation_model_json = QuantumComputationModel(
             programs=programs,
             backend=backend_data,
             client=client_data,
             noise_model=noise_model,
-            frozenset=True,
-        ).to_dict()
+        ).to_json_str()
 
-        computation_parameters_dict = QuantumComputationParameters(
+        computation_parameters_json = QuantumComputationParameters(
             shots=shots,
-            frozenset=True,
-        ).to_dict()
+        ).to_json_str()
 
         model = self._client.create_model(
-            payload=computation_model_dict,
+            payload=computation_model_json,
         )
 
         if not model:
@@ -119,7 +115,7 @@ class BaseJob(JobV1):
             name=self._name,
             session_id=session_id,
             model_id=model.id,
-            parameters=computation_parameters_dict,
+            parameters=computation_parameters_json,
         ).id
 
     def result(
@@ -133,12 +129,10 @@ class BaseJob(JobV1):
         program_results = list(
             map(
                 lambda r: self._extract_payload_from_response(r).to_qiskit_result(
-                    **{
-                        "backend_name": self.backend().name,
-                        "backend_version": self.backend().version,
-                        "job_id": self._job_id,
-                        "qobj_id": ", ".join(x.name for x in self._circuits),
-                    }
+                    backend_name=self.backend().name,
+                    backend_version=self.backend().version,
+                    job_id=self._job_id,
+                    qobj_id=", ".join(x.name for x in self._circuits),
                 ),
                 job_results,
             )
@@ -164,7 +158,7 @@ class BaseJob(JobV1):
             else:
                 raise RuntimeError("Got result with empty data and url fields")
 
-        return QuantumProgramResult.from_json(result)
+        return QuantumProgramResult.from_json_str(result)
 
     def _wait_for_result(
         self, timeout: Optional[int], fetch_interval: int
