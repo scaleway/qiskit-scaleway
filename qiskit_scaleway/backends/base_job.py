@@ -54,6 +54,7 @@ class BaseJob(JobV1):
         self._client = client
         self._circuits = circuits
         self._config = config
+        self._last_progress_message = ""
 
     @property
     def name(self):
@@ -67,6 +68,9 @@ class BaseJob(JobV1):
             "waiting": JobStatus.QUEUED,
             "completed": JobStatus.DONE,
         }
+
+        if job.progress_message is not None:
+            self._last_progress_message = job.progress_message
 
         return status_mapping.get(job.status, JobStatus.ERROR)
 
@@ -111,6 +115,7 @@ class BaseJob(JobV1):
         if not model:
             raise RuntimeError("Failed to push circuit data")
 
+        self._last_progress_message = ""
         self._job_id = self._client.create_job(
             name=self._name,
             session_id=session_id,
@@ -177,6 +182,6 @@ class BaseJob(JobV1):
                 return self._client.list_job_results(self._job_id)
 
             if status == JobStatus.ERROR:
-                raise JobError("Job error")
+                raise JobError(f"Job failed: {self._last_progress_message}")
 
             time.sleep(fetch_interval)

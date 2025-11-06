@@ -62,7 +62,11 @@ class QsimJob(BaseJob):
         # Note 2: Qsim can only handle one circuit at a time
         circuit = RemoveBarriers()(self._circuits[0])
 
-        programs = [QuantumProgram.from_qiskit_circuit(circuit)]
+        programs = [
+            QuantumProgram.from_qiskit_circuit(
+                circuit, QuantumProgramSerializationFormat.QASM_V2
+            )
+        ]
 
         options.pop("circuit_memoization_size")
         shots = options.pop("shots")
