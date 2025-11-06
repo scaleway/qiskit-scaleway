@@ -80,6 +80,7 @@ class BaseJob(JobV1):
 
         options = self._config.copy()
         shots = options.pop("shots")
+        memory = options.pop("memory")
 
         programs = map(lambda c: QuantumProgram.from_qiskit_circuit(c), self._circuits)
 
@@ -106,6 +107,9 @@ class BaseJob(JobV1):
 
         computation_parameters_json = QuantumComputationParameters(
             shots=shots,
+            options={
+                "memory": memory,
+            },
         ).to_json_str()
 
         model = self._client.create_model(
