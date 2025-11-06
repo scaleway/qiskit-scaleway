@@ -1,4 +1,4 @@
-# Copyright 2024 Scaleway
+# Copyright 2025 Scaleway
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,32 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import time
-import zlib
 import httpx
-import json
-import numpy as np
 import randomname
 
 from typing import List, Union, Optional, Dict
 
-from qiskit import qasm3, QuantumCircuit
+from qiskit import QuantumCircuit
 from qiskit.result import Result
 from qiskit.providers import JobV1
 from qiskit.providers import JobError, JobTimeoutError, JobStatus
 
 from qiskit_scaleway.versions import USER_AGENT
 
+from qio.core import (
+    QuantumProgram,
+    QuantumProgramResult,
+    QuantumComputationModel,
+    QuantumComputationParameters,
+    QuantumNoiseModel,
+    BackendData,
+    ClientData,
+)
+
 from scaleway_qaas_client.v1alpha1 import (
     QaaSClient,
     QaaSJobResult,
-    QaaSJobData,
-    QaaSJobClientData,
-    QaaSCircuitData,
-    QaaSJobRunData,
-    QaaSJobBackendData,
-    QaaSCircuitSerializationFormat,
-    QaaSNoiseModelData,
-    QaaSNoiseModelSerializationFormat,
 )
 
 
@@ -55,6 +54,7 @@ class BaseJob(JobV1):
         self._client = client
         self._circuits = circuits
         self._config = config
+        self._last_progress_message = ""
 
     @property
     def name(self):
@@ -69,6 +69,9 @@ class BaseJob(JobV1):
             "completed": JobStatus.DONE,
         }
 
+        if job.progress_message is not None:
+            self._last_progress_message = job.progress_message
+
         return status_mapping.get(job.status, JobStatus.ERROR)
 
     def submit(self, session_id: str) -> None:
@@ -78,69 +81,46 @@ class BaseJob(JobV1):
         options = self._config.copy()
         shots = options.pop("shots")
 
-        run_data = QaaSJobRunData(
-            options={
-                "shots": shots,
-                "memory": options.pop("memory", False),
-            },
-            circuits=list(
-                map(
-                    lambda c: QaaSCircuitData(
-                        serialization_format=QaaSCircuitSerializationFormat.QASM_V3,
-                        circuit_serialization=qasm3.dumps(c),
-                    ),
-                    self._circuits,
-                )
-            ),
-        )
+        programs = map(lambda c: QuantumProgram.from_qiskit_circuit(c), self._circuits)
 
         noise_model = options.pop("noise_model", None)
         if noise_model:
-            noise_model_dict = _encode_numpy_complex(noise_model.to_dict(False))
-            noise_model = QaaSNoiseModelData(
-                serialization_format=QaaSNoiseModelSerializationFormat.AER_COMPRESSED_JSON,
-                noise_model_serialization=zlib.compress(
-                    json.dumps(noise_model_dict).encode()
-                ),
-            )
-            ### Uncomment to use standard JSON serialization, provided there is no more issue with AER deserialization logic
-            # noise_model = QaaSNoiseModelData(
-            #     serialization_format = QaaSNoiseModelSerializationFormat.JSON,
-            #     noise_model_serialization = json.dumps(noise_model.to_dict(True)).encode()
-            # )
-            ###
+            noise_model = QuantumNoiseModel.from_qiskit_aer_noise_model(noise_model)
 
-        backend_data = QaaSJobBackendData(
+        backend_data = BackendData(
             name=self.backend().name,
             version=self.backend().version,
             options=options,
         )
 
-        client_data = QaaSJobClientData(
+        client_data = ClientData(
             user_agent=USER_AGENT,
         )
 
-        data = QaaSJobData.schema().dumps(
-            QaaSJobData(
-                backend=backend_data,
-                run=run_data,
-                client=client_data,
-                noise_model=noise_model,
-            )
-        )
+        computation_model_json = QuantumComputationModel(
+            programs=programs,
+            backend=backend_data,
+            client=client_data,
+            noise_model=noise_model,
+        ).to_json_str()
+
+        computation_parameters_json = QuantumComputationParameters(
+            shots=shots,
+        ).to_json_str()
 
         model = self._client.create_model(
-            payload=data,
+            payload=computation_model_json,
         )
 
         if not model:
             raise RuntimeError("Failed to push circuit data")
 
+        self._last_progress_message = ""
         self._job_id = self._client.create_job(
             name=self._name,
             session_id=session_id,
             model_id=model.id,
-            parameters={"shots": shots},
+            parameters=computation_parameters_json,
         ).id
 
     def result(
@@ -151,37 +131,26 @@ class BaseJob(JobV1):
 
         job_results = self._wait_for_result(timeout, fetch_interval)
 
-        def __make_result_from_payload(payload: str) -> Result:
-            payload_dict = json.loads(payload)
-
-            return Result.from_dict(
-                {
-                    "results": payload_dict["results"],
-                    "backend_name": self.backend().name,
-                    "backend_version": self.backend().version,
-                    "job_id": self._job_id,
-                    "qobj_id": ", ".join(x.name for x in self._circuits),
-                    "success": payload_dict["success"],
-                    "header": payload_dict.get("header"),
-                    "metadata": payload_dict.get("metadata"),
-                }
-            )
-
-        qiskit_results = list(
+        program_results = list(
             map(
-                lambda r: __make_result_from_payload(
-                    self._extract_payload_from_response(r)
+                lambda r: self._extract_payload_from_response(r).to_qiskit_result(
+                    backend_name=self.backend().name,
+                    backend_version=self.backend().version,
+                    job_id=self._job_id,
+                    qobj_id=", ".join(x.name for x in self._circuits),
                 ),
                 job_results,
             )
         )
 
-        if len(qiskit_results) == 1:
-            return qiskit_results[0]
+        if len(program_results) == 1:
+            return program_results[0]
 
-        return qiskit_results
+        return program_results
 
-    def _extract_payload_from_response(self, job_result: QaaSJobResult) -> str:
+    def _extract_payload_from_response(
+        self, job_result: QaaSJobResult
+    ) -> QuantumProgramResult:
         result = job_result.result
 
         if result is None or result == "":
@@ -190,12 +159,11 @@ class BaseJob(JobV1):
             if url is not None:
                 resp = httpx.get(url)
                 resp.raise_for_status()
-
-                return resp.text
+                result = resp.text
             else:
-                raise Exception("Got result with empty data and url fields")
-        else:
-            return result
+                raise RuntimeError("Got result with empty data and url fields")
+
+        return QuantumProgramResult.from_json_str(result)
 
     def _wait_for_result(
         self, timeout: Optional[int], fetch_interval: int
@@ -214,28 +182,6 @@ class BaseJob(JobV1):
                 return self._client.list_job_results(self._job_id)
 
             if status == JobStatus.ERROR:
-                raise JobError("Job error")
+                raise JobError(f"Job failed: {self._last_progress_message}")
 
             time.sleep(fetch_interval)
-
-
-def _encode_numpy_complex(obj):
-    """
-    Recursively traverses a structure and converts numpy arrays and
-    complex numbers into a JSON-serializable format.
-    """
-    if isinstance(obj, np.ndarray):
-        return {
-            "__ndarray__": True,
-            "data": _encode_numpy_complex(obj.tolist()),  # Recursively encode data
-            "dtype": obj.dtype.name,
-            "shape": obj.shape,
-        }
-    elif isinstance(obj, (complex, np.complex128)):
-        return {"__complex__": True, "real": obj.real, "imag": obj.imag}
-    elif isinstance(obj, dict):
-        return {key: _encode_numpy_complex(value) for key, value in obj.items()}
-    elif isinstance(obj, (list, tuple)):
-        return [_encode_numpy_complex(item) for item in obj]
-    else:
-        return obj
