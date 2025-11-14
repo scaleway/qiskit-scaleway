@@ -18,6 +18,7 @@ from qiskit_scaleway import ScalewayProvider
 
 from qio.utils.circuit import random_square_qiskit_circuit
 
+
 def test_aqt_multiple_circuits():
     provider = ScalewayProvider(
         project_id=os.environ["QISKIT_SCALEWAY_PROJECT_ID"],

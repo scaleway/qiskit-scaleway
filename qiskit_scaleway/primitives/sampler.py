@@ -14,6 +14,8 @@
 import numpy as np
 import re
 
+from numpy.typing import NDArray
+
 from qiskit.primitives.backend_sampler_v2 import (
     BackendSamplerV2,
     _MeasureInfo,
@@ -102,7 +104,7 @@ class Sampler(BackendSamplerV2):
         )
 
 
-def _memory_array(results: list[list[str]], num_bytes: int) -> np.NDArray[np.uint8]:
+def _memory_array(results: list[list[str]], num_bytes: int) -> NDArray[np.uint8]:
     """Converts the memory data into an array in an unpacked way."""
     lst = []
     # Heuristic: check only the first result format
