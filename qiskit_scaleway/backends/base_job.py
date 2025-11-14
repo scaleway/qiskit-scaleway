@@ -80,7 +80,7 @@ class BaseJob(JobV1):
 
         options = self._config.copy()
         shots = options.pop("shots")
-        memory = options.pop("memory")
+        memory = options.pop("memory", False)
 
         programs = map(lambda c: QuantumProgram.from_qiskit_circuit(c), self._circuits)
 
