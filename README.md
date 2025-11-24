@@ -61,7 +61,7 @@ backends = provider.backends(min_num_qubits=35)
 print(backends)
 
 # Retrieve a backend by providing search criteria. The search must have a single match
-backend = provider.get_backend("aer_simulation_h100") # Or any gate-based compatible QPU
+backend = provider.get_backend("EMU-AER-H100") # Or any gate-based compatible QPU
 ```
 
 Define a quantum circuit and run it
@@ -79,6 +79,7 @@ qc.measure_all()
 ## Transpilation is done server side on QaaS service
 
 # Create and send a job to a new QPU's session (or on an existing one)
+# Custom noise models are also supported
 result = backend.run(qc, method="statevector", shots=1000).result()
 
 if result.success:
