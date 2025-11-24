@@ -23,7 +23,7 @@ provider = ScalewayProvider(
 )
 
 # Scaleway provides Qsim backend, whichs is compatible with Cirq SDK
-backend = provider.get_backend("qsim_simulation_l40s")
+backend = provider.get_backend("EMU-QSIM-L40S")
 
 # Define a quantum circuit that produces a 4-qubit GHZ state.
 qc = QuantumCircuit(4)
