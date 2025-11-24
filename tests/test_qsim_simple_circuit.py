@@ -26,7 +26,7 @@ def test_qsim_simple_circuit():
     )
 
     backend = provider.get_backend(
-        os.getenv("QSIM_SCALEWAY_BACKEND_NAME", "qsim_simulation_pop_c16m128")
+        os.getenv("QSIM_SCALEWAY_BACKEND_NAME", "EMU-QSIM-16C-128M")
     )
 
     assert backend is not None

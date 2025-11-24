@@ -27,7 +27,7 @@ provider = ScalewayProvider(
 )
 
 # Create a Aer compatible backend
-backend = provider.get_backend("aer_simulation_2l4")
+backend = provider.get_backend("EMU-AER-2L40S")
 
 # Start a session to run further jobs
 session_id = backend.start_session(deduplication_id="my-estimator", max_duration="20m")

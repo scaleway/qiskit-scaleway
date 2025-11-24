@@ -20,7 +20,7 @@ provider = ScalewayProvider(
 )
 
 # Scaleway provides Alpine Quantum Technologies (AQT) ion-trapped backend, whichs is compatible with Qiskit SDK
-backend = provider.get_backend("aqt_ibex_simulation_l4")
+backend = provider.get_backend("EMU-IBEX-12PQ-2L4")
 
 # Define a quantum circuit that produces a 4-qubit GHZ state.
 qc = QuantumCircuit(4)

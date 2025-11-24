@@ -28,7 +28,7 @@ provider = ScalewayProvider(
 )
 
 # Scaleway provides Alpine Quantum Technologies (AQT) ion-trapped backend, whichs is compatible with Qiskit SDK
-backend = provider.get_backend("aqt_ibex_simulation_l4")
+backend = provider.get_backend("EMU-IBEX-12PQ-L4")
 
 # Start the session
 session_id = backend.start_session(name="test-session", deduplication_id="my-workshop")

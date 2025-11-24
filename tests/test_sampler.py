@@ -30,7 +30,7 @@ def test_sampler():
     )
 
     backend = provider.get_backend(
-        os.getenv("QISKIT_SCALEWAY_BACKEND_NAME", "aer_simulation_pop_c16m128")
+        os.getenv("QISKIT_SCALEWAY_BACKEND_NAME", "EMU-AER-16C-128M")
     )
 
     assert backend is not None

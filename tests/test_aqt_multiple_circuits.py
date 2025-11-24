@@ -26,7 +26,7 @@ def test_aqt_multiple_circuits():
         url=os.getenv("QISKIT_SCALEWAY_API_URL"),
     )
 
-    backend = provider.get_backend("aqt_ibex_simulation_pop_c16m128")
+    backend = provider.get_backend("EMU-IBEX-12PQ-16C-128M")
 
     assert backend is not None
 
