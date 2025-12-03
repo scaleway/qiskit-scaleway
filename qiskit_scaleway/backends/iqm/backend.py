@@ -50,7 +50,6 @@ class IqmBackend(BaseBackend):
         return Options(
             session_id="auto",
             session_name="qs-qiskit-iqm",
-            session_deduplication_id="qs-qiskit-iqm",
             session_max_duration="59h",
             session_max_idle_duration="59m",
             shots=1000,

@@ -82,7 +82,6 @@ class BaseBackend(BackendV2, ABC):
 
         job_config.pop("session_id")
         job_config.pop("session_name")
-        job_config.pop("session_deduplication_id")
         job_config.pop("session_max_duration")
         job_config.pop("session_max_idle_duration")
 
@@ -109,10 +108,7 @@ class BaseBackend(BackendV2, ABC):
         max_idle_duration: Union[int, str] = None,
     ) -> str:
         if name is None:
-            name = self._options.get("session_name")
-
-        if deduplication_id is None:
-            deduplication_id = self._options.get("session_deduplication_id")
+            name = self._options.get("session_name", None)
 
         if max_duration is None:
             max_duration = self._options.get("session_max_duration", "59m")

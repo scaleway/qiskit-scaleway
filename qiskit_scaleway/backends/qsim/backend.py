@@ -74,7 +74,6 @@ class QsimBackend(BaseBackend):
 
         job_config.pop("session_id")
         job_config.pop("session_name")
-        job_config.pop("session_deduplication_id")
         job_config.pop("session_max_duration")
         job_config.pop("session_max_idle_duration")
 
@@ -99,7 +98,6 @@ class QsimBackend(BaseBackend):
         return Options(
             session_id="auto",
             session_name="qs-qiskit-qsim",
-            session_deduplication_id="qs-qiskit-qsim",
             session_max_duration="59m",
             session_max_idle_duration="59m",
             shots=1000,

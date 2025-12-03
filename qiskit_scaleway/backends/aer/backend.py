@@ -66,7 +66,6 @@ class AerBackend(BaseBackend):
         return Options(
             session_id="auto",
             session_name="qs-qiskit-aer",
-            session_deduplication_id="qs-qiskit-aer",
             session_max_duration="59m",
             session_max_idle_duration="59m",
             shots=1000,
