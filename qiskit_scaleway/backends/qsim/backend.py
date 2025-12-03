@@ -74,7 +74,6 @@ class QsimBackend(BaseBackend):
 
         job_config.pop("session_id")
         job_config.pop("session_name")
-        job_config.pop("session_deduplication_id")
         job_config.pop("session_max_duration")
         job_config.pop("session_max_idle_duration")
 
