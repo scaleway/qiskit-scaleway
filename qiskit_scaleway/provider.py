@@ -102,23 +102,7 @@ class ScalewayProvider:
         platforms = self.__client.list_platforms(name=name)
 
         for platform in platforms:
-            if platform.backend_name == "aer":
-                scaleway_backends.append(
-                    AerBackend(
-                        provider=self,
-                        client=self.__client,
-                        platform=platform,
-                    )
-                )
-            elif platform.backend_name == "qsim":
-                scaleway_backends.append(
-                    QsimBackend(
-                        provider=self,
-                        client=self.__client,
-                        platform=platform,
-                    )
-                )
-            elif platform.provider_name == "aqt":
+            if platform.provider_name == "aqt":
                 scaleway_backends.append(
                     AqtBackend(
                         provider=self,
@@ -129,6 +113,22 @@ class ScalewayProvider:
             elif platform.provider_name == "iqm":
                 scaleway_backends.append(
                     IqmBackend(
+                        provider=self,
+                        client=self.__client,
+                        platform=platform,
+                    )
+                )
+            elif platform.backend_name == "aer":
+                scaleway_backends.append(
+                    AerBackend(
+                        provider=self,
+                        client=self.__client,
+                        platform=platform,
+                    )
+                )
+            elif platform.backend_name == "qsim":
+                scaleway_backends.append(
+                    QsimBackend(
                         provider=self,
                         client=self.__client,
                         platform=platform,

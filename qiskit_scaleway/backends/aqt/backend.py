@@ -51,7 +51,7 @@ class AqtBackend(BaseBackend):
             shots=100,
             memory=True,
             open_pulse=False,
-            description="AQT trapped-ion platform",
+            description="AQT trapped-ions machine",
             conditional=False,
             max_experiments=1,
             simulator=False,
