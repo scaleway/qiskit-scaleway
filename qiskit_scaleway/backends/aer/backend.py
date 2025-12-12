@@ -73,7 +73,7 @@ class AerBackend(BaseBackend):
             seed_simulator=None,
             noise_model=None,
             method="automatic",
-            precision="double",
+            precision="single",
             max_shot_size=None,
             enable_truncation=True,
             max_parallel_experiments=1,

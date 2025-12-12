@@ -52,5 +52,7 @@ class IqmBackend(BaseBackend):
             session_name="qs-qiskit-iqm",
             session_max_duration="59h",
             session_max_idle_duration="59m",
+            description="IQM transmons machine",
             shots=1000,
+            memory=True,
         )
