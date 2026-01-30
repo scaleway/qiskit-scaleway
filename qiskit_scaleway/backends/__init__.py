@@ -17,3 +17,4 @@ from .aer.backend import AerBackend
 from .qsim.backend import QsimBackend
 from .aqt.backend import AqtBackend
 from .iqm.backend import IqmBackend
+from .cudaq.backend import CudaqBackend

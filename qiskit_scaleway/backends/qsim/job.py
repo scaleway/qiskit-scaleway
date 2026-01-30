@@ -120,6 +120,8 @@ class QsimJob(BaseJob):
             job_id=self._job_id,
             qobj_id=", ".join(x.name for x in self._circuits),
             success=self.status() == JobStatus.DONE,
+            status=program_result.url is not None or program_result.result is not None,
+            date=program_result.created_at,
         )
 
     def result(

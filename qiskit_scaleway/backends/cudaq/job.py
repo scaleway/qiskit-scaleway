@@ -21,11 +21,11 @@ from qiskit import QuantumCircuit
 
 from qiskit_scaleway.versions import USER_AGENT
 from qiskit_scaleway.backends import BaseJob
+from qiskit.transpiler.passes import RemoveBarriers
 
 from qio.core import (
     QuantumProgram,
     QuantumProgramSerializationFormat,
-    QuantumProgramResult,
     QuantumComputationModel,
     QuantumComputationParameters,
     BackendData,
@@ -54,15 +54,17 @@ class CudaqJob(BaseJob):
 
         options = self._config.copy()
 
+        circuit = RemoveBarriers()(self._circuits[0])
+
         programs = [
             QuantumProgram.from_qiskit_circuit(
-                self._circuits[0], QuantumProgramSerializationFormat.QASM_V2
+                circuit, QuantumProgramSerializationFormat.QASM_V2
             )
         ]
 
         # Retrieve run options
         shots = options.pop("shots")
-        cudaq_options = {"cudaq_target_options": options.pop("options", "")}
+        cudaq_option = {"cudaq_target_option": options.pop("option", "")}
 
         backend_data = BackendData(
             name=self.backend().name,
@@ -82,7 +84,7 @@ class CudaqJob(BaseJob):
 
         computation_parameters_json = QuantumComputationParameters(
             shots=shots,
-            options=cudaq_options,
+            options=cudaq_option,
         ).to_json_str()
 
         model = self._client.create_model(

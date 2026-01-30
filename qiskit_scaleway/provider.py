@@ -23,9 +23,18 @@ from qiskit_scaleway.backends import (
     AqtBackend,
     QsimBackend,
     AerBackend,
+    CudaqBackend,
 )
 
 from scaleway_qaas_client.v1alpha1 import QaaSClient
+
+_MAP_NAME_TO_BACKEND = {
+    "iqm": IqmBackend,
+    "aqt": AqtBackend,
+    "qsim": QsimBackend,
+    "aer": AerBackend,
+    "cudaq": CudaqBackend,
+}
 
 
 class ScalewayProvider:
@@ -102,38 +111,16 @@ class ScalewayProvider:
         platforms = self.__client.list_platforms(name=name)
 
         for platform in platforms:
-            if platform.provider_name == "aqt":
-                scaleway_backends.append(
-                    AqtBackend(
-                        provider=self,
-                        client=self.__client,
-                        platform=platform,
-                    )
-                )
-            elif platform.provider_name == "iqm":
-                scaleway_backends.append(
-                    IqmBackend(
-                        provider=self,
-                        client=self.__client,
-                        platform=platform,
-                    )
-                )
-            elif platform.backend_name == "aer":
-                scaleway_backends.append(
-                    AerBackend(
-                        provider=self,
-                        client=self.__client,
-                        platform=platform,
-                    )
-                )
-            elif platform.backend_name == "qsim":
-                scaleway_backends.append(
-                    QsimBackend(
-                        provider=self,
-                        client=self.__client,
-                        platform=platform,
-                    )
-                )
+            backend_class = _MAP_NAME_TO_BACKEND.get(
+                platform.provider_name.lower()
+            )  # aqt, iqm
+            backend_class = backend_class or _MAP_NAME_TO_BACKEND.get(
+                platform.backend_name.lower()
+            )  # qsim, aer, cudaq
+            backend = backend_class(
+                provider=self, client=self.__client, platform=platform
+            )
+            scaleway_backends.append(backend)
 
         if filters is not None:
             scaleway_backends = self.filters(scaleway_backends, filters)

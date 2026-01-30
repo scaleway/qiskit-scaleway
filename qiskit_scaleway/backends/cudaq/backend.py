@@ -20,7 +20,7 @@ from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
 from qiskit.transpiler import Target
 
-from qiskit_scaleway.backends.qsim.job import QsimJob
+from qiskit_scaleway.backends.cudaq.job import CudaqJob
 from qiskit_scaleway.backends import BaseBackend
 
 from scaleway_qaas_client.v1alpha1 import QaaSClient, QaaSPlatform
@@ -48,11 +48,11 @@ class CudaqBackend(BaseBackend):
 
     @property
     def job_cls(self):
-        return QsimJob
+        return CudaqJob
 
     def run(
         self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **kwargs
-    ) -> QsimJob:
+    ) -> CudaqJob:
         if not isinstance(circuits, List):
             circuits = [circuits]
 
@@ -77,7 +77,7 @@ class CudaqBackend(BaseBackend):
         job_config.pop("session_max_duration")
         job_config.pop("session_max_idle_duration")
 
-        job = QsimJob(
+        job = CudaqJob(
             backend=self,
             client=self._client,
             circuits=circuits,
