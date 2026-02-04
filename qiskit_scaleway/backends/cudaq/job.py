@@ -58,7 +58,7 @@ class CudaqJob(BaseJob):
 
         programs = [
             QuantumProgram.from_qiskit_circuit(
-                circuit, QuantumProgramSerializationFormat.QASM_V2
+                circuit, QuantumProgramSerializationFormat.QASM_V3
             )
         ]
 
