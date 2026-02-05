@@ -82,7 +82,9 @@ class BaseJob(JobV1):
         shots = options.pop("shots")
         memory = options.pop("memory", False)
 
-        programs = map(lambda c: QuantumProgram.from_qiskit_circuit(c), self._circuits)
+        programs = list(
+            map(lambda c: QuantumProgram.from_qiskit_circuit(c), self._circuits)
+        )
 
         noise_model = options.pop("noise_model", None)
         if noise_model:
