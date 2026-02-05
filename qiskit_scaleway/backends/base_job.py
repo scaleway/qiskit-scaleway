@@ -145,7 +145,7 @@ class BaseJob(JobV1):
                     job_id=self._job_id,
                     qobj_id=", ".join(x.name for x in self._circuits),
                     success=r.url is not None or r.result is not None,
-                    status=r.url is not None or r.result is not None,
+                    status=JobStatus.DONE,
                     date=r.created_at,
                 ),
                 job_results,

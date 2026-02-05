@@ -114,14 +114,15 @@ class QsimJob(BaseJob):
         return program_result.to_cirq_result()
 
     def __to_qiskit_result(self, program_result: QuantumProgramResult) -> Result:
+        status = self.status()
+
         return program_result.to_qiskit_result(
             backend_name=self.backend().name,
             backend_version=self.backend().version,
             job_id=self._job_id,
             qobj_id=", ".join(x.name for x in self._circuits),
-            success=self.status() == JobStatus.DONE,
-            status=program_result.url is not None or program_result.result is not None,
-            date=program_result.created_at,
+            success=status == JobStatus.DONE,
+            status=JobStatus.DONE,
         )
 
     def result(
