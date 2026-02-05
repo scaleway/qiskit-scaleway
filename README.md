@@ -5,6 +5,7 @@
 - [IQM](https://meetiqm.com/) superconducting quantum computers
 - [Aer](https://github.com/Qiskit/qiskit-aer) state vector and tensor network multi-GPU emulators
 - [Qsim](https://github.com/quantumlib/qsim) NISQ emulators
+- [CUDA-Q](https://developer.nvidia.com/cuda-q) emulators by NVIDIA
 
 To run circuits over [Quandela](https://www.quandela.com/) backends provided by Scaleway, you must use [Perceval SDK](https://perceval.quandela.net/) through the [Scaleway provider](https://perceval.quandela.net/docs/providers.html).
 
