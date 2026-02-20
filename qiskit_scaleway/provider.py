@@ -117,10 +117,12 @@ class ScalewayProvider:
             backend_class = backend_class or _MAP_NAME_TO_BACKEND.get(
                 platform.backend_name.lower()
             )  # qsim, aer, cudaq
-            backend = backend_class(
-                provider=self, client=self.__client, platform=platform
-            )
-            scaleway_backends.append(backend)
+
+            if backend_class:
+                backend = backend_class(
+                    provider=self, client=self.__client, platform=platform
+                )
+                scaleway_backends.append(backend)
 
         if filters is not None:
             scaleway_backends = self.filters(scaleway_backends, filters)
