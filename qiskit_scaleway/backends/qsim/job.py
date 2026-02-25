@@ -105,14 +105,6 @@ class QsimJob(BaseJob):
             parameters=computation_parameters_json,
         ).id
 
-    def __to_cirq_result(self, program_result: QuantumProgramResult) -> "cirq.Result":
-        try:
-            import cirq
-        except:
-            raise Exception("Cannot get Cirq result: Cirq not installed")
-
-        return program_result.to_cirq_result()
-
     def __to_qiskit_result(self, program_result: QuantumProgramResult) -> Result:
         status = self.status()
 
@@ -129,23 +121,16 @@ class QsimJob(BaseJob):
         self,
         timeout=None,
         fetch_interval: int = 3,
-        format: str = "qiskit",
-    ) -> Union[Result, List[Result], "cirq.Result"]:
+    ) -> Union[Result, List[Result]]:
         if self._job_id == None:
             raise JobError("Job ID error")
-
-        match = {
-            "qiskit": self.__to_qiskit_result,
-            "cirq": self.__to_cirq_result,
-        }
-
         job_results = self._wait_for_result(timeout, fetch_interval)
-
-        conv_method = match.get(format, self.__to_qiskit_result)
 
         program_results = list(
             map(
-                lambda r: conv_method(self._extract_payload_from_response(r)),
+                lambda r: self.__to_qiskit_result(
+                    self._extract_payload_from_response(r)
+                ),
                 job_results,
             )
         )
