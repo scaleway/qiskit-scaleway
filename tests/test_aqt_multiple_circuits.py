@@ -16,7 +16,7 @@ import random
 
 from qiskit_scaleway import ScalewayProvider
 
-from qio.utils.circuit import random_square_qiskit_circuit
+from qio.utils.circuit_factory import random_square_qiskit_circuit
 
 
 def test_aqt_multiple_circuits():
