@@ -68,7 +68,7 @@ class CudaqBackend(BaseBackend):
             else:
                 job_config[kwarg] = kwargs[kwarg]
 
-        job_name = f"qj-qsim-{randomname.get_name()}"
+        job_name = f"qj-cudaq-{randomname.get_name()}"
 
         session_id = job_config.get("session_id", None)
 
