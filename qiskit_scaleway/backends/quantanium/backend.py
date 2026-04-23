@@ -18,7 +18,7 @@ from typing import Union, List
 
 from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
-from qiskit.transpiler import Target
+from qiskit_scaleway.utils import create_target_from_platform
 
 from qiskit_scaleway.backends.quantanium.job import QuantaniumJob
 from qiskit_scaleway.backends import BaseBackend
@@ -37,8 +37,8 @@ class QuantaniumBackend(BaseBackend):
         self._options = self._default_options()
         self.options.set_validator("shots", (1, platform.max_shot_count))
 
-        self._target = Target(num_qubits=platform.max_qubit_count)
-
+        self._target = create_target_from_platform(platform)
+        
     def __repr__(self) -> str:
         return f"<QuantaniumBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
 
