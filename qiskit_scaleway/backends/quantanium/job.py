@@ -63,8 +63,12 @@ class QuantaniumJob(BaseJob):
         ]
 
         # Retrieve run options
+        quantanium_option = {}
         shots = options.pop("shots")
-        quantanium_option = {"quantanium_target_option": options.pop("option", "")}
+
+        for key, value in options.items():
+            if value is not None:
+                quantanium_option[key] = value
 
         backend_data = BackendData(
             name=self.backend().name,

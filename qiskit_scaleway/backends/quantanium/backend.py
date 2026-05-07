@@ -18,7 +18,7 @@ from typing import Union, List
 
 from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
-from qiskit_scaleway.utils import create_target_from_platform
+from qiskit.transpiler import Target
 
 from qiskit_scaleway.backends.quantanium.job import QuantaniumJob
 from qiskit_scaleway.backends import BaseBackend
@@ -37,8 +37,8 @@ class QuantaniumBackend(BaseBackend):
         self._options = self._default_options()
         self.options.set_validator("shots", (1, platform.max_shot_count))
 
-        self._target = create_target_from_platform(platform)
-        
+        self._target = Target(num_qubits=platform.max_qubit_count)
+
     def __repr__(self) -> str:
         return f"<QuantaniumBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
 
@@ -68,6 +68,7 @@ class QuantaniumBackend(BaseBackend):
             else:
                 job_config[kwarg] = kwargs[kwarg]
 
+        job_config["nsamples"] = job_config["shots"]
         job_name = f"qj-quantanium-{randomname.get_name()}"
 
         session_id = job_config.get("session_id", None)
@@ -86,7 +87,11 @@ class QuantaniumBackend(BaseBackend):
         )
 
         if session_id in ["auto", None]:
-            session_id = self.start_session(name=f"auto-{self._options.session_name}")
+            session_id = self.start_session(
+                name=f"auto-{self._options.session_name}",
+                max_duration=self._options.get("session_max_duration"),
+                max_idle_duration=self._options.get("session_max_idle_duration"),
+            )
             assert session_id is not None
 
         job.submit(session_id)
@@ -101,4 +106,12 @@ class QuantaniumBackend(BaseBackend):
             session_max_duration="59m",
             session_max_idle_duration="59m",
             shots=1000,
+            label="pyapi_v1.0",
+            algorithm="auto",
+            bitstrings=None,
+            timelimit=3540,
+            bonddim=None,
+            entdim=None,
+            seed=None,
+            qasmincludes=None,
         )
