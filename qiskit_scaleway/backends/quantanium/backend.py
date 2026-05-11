@@ -109,7 +109,7 @@ class QuantaniumBackend(BaseBackend):
             label="pyapi_v1.0",
             algorithm="auto",
             bitstrings=None,
-            timelimit=3540,
+            timelimit=9999,
             bonddim=None,
             entdim=None,
             seed=None,
