@@ -20,13 +20,13 @@ from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
 from qiskit.transpiler import Target
 
-from qiskit_scaleway.backends.cudaq.job import CudaqJob
+from qiskit_scaleway.backends.quantanium.job import QuantaniumJob
 from qiskit_scaleway.backends import BaseBackend
 
 from scaleway_qaas_client.v1alpha1 import QaaSClient, QaaSPlatform
 
 
-class CudaqBackend(BaseBackend):
+class QuantaniumBackend(BaseBackend):
     def __init__(self, provider, client: QaaSClient, platform: QaaSPlatform):
         super().__init__(
             provider=provider,
@@ -40,7 +40,7 @@ class CudaqBackend(BaseBackend):
         self._target = Target(num_qubits=platform.max_qubit_count)
 
     def __repr__(self) -> str:
-        return f"<CudaqBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
+        return f"<QuantaniumBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
 
     @property
     def target(self):
@@ -48,11 +48,11 @@ class CudaqBackend(BaseBackend):
 
     @property
     def job_cls(self):
-        return CudaqJob
+        return QuantaniumJob
 
     def run(
         self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **kwargs
-    ) -> CudaqJob:
+    ) -> QuantaniumJob:
         if not isinstance(circuits, List):
             circuits = [circuits]
 
@@ -68,7 +68,8 @@ class CudaqBackend(BaseBackend):
             else:
                 job_config[kwarg] = kwargs[kwarg]
 
-        job_name = f"qj-cudaq-{randomname.get_name()}"
+        job_config["nsamples"] = job_config["shots"]
+        job_name = f"qj-quantanium-{randomname.get_name()}"
 
         session_id = job_config.get("session_id", None)
 
@@ -77,7 +78,7 @@ class CudaqBackend(BaseBackend):
         job_config.pop("session_max_duration")
         job_config.pop("session_max_idle_duration")
 
-        job = CudaqJob(
+        job = QuantaniumJob(
             backend=self,
             client=self._client,
             circuits=circuits,
@@ -86,7 +87,11 @@ class CudaqBackend(BaseBackend):
         )
 
         if session_id in ["auto", None]:
-            session_id = self.start_session(name=f"auto-{self._options.session_name}")
+            session_id = self.start_session(
+                name=f"auto-{self._options.session_name}",
+                max_duration=self._options.get("session_max_duration"),
+                max_idle_duration=self._options.get("session_max_idle_duration"),
+            )
             assert session_id is not None
 
         job.submit(session_id)
@@ -97,8 +102,16 @@ class CudaqBackend(BaseBackend):
     def _default_options(self):
         return Options(
             session_id="auto",
-            session_name="qs-qiskit-cudaq",
+            session_name="qs-qiskit-quantanium",
             session_max_duration="59m",
             session_max_idle_duration="59m",
             shots=1000,
+            label="pyapi_v1.0",
+            algorithm="auto",
+            bitstrings=None,
+            timelimit=9999,
+            bonddim=None,
+            entdim=None,
+            seed=None,
+            qasmincludes=None,
         )
