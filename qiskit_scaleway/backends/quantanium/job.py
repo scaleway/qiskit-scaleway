@@ -66,9 +66,7 @@ class QuantaniumJob(BaseJob):
         quantanium_option = {}
         shots = options.pop("shots")
 
-        for key, value in options.items():
-            if value is not None:
-                quantanium_option[key] = value
+        quantanium_option = dict(filter(lambda item : item[1] is not None, options.items()))
 
         backend_data = BackendData(
             name=self.backend().name,

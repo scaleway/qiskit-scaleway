@@ -18,7 +18,7 @@ from qiskit import QuantumCircuit
 from qiskit_scaleway import ScalewayProvider
 
 
-def test_qsim_simple_circuit():
+def test_quantanium_simple_circuit():
     provider = ScalewayProvider(
         project_id=os.environ["QISKIT_SCALEWAY_PROJECT_ID"],
         secret_key=os.environ["QISKIT_SCALEWAY_SECRET_KEY"],
