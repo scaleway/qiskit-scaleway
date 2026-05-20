@@ -25,6 +25,7 @@ from qiskit_scaleway.backends import (
     AerBackend,
     CudaqBackend,
     QuantaniumBackend,
+    AlloyBackend,
 )
 
 from scaleway_qaas_client.v1alpha1 import QaaSClient
@@ -32,6 +33,7 @@ from scaleway_qaas_client.v1alpha1 import QaaSClient
 _MAP_NAME_TO_BACKEND = {
     "iqm": IqmBackend,
     "aqt": AqtBackend,
+    "pioneer": AlloyBackend,
     "qsim": QsimBackend,
     "aer": AerBackend,
     "cudaq": CudaqBackend,
