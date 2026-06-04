@@ -20,13 +20,13 @@ from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
 from qiskit.transpiler import Target
 
-from qiskit_scaleway.backends.alloy.job import AlloyJob
+from qiskit_scaleway.backends.pioneer.job import PioneerJob
 from qiskit_scaleway.backends import BaseBackend
 
 from scaleway_qaas_client.v1alpha1 import QaaSClient, QaaSPlatform
 
 
-class AlloyBackend(BaseBackend):
+class PioneerBackend(BaseBackend):
     def __init__(self, provider, client: QaaSClient, platform: QaaSPlatform):
         super().__init__(
             provider=provider,
@@ -40,7 +40,7 @@ class AlloyBackend(BaseBackend):
         self._target = Target(num_qubits=platform.max_qubit_count)
 
     def __repr__(self) -> str:
-        return f"<AlloyBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
+        return f"<PioneerBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
 
     @property
     def target(self):
@@ -48,11 +48,11 @@ class AlloyBackend(BaseBackend):
 
     @property
     def job_cls(self):
-        return AlloyJob
+        return PioneerJob
 
     def run(
         self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **kwargs
-    ) -> AlloyJob:
+    ) -> PioneerJob:
         if not isinstance(circuits, List):
             circuits = [circuits]
 
@@ -68,7 +68,7 @@ class AlloyBackend(BaseBackend):
             else:
                 job_config[kwarg] = kwargs[kwarg]
 
-        job_name = f"qj-alloy-{randomname.get_name()}"
+        job_name = f"qj-pioneer-{randomname.get_name()}"
 
         session_id = job_config.get("session_id", None)
 
@@ -77,7 +77,7 @@ class AlloyBackend(BaseBackend):
         job_config.pop("session_max_duration")
         job_config.pop("session_max_idle_duration")
 
-        job = AlloyJob(
+        job = PioneerJob(
             backend=self,
             client=self._client,
             circuits=circuits,
@@ -101,7 +101,7 @@ class AlloyBackend(BaseBackend):
     def _default_options(self):
         return Options(
             session_id="auto",
-            session_name="qs-qiskit-alloy",
+            session_name="qs-qiskit-pioneer",
             session_max_duration="59m",
             session_max_idle_duration="59m",
             shots=1000,

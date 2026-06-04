@@ -35,7 +35,7 @@ from qio.core import (
 from scaleway_qaas_client.v1alpha1 import QaaSClient
 
 
-class AlloyJob(BaseJob):
+class PioneerJob(BaseJob):
     def __init__(
         self,
         name: str,
@@ -63,10 +63,10 @@ class AlloyJob(BaseJob):
         ]
 
         # Retrieve run options
-        alloy_option = {}
+        pioneer_option = {}
         shots = options.pop("shots")
 
-        alloy_option = dict(filter(lambda item : item[1] is not None, options.items()))
+        pioneer_option = dict(filter(lambda item : item[1] is not None, options.items()))
 
         backend_data = BackendData(
             name=self.backend().name,
@@ -86,7 +86,7 @@ class AlloyJob(BaseJob):
 
         computation_parameters_json = QuantumComputationParameters(
             shots=shots,
-            options=alloy_option,
+            options=pioneer_option,
         ).to_json_str()
 
         model = self._client.create_model(
