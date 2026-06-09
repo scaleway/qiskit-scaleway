@@ -24,7 +24,7 @@ from qiskit_scaleway.backends import (
     QsimBackend,
     AerBackend,
     CudaqBackend,
-    QuantaniumBackend,
+    QperfectBackend,
     PioneerBackend,
 )
 
@@ -37,7 +37,7 @@ _MAP_NAME_TO_BACKEND = {
     "qsim": QsimBackend,
     "aer": AerBackend,
     "cudaq": CudaqBackend,
-    "quantanium": QuantaniumBackend,
+    "qperfect": QperfectBackend,
 }
 
 

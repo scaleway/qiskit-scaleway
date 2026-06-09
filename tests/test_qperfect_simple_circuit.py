@@ -18,7 +18,7 @@ from qiskit import QuantumCircuit
 from qiskit_scaleway import ScalewayProvider
 
 
-def test_quantanium_simple_circuit():
+def test_qperfect_simple_circuit():
     provider = ScalewayProvider(
         project_id=os.environ["QISKIT_SCALEWAY_PROJECT_ID"],
         secret_key=os.environ["QISKIT_SCALEWAY_SECRET_KEY"],
@@ -26,14 +26,14 @@ def test_quantanium_simple_circuit():
     )
 
     backend = provider.get_backend(
-        os.getenv("QUANTANIUM_SCALEWAY_BACKEND_NAME", "EMU-QUANTANIUM-16C-128M")
+        os.getenv("QPERFECT_SCALEWAY_BACKEND_NAME", "EMU-QUANTANIUM-16C-128M")
     )
 
     assert backend is not None
 
     session_id = backend.start_session(
-        name="my-quantanium-session-autotest",
-        deduplication_id=f"my-quantanium-session-autotest-{random.randint(1, 1000)}",
+        name="my-qperfect-session-autotest",
+        deduplication_id=f"my-qperfect-session-autotest-{random.randint(1, 1000)}",
         max_duration="15m",
     )
 
