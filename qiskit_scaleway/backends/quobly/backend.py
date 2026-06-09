@@ -20,13 +20,13 @@ from qiskit.providers import Options
 from qiskit.circuit import QuantumCircuit
 from qiskit.transpiler import Target
 
-from qiskit_scaleway.backends.pioneer.job import PioneerJob
+from qiskit_scaleway.backends.quobly.job import QuoblyJob
 from qiskit_scaleway.backends import BaseBackend
 
 from scaleway_qaas_client.v1alpha1 import QaaSClient, QaaSPlatform
 
 
-class PioneerBackend(BaseBackend):
+class QuoblyBackend(BaseBackend):
     def __init__(self, provider, client: QaaSClient, platform: QaaSPlatform):
         super().__init__(
             provider=provider,
@@ -40,7 +40,7 @@ class PioneerBackend(BaseBackend):
         self._target = Target(num_qubits=platform.max_qubit_count)
 
     def __repr__(self) -> str:
-        return f"<PioneerBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
+        return f"<QuoblyBackend(name={self.name},num_qubits={self.num_qubits},platform_id={self.id})>"
 
     @property
     def target(self):
@@ -48,11 +48,11 @@ class PioneerBackend(BaseBackend):
 
     @property
     def job_cls(self):
-        return PioneerJob
+        return QuoblyJob
 
     def run(
         self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **kwargs
-    ) -> PioneerJob:
+    ) -> QuoblyJob:
         if not isinstance(circuits, List):
             circuits = [circuits]
 
@@ -68,7 +68,7 @@ class PioneerBackend(BaseBackend):
             else:
                 job_config[kwarg] = kwargs[kwarg]
 
-        job_name = f"qj-pioneer-{randomname.get_name()}"
+        job_name = f"qj-quobly-{randomname.get_name()}"
 
         session_id = job_config.get("session_id", None)
 
@@ -77,7 +77,7 @@ class PioneerBackend(BaseBackend):
         job_config.pop("session_max_duration")
         job_config.pop("session_max_idle_duration")
 
-        job = PioneerJob(
+        job = QuoblyJob(
             backend=self,
             client=self._client,
             circuits=circuits,
@@ -101,7 +101,7 @@ class PioneerBackend(BaseBackend):
     def _default_options(self):
         return Options(
             session_id="auto",
-            session_name="qs-qiskit-pioneer",
+            session_name="qs-qiskit-quobly",
             session_max_duration="59m",
             session_max_idle_duration="59m",
             shots=1000,
