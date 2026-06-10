@@ -3,10 +3,10 @@
 **Qiskit Scaleway** is a Python package to run quantum circuits on [Scaleway](https://www.scaleway.com/en/) infrastructure, providing access to:
 - [AQT](https://www.aqt.eu/) ion-trapped quantum computers and emulators
 - [IQM](https://iqm.tech/) superconducting quantum computers and emulators
-- [Quobly](httpshttps://www.quobly.io/) electron spin based quantum processors and emulators
+- [Quobly](https://www.quobly.io/) electron spin based quantum processors and emulators
 - [Aer](https://github.com/Qiskit/qiskit-aer) state vector and tensor network multi-GPU emulators
-- [Qsim](https://github.com/quantumlib/qsim) NISQ emulators
-- [CUDA-Q](https://developer.nvidia.com/cuda-q) emulators by NVIDIA
+- [Qsim](https://github.com/quantumlib/qsim) NISQ emulator
+- [CUDA-Q](https://developer.nvidia.com/cuda-q) GPU-optimized emulators by NVIDIA
 - [QPerfect](https://github.com/qperfect-io/quantanium-python) emulators by QPerfect
 
 To run circuits over [Quandela](https://www.quandela.com/) QPUs provided by Scaleway, you must use [Perceval SDK](https://perceval.quandela.net/) through the [Scaleway provider](https://www.scaleway.com/en/docs/quantum-computing/how-to/use-quandela-qpus/).
@@ -84,6 +84,7 @@ qc.measure_all()
 ## Transpilation is done server side on QaaS service
 
 # Create and send a job to a new QPU's session (or on an existing one)
+# Support additional argument such as 'method' for Aer backends
 # Custom noise models are also supported
 result = backend.run(qc, method="statevector", shots=1000).result()
 
