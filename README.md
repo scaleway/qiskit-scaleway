@@ -8,7 +8,6 @@
 - [Qsim](https://github.com/quantumlib/qsim) NISQ emulators
 - [CUDA-Q](https://developer.nvidia.com/cuda-q) emulators by NVIDIA
 - [QPerfect](https://github.com/qperfect-io/quantanium-python) emulators by QPerfect
-- [Quobly](https://github.com/quobly-sw/Quobly-alloy) silicon spin qubits emulators by Quobly
 
 To run circuits over [Quandela](https://www.quandela.com/) QPUs provided by Scaleway, you must use [Perceval SDK](https://perceval.quandela.net/) through the [Scaleway provider](https://www.scaleway.com/en/docs/quantum-computing/how-to/use-quandela-qpus/).
 
