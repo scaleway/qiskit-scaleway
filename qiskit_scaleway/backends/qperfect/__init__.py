@@ -1,4 +1,4 @@
-# Copyright 2025 Scaleway
+# Copyright 2026 Scaleway
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,4 +11,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .backend import PioneerBackend
+from .backend import QperfectBackend
+from .job import QperfectJob

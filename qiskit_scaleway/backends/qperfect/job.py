@@ -35,7 +35,7 @@ from qio.core import (
 from scaleway_qaas_client.v1alpha1 import QaaSClient
 
 
-class QuantaniumJob(BaseJob):
+class QperfectJob(BaseJob):
     def __init__(
         self,
         name: str,
@@ -63,10 +63,10 @@ class QuantaniumJob(BaseJob):
         ]
 
         # Retrieve run options
-        quantanium_option = {}
+        qperfect_option = {}
         shots = options.pop("shots")
 
-        quantanium_option = dict(filter(lambda item : item[1] is not None, options.items()))
+        qperfect_option = dict(filter(lambda item : item[1] is not None, options.items()))
 
         backend_data = BackendData(
             name=self.backend().name,
@@ -86,7 +86,7 @@ class QuantaniumJob(BaseJob):
 
         computation_parameters_json = QuantumComputationParameters(
             shots=shots,
-            options=quantanium_option,
+            options=qperfect_option,
         ).to_json_str()
 
         model = self._client.create_model(
