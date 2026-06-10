@@ -66,7 +66,9 @@ class QperfectJob(BaseJob):
         qperfect_option = {}
         shots = options.pop("shots")
 
-        qperfect_option = dict(filter(lambda item : item[1] is not None, options.items()))
+        qperfect_option = dict(
+            filter(lambda item: item[1] is not None, options.items())
+        )
 
         backend_data = BackendData(
             name=self.backend().name,
