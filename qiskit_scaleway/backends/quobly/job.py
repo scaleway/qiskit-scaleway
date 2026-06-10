@@ -66,7 +66,7 @@ class QuoblyJob(BaseJob):
         quobly_option = {}
         shots = options.pop("shots")
 
-        quobly_option = dict(filter(lambda item : item[1] is not None, options.items()))
+        quobly_option = dict(filter(lambda item: item[1] is not None, options.items()))
 
         backend_data = BackendData(
             name=self.backend().name,

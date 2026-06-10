@@ -106,5 +106,5 @@ class QuoblyBackend(BaseBackend):
             session_max_idle_duration="59m",
             shots=1000,
             seed=None,
-            noise=True
+            noise=True,
         )
